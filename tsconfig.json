@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "module": "commonjs",
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "rootDir": "./source",
+    "outDir": "./build",
+    "pretty": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "target": "es2015",
+    "noEmitOnError": true,
+    "lib": [
+      "es2017"
+    ],
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "source/**/*.ts"
+  ]
+}

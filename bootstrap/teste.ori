@@ -1,0 +1,11 @@
+# This is a module
+
+union Maybe<'a>
+  case Just(value :: 'a)
+  case Nothing
+
+
+define a + b = a
+
+define fn(a :: Maybe<'a>, f :: ('a) -> 'b) =
+  if true then f(a) else 1

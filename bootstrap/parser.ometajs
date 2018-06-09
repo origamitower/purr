@@ -1,0 +1,81 @@
+function notReserved(x) {
+  return ![
+    'union', 'case'
+  ].includes(x);
+}
+
+ometa OrigamiParser {
+  idstart    = letter | '_',
+  idrest     = idstart | digit,
+  identifier = <idstart idrest*>:id ?notReserved(id),
+  number     = <digit+>,
+  boolean    = kw("true") | kw("false"),
+  infix      = (seq('===') | seq('=/=') | '>' | seq('>=') | seq('<') | seq('<=') | '+' | '-' | '*' | '/'):a,
+  
+  kw :xs = seq(xs) ~(letter | digit),
+  listOf :p :s = apply(p):h (_ seq(s) _ apply(p))*:tl -> [h].concat(tl)
+               | empty                                -> [],
+
+  comment = fromTo('#', '\n'),
+  wspace = /\s/,
+  _ = (wspace | comment)*,
+  eof = ~char,
+
+  // Syntactical structure
+  Module =
+    (_ Definition)*:ds _ eof -> ['module', ds],
+
+  Definition =
+    Union
+  | Define,
+  
+  // Definitions
+  Union =
+    kw('union') _ identifier:n _ TypeArgs?:t (_ UnionVariant)+:vs -> ['union', n, t || [], vs],
+
+  UnionVariant =
+    kw('case') _ identifier:n _ VariantArgs:a -> ['case', n, a]
+  | kw('case') _ identifier:n                 -> ['case', n, []],
+
+  VariantArgs =
+    '(' _ Param:v (_ ',' _ Param)*:vs _ ')' -> [v].concat(vs),
+
+  TypeArgs =
+    '<' _ TypeDef:t (_ ',' _ TypeDef)*:ts _ '>' -> [t].concat(ts),
+
+  TypeDef =
+    '\'' identifier:i                                         -> ['type-var', i]
+  | identifier:i _ TypeArgs:ts                                -> ['type-app', i, ts]
+  | identifier:i                                              -> ['type-ref', i]
+  | seq('any')                                                -> ['type-any']
+  | '(' _ listOf('TypeDef'):i _ ')' _ seq('->') _ TypeDef:o   -> ['type-fn', i, o],
+
+  Param =
+    identifier:i _ seq('::') _ TypeDef:t -> [i, t]
+  | identifier:i                         -> [i, ['type-any']],
+
+  Define =
+    kw('define') _ Param:l _ infix:op _ Param:r _ '=' _ Expr:b -> ['define', op, [l, r], b]
+  | kw('define') _ identifier:i _ FnParams:p _ '=' _ Expr:b -> ['define', i, p, b],
+
+  FnParams = '(' _ listOf(#Param, ','):ps _ ')' -> ps,
+
+
+  // Expressions
+  Expr =
+    If
+  | Call,
+
+  If =
+    kw('if') _ Expr:a _ kw('then') _ Expr:b _ kw('else') _ Expr:c -> ['if', a, b, c],
+
+  Call =
+    Call:callee _ '(' _ listOf(#Expr, ','):args _ ')' -> ['call', callee, args]
+  | PrimaryExpr,
+
+  PrimaryExpr =
+    boolean:b -> ['lit_bool', b]
+  | number:n -> ['lit_num', n]
+  | identifier:i -> ['ref', i]
+  | '(' _ Expr:e _ ')' -> e
+}

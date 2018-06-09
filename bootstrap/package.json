@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "description": "Bootstraps the Origami compiler",
+  "dependencies": {
+    "ometajs": "^4.0.0"
+  }
+}

@@ -1,0 +1,23 @@
+const g = require('./codegen');
+
+ometa OrigamiCompiler {
+  compile =
+    ['module' [compile_def*:xs]] -> { xs.join('\n\n') },
+
+  compile_def =
+    ['union' :id :t [variant*:vs]] -> g.Union(id, vs)
+  | ['define' :n [param*:xs] expr:b] -> g.Define(n, xs, b),
+
+  variant =
+    ['case' :n [param*:xs]] -> [n, xs],
+  
+  param =
+    [:n :t] -> n,
+
+  expr =
+    ['call' expr:e [expr*:xs]] -> { '(' + e + ')(' + xs.join(', ') + ')' }
+  | ['if' expr:a expr:b expr:c] -> { '((' + a + ') ? (' + b + ') : (' + c + '))' }
+  | ['lit_bool' :b] -> b
+  | ['lit_num' :n] -> n
+  | ['ref' :i] -> i
+}
