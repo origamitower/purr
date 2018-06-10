@@ -1,0 +1,13 @@
+% version: 1
+# import "@origamitower/foundation" exposing { Integer, <=, ==> }
+
+define factorial(n :: Integer) -> Integer
+  if n <= 1 then 1
+  else n * factorial(n - 1)
+# where
+#   assert factorial(0)  ==> 1
+#   assert factorial(1)  ==> 1
+#   assert factorial(3)  ==> 6
+#   assert factorial(5)  ==> 120
+#   assert factorial(20) ==> 2_432_902_008_176_640_000
+end

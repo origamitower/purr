@@ -2,22 +2,119 @@ const g = require('./codegen');
 
 ometa OrigamiCompiler {
   compile =
-    ['module' [compile_def*:xs]] -> { xs.join('\n\n') },
+    [#module [compile_def*:xs]] -> { xs.join('\n\n') },
 
   compile_def =
-    ['union' :id :t [variant*:vs]] -> g.Union(id, vs)
-  | ['define' :n [param*:xs] expr:b] -> g.Define(n, xs, b),
+    [#union :id :t [variant*:vs]] -> g.Union(id, vs)
+  | [#import :id :n] -> { 'import * as ' + n + ' from ' + JSON.stringify(id) + ';' }
+  | [#define :n [param*:xs] [stmt*:b]] -> g.Define(n, xs, b),
 
   variant =
-    ['case' :n [param*:xs]] -> [n, xs],
+    [#case :n [param*:xs]] -> [n, xs],
   
   param =
     [:n :t] -> n,
 
+  stmt =
+    [#let #mutable :n expr:v] -> { 'let ' + n + ' = ' + v }
+  | [#let :k :n expr:v]       -> { 'const ' + n + ' = ' + v }
+  | [#return expr:e]          -> { 'return ' + e }
+  | [#foreach :v expr:e [stmt*:b]] -> {
+    'for (const ' + v + ' of ' + e + ') {\n'
+  + '    ' + b.join('\n    ') + '\n'
+  + '  }'
+  }
+  | [#while expr:e [stmt*:b]] -> {
+    'while (' + e + ') {\n'
+  + '    ' + b.join('\n    ') + '\n'
+  + '  }'
+  }
+  | [#until expr:e [stmt*:b]] -> {
+    'do {\n'
+  + '    ' + b.join('\n    ') + '\n'
+  + '  } while (' + e + ')'
+  }
+  | [#for :n expr:s expr:e expr:k [stmt*:b]] -> {
+    'for (let ' + n + ' = ' + s + '; $gte(' + n + ', ' + e + '); ' + n + ' = $plus(' + n + ', ' + k + ')) {\n'
+  + '    ' + b.join('\n  ') + '\n'
+  + '  }'
+  }
+  | [#repeat [stmt*:b]] -> {
+    'while (true) {\n'
+  + '    ' + b.join('\n    ') + '\n'
+  + '  }'
+  }
+
+  | [#tryfin [stmt*:b] [stmt*:f]] -> {
+    'try {\n'
+  + '    ' + b.join('\n    ') + '\n'
+  + '  } finally {\n'
+  + '    ' + f.join('\n    ') + '\n'
+  + '  }'
+  }
+
+  | [#try [stmt*:b] :n [stmt*:c] 'none'] -> {
+    'try {\n'
+  + '    ' + b.join('\n    ') + '\n'
+  + '  } catch (' + n + ') {\n'
+  + '    ' + c.join('\n    ') + '\n'
+  + '  }'
+  }
+
+  | [#try [stmt*:b] :n [stmt*:c] [stmt*:f]] -> {
+    'try {\n'
+  + '    ' + b.join('\n    ') + '\n'
+  + '  } catch (' + n + ') {\n'
+  + '    ' + c.join('\n    ') + '\n'
+  + '  } finally {\n'
+  + '    ' + f.join('\n    ') + '\n'
+  + '  }'
+  }
+
+  | [#throw expr:e] -> { 'throw ' + e }
+  | [#assert expr:e] -> {
+    'if (!' + e + ') {\n'
+  + '    throw $fail(' + JSON.stringify(e) + ');\n'
+  + '  }'
+  }
+
+  | [#expr expr:e] -> e,
+
   expr =
-    ['call' expr:e [expr*:xs]] -> { '(' + e + ')(' + xs.join(', ') + ')' }
-  | ['if' expr:a expr:b expr:c] -> { '((' + a + ') ? (' + b + ') : (' + c + '))' }
-  | ['lit_bool' :b] -> b
-  | ['lit_num' :n] -> n
-  | ['ref' :i] -> i
+    [#pipe expr:l expr:r] -> { '(' + r + ')(' + l + ')' }
+  | [#call expr:e [expr*:xs]] -> { '(' + e + ')(' + xs.join(', ') + ')' }
+  | [#opcall :n [expr*:xs]] -> { g.mangle(n) + '(' + xs.join(', ') + ')' }
+  | [#if expr:a expr:b expr:c] -> { '((' + a + ') ? (' + b + ') : (' + c + '))' }
+  | [#set expr:l expr:r] -> { '(' + l + ') = (' + r + ')' }
+  | [#send expr:c :n [expr*:xs]] -> { '(' + c + ').' + n + '(' + xs.join(', ') + ')' }
+  | [#get expr:m :n] -> { '$get(' + m + ', ' + JSON.stringify(n) + ')' }
+  | [#at expr:m expr:i] -> { '$at(' + m + ', ' + i + ')' }
+  | [#new expr:p [expr*:xs]] -> { 'new (' + p + ')(' + xs.join(', ') + ')' }
+  | [#fn [param*:p] expr:e] -> { 
+    '(' + p.map(function(x) { return x + ': any' }).join(', ') + ') => ' + e
+  }
+  | [#vector [expr*:e]] -> { '$vector(' + e.join(', ') + ')' }
+  | [#map [assoc*:xs]] -> {
+    '$map('
+    + xs.map(function(x){ return '[' + JSON.stringify(x[0]) + ', ' + x[1] + ']' }).join(', ')
+    + ')'
+  }
+  | [#array [expr*:e]] -> {
+    '[' + e.join(', ') + ']'
+  }
+  | [#record [assoc*:xs]] -> {
+    '{'
+    + xs.map(function(x){ return JSON.stringify(x[0]) + ': ' + x[1] }).join(', ')
+    + '}'
+  }
+  | [#lit_bool :b] -> b
+  | [#lit_float :n] -> n
+  | [#lit_int :n] -> { '$int(' + JSON.stringify(n) + ')' }
+  | [#lit_dec :n] -> { '$dec(' + JSON.stringify(n) + ')' }
+  | [#lit_str :s] -> JSON.stringify(s)
+  | [#do [stmt*:xs]] -> { '(function(){ ' + xs.join('; ') + ' })' }
+  | [#ref :i] -> i,
+
+  assoc =
+    [:n expr:e] -> [n, e]
 }

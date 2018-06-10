@@ -1,11 +1,50 @@
+% version: 1
 # This is a module
+
+import "runtime" as rt
 
 union Maybe<'a>
   case Just(value :: 'a)
   case Nothing
 
 
-define a + b = a
+define a + b = a |> b |> c
 
-define fn(a :: Maybe<'a>, f :: ('a) -> 'b) =
-  if true then f(a) else 1
+define fn(a :: Maybe<'a>, f :: ('a) -> 'b)
+  let mutable y = x;
+  let x = a + 1;
+  foreach x of y do z; end
+  repeat while x do z; end
+  repeat until x do z; end
+  repeat with a from 1 to x by 2 do z; end
+  repeat z; end
+  try a; finally z; end
+  try a; catch e with z; end
+  try a; catch e with z; finally b; end
+  throw e;
+  assert z;
+
+  a |> b;
+  f(a, b, c);
+  a + x; a or x; a === x;
+  if a then b else c;
+  a <- b;
+  a.c <- b;
+  a.c(foo, bar);
+  a[c];
+  new a.c(foo, bar);
+  new a();
+  (a, b, c) => a + b + c;
+  [a, b, c];
+  [a: b, c: d];
+  [| a, b, c |];
+  { a: b, c: d };
+  true; false;
+  1_000.03f;
+  1_000;
+  -10;
+  1_000.282;
+  "foo";
+  a;
+  do a; b; end;
+end

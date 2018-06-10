@@ -1,0 +1,28 @@
+% version: 1
+
+union Maybe<'A>
+  | Just(value :: 'A)
+  | Nothing
+
+with
+  member self.map(fn :: ('A) -> 'B) -> Maybe<'B>
+    match<Maybe> self with
+      | Just(v) -> Maybe.Just(f(v))
+      | Nothing -> Maybe.Nothing
+
+  member (self :: Maybe<('A) -> 'B).apply(container :: Maybe<'A>) -> Maybe<'B>
+    match<Maybe> self with
+      | Just(v) -> Maybe.Just(f(v))
+      | Nothing -> Maybe.Nothing
+
+  member self.chain(fn :: ('A) -> Maybe<'B>) -> Maybe<'B>
+    match<Maybe> self with
+      | Just(v) -> f(v)
+      | Nothing -> Maybe.Nothing
+
+  member self.getOrElse(fallback :: () -> 'A) -> 'A
+    match<Maybe> self with
+      | Just(v) -> v
+      | Nothing -> fallback
+
+  

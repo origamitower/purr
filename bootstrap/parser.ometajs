@@ -1,17 +1,56 @@
 function notReserved(x) {
-  return ![
-    'union', 'case'
-  ].includes(x);
+  const re = /^(import|as|exposing|define|end|where|assert|law|forall|async|await|generator|yield|union|abstract|class|extends|implements|let|mutable|include|without|renaming|member|static|export|match|with|if|then|else|do|foreach|of|repeat|from|to|by|break|continue|try|catch|case|const|debugger|default|delete|enum|finally|for|function|in|instanceof|new|return|super|throw|switch|this|typeof|var|void|while|interface|package|private|protected|public|required|optional|override|protocol|implement|and|or|not)$/;
+
+  return !re.test(x);
+}
+
+function fixReturn(xs) {
+  if (xs.length === 0)  return xs;
+
+  const head = xs.slice(0, -1);
+  const tail = xs[xs.length - 1];
+
+  switch (tail[0]) {
+    case 'expr': {
+      const [_, expr] = tail;
+      return [...head, ['return', expr]];
+    }
+
+    case 'tryfin': {
+      const [_, block, fin] = tail;
+      return [...head, ['tryfin', fixReturn(block), fin]];
+    }
+
+    case 'try': {
+      const [_, block, n, err, fin] = tail;
+      return [...head, ['try', fixReturn(block), n, fixReturn(err), fin]];
+    }
+
+    default:
+      return [...head, tail];
+  }
 }
 
 ometa OrigamiParser {
   idstart    = letter | '_',
   idrest     = idstart | digit,
-  identifier = <idstart idrest*>:id ?notReserved(id),
-  number     = <digit+>,
+  name       = <idstart idrest*>,
+  identifier = name:id ?notReserved(id),
+  integer    = <'-'? (digit | '_')+>:x -> x.replace(/_/, ''),
+  float      = <'-'? integer '.' integer>:x -> x.replace(/_/, ''),
   boolean    = kw("true") | kw("false"),
-  infix      = (seq('===') | seq('=/=') | '>' | seq('>=') | seq('<') | seq('<=') | '+' | '-' | '*' | '/'):a,
+  infix      = (seq('===') | seq('=/=') | '>' | seq('>=') | seq('<') | seq('<=') | '+' | '-' | '*' | '/' | seq('and') | seq('or')):a,
   
+  stringEscape = '\\' ( 'b' -> '\b'
+               | 'f' -> '\f'
+               | 'n' -> '\n'
+               | 'r' -> '\r'
+               | 't' -> '\t'
+               | char),
+  stringChar = stringEscape:a       -> a
+             | (~seq('"') char):a   -> a,
+  text       = '"' stringChar*:as '"' -> as.join(''),
+
   kw :xs = seq(xs) ~(letter | digit),
   listOf :p :s = apply(p):h (_ seq(s) _ apply(p))*:tl -> [h].concat(tl)
                | empty                                -> [],
@@ -21,15 +60,22 @@ ometa OrigamiParser {
   _ = (wspace | comment)*,
   eof = ~char,
 
+  Header = '%' /[^\n\r]/*,
+
   // Syntactical structure
   Module =
+    (_ Header*) _
     (_ Definition)*:ds _ eof -> ['module', ds],
 
   Definition =
     Union
+  | Import
   | Define,
   
   // Definitions
+  Import =
+    kw('import') _ text:id _ kw('as') _ identifier:i -> ['import', id, i],
+
   Union =
     kw('union') _ identifier:n _ TypeArgs?:t (_ UnionVariant)+:vs -> ['union', n, t || [], vs],
 
@@ -55,27 +101,130 @@ ometa OrigamiParser {
   | identifier:i                         -> [i, ['type-any']],
 
   Define =
-    kw('define') _ Param:l _ infix:op _ Param:r _ '=' _ Expr:b -> ['define', op, [l, r], b]
-  | kw('define') _ identifier:i _ FnParams:p _ '=' _ Expr:b -> ['define', i, p, b],
+    kw('define') _ Param:l _ infix:op _ Param:r _ Body:b -> ['define', op, [l, r], b]
+  | kw('define') _ kw('not') Param:p _ Body:b -> ['define', 'not', [p], b]
+  | kw('define') _ identifier:i _ FnParams:p _ Body:b -> ['define', i, p, b],
 
   FnParams = '(' _ listOf(#Param, ','):ps _ ')' -> ps,
 
 
   // Expressions
-  Expr =
+  Body = 
+    '=' _ Expr:e         -> [['return', e]]
+  | Stmts:xs _ kw('end') -> fixReturn(xs),
+
+  Stmts = (_ Stmt)+,
+
+  Stmt =
+    Let
+  | Loop
+  | Try
+  | Throw
+  | Assert
+  | Expr:e _ ';' -> ['expr', e],
+
+  Block = kw('do') _ Stmts:xs _ kw('end') -> xs,
+
+  Loop =
+    kw('foreach') _ identifier:v _ kw('of') _ Expr:e _ Block:b -> ['foreach', v, e, b]
+  | kw('repeat') _ kw('while') _ Expr:e _ Block:b -> ['while', e, b]
+  | kw('repeat') _ kw('until') _ Expr:e _ Block:b -> ['until', e, b]
+  | kw('repeat') _ kw('with') _ identifier:n _ kw('from') _ Expr:s _ kw('to') _ Expr:e (_ kw('by') _ Expr)?:k _ Block:b -> ['for', n, s, e, k || 1, b]
+  | kw('repeat') _ Stmts:b _ kw('end') -> ['repeat', b],
+
+  Try =
+    kw('try') _ Stmts:b _ kw('finally') _ Stmts:f _ kw('end') -> ['tryfin', b, f]
+  | kw('try') _ Stmts:b _ kw('catch') _ identifier:n _ kw('with') _ Stmts:c (_ kw('finally') _ Stmts)?:f _ kw('end') -> ['try', b, n, c, f || 'none'],
+
+  Throw =
+    kw('throw') _ Expr:e _ ';' -> ['throw', e],
+
+  Assert =
+    kw('assert') _ Expr:e _ ';' -> ['assert', e],
+
+  Let =
+    kw('let') _ kw('mutable')?:m _ identifier:n _ '=' _ Expr:v _ ';' -> ['let', m || '', n, v],
+
+  Expr = 
     If
-  | Call,
+  | Pipe,
 
   If =
     kw('if') _ Expr:a _ kw('then') _ Expr:b _ kw('else') _ Expr:c -> ['if', a, b, c],
 
+  Pipe =
+    Pipe:l _ seq('|>') _ Logical:r -> ['pipe', l, r]
+  | Logical,
+
+  Logical = 
+    Logical:l _ (kw('and') | kw('or')):op _ Relational:r -> ['opcall', op, [l, r]]
+  | Infix,
+
+  Infix =
+    Infix:l _ '`' _ PrimaryExpr:n _ Relational:r -> ['call', n, [r]]
+  | Relational,
+
+  Relational =
+    Relational:l _ (seq('===') | seq('=/=') | seq('>=') | seq('<=') | '<' | '>'):op _ Add:r -> ['opcall', op, [l, r]]
+  | Add,
+
+  Add =
+    Add:l _ ('+' | '-'):op _ Mul:r -> ['opcall', op, [l, r]]
+  | Mul,
+
+  Mul =
+    Mul:l _ ('*' | '/'):op _ Unary:r -> ['opcall', op, [l, r]]
+  | Unary,
+
+  Unary =
+    kw('not') _ Relational:r -> ['opcall', 'not', [r]]
+  | Call,
+
   Call =
     Call:callee _ '(' _ listOf(#Expr, ','):args _ ')' -> ['call', callee, args]
+  | Update,
+
+  Update =
+    Postfix:p _ seq('<-') _ Expr:e -> ['set', p, e]
+  | PostfixCall,
+
+  PostfixCall =
+    PostfixCall:p _ '.' _ name:n _ '(' _ listOf(#Expr, ','):args _ ')' -> ['send', n, args]
+  | Postfix,
+
+  Postfix =
+    Postfix:p _ '.' _ name:n -> ['get', p, n]
+  | Postfix:p _ '[' _ Expr:e _ ']' -> ['at', p, e]
+  | kw('new') _ Postfix:p _ '(' _ listOf(#Expr, ','):args _ ')' -> ['new', p, args]
   | PrimaryExpr,
 
   PrimaryExpr =
-    boolean:b -> ['lit_bool', b]
-  | number:n -> ['lit_num', n]
+    Do
+  | Lambda
+  | Literal
   | identifier:i -> ['ref', i]
-  | '(' _ Expr:e _ ')' -> e
+  | '(' _ Expr:e _ ')' -> e,
+
+  Lambda =
+    '(' _ listOf(#Param, ','):p _ ')' _ seq('=>') _ Expr:e -> ['fn', p, e],
+
+  NumericLiteral =
+    float:n 'f' -> ['lit_float', n]
+  | float:n -> ['lit_dec', n]
+  | integer:n -> ['lit_int', n],
+
+  Literal =
+    boolean:b -> ['lit_bool', b]
+  | NumericLiteral
+  | text:s -> ['lit_str', s]
+  | seq('[|') _ listOf(#Expr, ','):e _ seq('|]') -> ['array', e]
+  | '[' _ listOf(#Pair, ','):e _ ']' -> ['map', e]
+  | '[' _ listOf(#Expr, ','):e _ ']' -> ['vector', e]
+  | '{' _ listOf(#Pair, ','):e _ '}' -> ['record', e],
+
+  Pair =
+    name:n _ ':' _ Expr:e -> [n, e],
+
+  Do =
+    kw('do') _ Stmts:b _ kw('end') -> ['do', fixReturn(b)]
 }
