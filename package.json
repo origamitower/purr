@@ -15,6 +15,7 @@
   "author": "Quil",
   "license": "MIT",
   "devDependencies": {
+    "spec-md": "^0.6.0",
     "ts-node": "^4.1.0",
     "typescript": "^2.6.2"
   },
