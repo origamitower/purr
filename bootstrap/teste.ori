@@ -32,6 +32,9 @@ define fn(a :: Maybe<'a>, f :: ('a) -> 'b)
   a.c <- b;
   a.c(foo, bar);
   a[c];
+  a.b[c].d <- a;
+  a.b[c] <- a;
+  a[c] <- a;
   new a.c(foo, bar);
   new a();
   (a, b, c) => a + b + c;

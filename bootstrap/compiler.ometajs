@@ -89,8 +89,10 @@ ometa OrigamiCompiler {
   | [#opcall :n [expr*:xs]] -> { g.mangle(n) + '(' + xs.join(', ') + ')' }
   | [#if expr:a expr:b expr:c] -> { '((' + a + ') ? (' + b + ') : (' + c + '))' }
   | [#set expr:l expr:r] -> { '(' + l + ') = (' + r + ')' }
+  | [#setprop expr:l :n expr:r] -> { '(' + l + ')[' + JSON.stringify(n) + '] = (' + r + ')'  }
+  | [#putat expr:l expr:k expr:r] -> { '$atput(' + l + ', ' + k + ', ' + r + ')' }
   | [#send expr:c :n [expr*:xs]] -> { '(' + c + ').' + n + '(' + xs.join(', ') + ')' }
-  | [#get expr:m :n] -> { '$get(' + m + ', ' + JSON.stringify(n) + ')' }
+  | [#get expr:m :n] -> { '(' + m + ')[' + JSON.stringify(n) + ']' }
   | [#at expr:m expr:i] -> { '$at(' + m + ', ' + i + ')' }
   | [#new expr:p [expr*:xs]] -> { 'new (' + p + ')(' + xs.join(', ') + ')' }
   | [#fn [param*:p] expr:e] -> { 

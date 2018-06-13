@@ -77,4 +77,8 @@ function $int(a: any) {
 function $dec(a: any) {
   return Number(a);
 }
+
+function $putat(o: any, k: any, v: any) {
+  o[k] = v;
+}
 // <runtime ends here>

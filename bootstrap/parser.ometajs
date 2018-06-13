@@ -190,10 +190,6 @@ ometa OrigamiParser {
 
   Call =
     Call:callee _ '(' _ listOf(#Expr, ','):args _ ')' -> ['call', callee, args]
-  | Update,
-
-  Update =
-    Postfix:p _ seq('<-') _ Expr:e -> ['set', p, e]
   | PostfixCall,
 
   PostfixCall =
@@ -201,8 +197,13 @@ ometa OrigamiParser {
   | Postfix,
 
   Postfix =
-    Postfix:p _ '.' _ name:n -> ['get', p, n]
+    Postfix:p _ '.' _ name:n _ seq('<-') _ Expr:e -> ['setprop', p, n, e]
+  | Postfix:p _ '[' _ Expr:k _ ']' _ seq('<-') _ Expr:e -> ['putat', p, k, e]
+
+  | Postfix:p _ '.' _ name:n -> ['get', p, n]
   | Postfix:p _ '[' _ Expr:e _ ']' -> ['at', p, e]
+  
+  | PrimaryExpr:p _ seq('<-') _ Expr:e -> ['set', p, e]
   | kw('new') _ Postfix:p _ '(' _ listOf(#Expr, ','):args _ ')' -> ['new', p, args]
   | PrimaryExpr,
 
