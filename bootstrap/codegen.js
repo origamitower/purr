@@ -29,9 +29,12 @@ class ${n} extends ${id} {
   return `${mainClass}\n${subClasses.join("\n\n")}\n`;
 };
 
-exports.Define = (name, params, body) => {
+exports.Define = (name, type, params, body) => {
+  const prefix = type === "async" ? "async" : "";
+  const suffix = type === "generator" ? "*" : "";
+
   return `
-export function ${mangle(name)}(${params
+export ${prefix} function ${suffix} ${mangle(name)}(${params
     .map(x => `${x}: any`)
     .join(", ")}): any {
 ${body.map(x => `  ${x};`).join("\n")}

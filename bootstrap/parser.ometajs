@@ -101,9 +101,11 @@ ometa OrigamiParser {
   | identifier:i                         -> [i, ['type-any']],
 
   Define =
-    kw('define') _ Param:l _ infix:op _ Param:r _ Body:b -> ['define', op, [l, r], b]
-  | kw('define') _ kw('not') Param:p _ Body:b -> ['define', 'not', [p], b]
-  | kw('define') _ identifier:i _ FnParams:p _ Body:b -> ['define', i, p, b],
+    kw('define') _ DefineType?:t _ Param:l _ infix:op _ Param:r _ Body:b -> ['define', t, op, [l, r], b]
+  | kw('define') _ DefineType?:t _ kw('not') Param:p _ Body:b -> ['define', t, 'not', [p], b]
+  | kw('define') _ DefineType?:t _ identifier:i _ FnParams:p _ Body:b -> ['define', t, i, p, b],
+
+  DefineType = kw('async') | kw('generator'),
 
   FnParams = '(' _ listOf(#Param, ','):ps _ ')' -> ps,
 
@@ -154,6 +156,11 @@ ometa OrigamiParser {
 
   Pipe =
     Pipe:l _ seq('|>') _ Logical:r -> ['pipe', l, r]
+  | YieldAwait,
+
+  YieldAwait =
+    kw('await') Logical:l -> ['await', l]
+  | kw('yield') Logical:l -> ['yield', l]
   | Logical,
 
   Logical = 
