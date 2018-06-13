@@ -83,6 +83,7 @@ ometa OrigamiCompiler {
   expr =
     [#pipe expr:l expr:r] -> { '(' + r + ')(' + l + ')' }
   | [#await expr:l] -> { '(await ' + l + ')' }
+  | ['yield*' expr:l ] -> { '(yield* ' + l + ')' }
   | [#yield expr:l] -> { '(yield ' + l + ')' }
   | [#call expr:e [expr*:xs]] -> { '(' + e + ')(' + xs.join(', ') + ')' }
   | [#opcall :n [expr*:xs]] -> { g.mangle(n) + '(' + xs.join(', ') + ')' }

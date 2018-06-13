@@ -160,6 +160,7 @@ ometa OrigamiParser {
 
   YieldAwait =
     kw('await') Logical:l -> ['await', l]
+  | kw('yield') _ '*' _ Logical:l -> ['yield*', l]
   | kw('yield') Logical:l -> ['yield', l]
   | Logical,
 
