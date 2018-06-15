@@ -41,6 +41,22 @@ ${body.map(x => `  ${x};`).join("\n")}
 }`;
 };
 
+exports.Interface = function(name, _type, defs) {
+  const includes = defs.filter(x => x[0] === "include").map(x => x[1]);
+  const members = defs.filter(x => x[0] !== "include");
+
+  return `
+export interface ${name} {
+  ${members
+    .map(([t, [n, s]]) => {
+      const s0 = t === "optional" ? "?" : "";
+      return `${mangle(n)}${s0}${s}`;
+    })
+    .join(";\n  ")}
+}
+  `;
+};
+
 function compileBlock(block) {
   const [tag] = block;
 }

@@ -70,7 +70,8 @@ ometa OrigamiParser {
   Definition =
     Union
   | Import
-  | Define,
+  | Define
+  | Interface,
   
   // Definitions
   Import =
@@ -82,6 +83,27 @@ ometa OrigamiParser {
   UnionVariant =
     kw('case') _ identifier:n _ VariantArgs:a -> ['case', n, a]
   | kw('case') _ identifier:n                 -> ['case', n, []],
+
+  Define =
+    kw('define') _ DefineType?:t _ Param:l _ infix:op _ Param:r _ Body:b -> ['define', t, op, [l, r], b]
+  | kw('define') _ DefineType?:t _ kw('not') Param:p _ Body:b -> ['define', t, 'not', [p], b]
+  | kw('define') _ DefineType?:t _ identifier:i _ FnParams:p _ Body:b -> ['define', t, i, p, b],
+
+  Interface =
+    kw('interface') _ identifier:n _ TypeArgs?:t (_ InterfaceDef)+:xs _ kw('end') -> ['iface', n, t, xs],
+
+  InterfaceDef =
+    kw('required') _ MemberTypeDecl:m -> ['required', m]
+  | kw('optional') _ MemberTypeDecl:m -> ['optional', m]
+  | kw('include') _ TypeDef:t -> ['include', t],
+
+  MemberTypeDecl =
+    kw('not') _ SelfType:s _ RetParam:r -> ['fn', s, 'not', [], r]
+  | kw('new') _ FnParams:p _ RetParam:r -> ['new', p, r]
+  | SelfType:s _ '.' _ identifier:i _ FnParams:p _ RetParam:r -> ['fn', s, i, p, r]
+  | SelfType:s _ '.' _ identifier:i (_ seq('::') _ TypeDef)?:t -> ['prop', s, i, t || ['type-any']]
+  | SelfType:s _ '[' _ TypeDef:t _ ']' (_ seq('::') _ TypeDef)?:r -> ['at', s, t, r || ['type-any']]
+  | SelfType:s _ infix:op _ Param:p _ RetParam:r -> ['fn', s, op, [p], r], 
 
   VariantArgs =
     '(' _ Param:v (_ ',' _ Param)*:vs _ ')' -> [v].concat(vs),
@@ -96,18 +118,20 @@ ometa OrigamiParser {
   | seq('any')                                                -> ['type-any']
   | '(' _ listOf('TypeDef'):i _ ')' _ seq('->') _ TypeDef:o   -> ['type-fn', i, o],
 
+  SelfType =
+    identifier:n (_ seq('::') _ TypeDef)?:t -> [n, t || ['type-any']],
+
   Param =
     identifier:i _ seq('::') _ TypeDef:t -> [i, t]
   | identifier:i                         -> [i, ['type-any']],
 
-  Define =
-    kw('define') _ DefineType?:t _ Param:l _ infix:op _ Param:r _ Body:b -> ['define', t, op, [l, r], b]
-  | kw('define') _ DefineType?:t _ kw('not') Param:p _ Body:b -> ['define', t, 'not', [p], b]
-  | kw('define') _ DefineType?:t _ identifier:i _ FnParams:p _ Body:b -> ['define', t, i, p, b],
-
   DefineType = kw('async') | kw('generator'),
 
   FnParams = '(' _ listOf(#Param, ','):ps _ ')' -> ps,
+
+  RetParam =
+    seq('->') _ TypeDef:t -> t
+  | empty -> ['type-any'],
 
 
   // Expressions

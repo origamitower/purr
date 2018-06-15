@@ -51,3 +51,14 @@ define fn(a :: Maybe<'a>, f :: ('a) -> 'b)
   a;
   do a; b; end;
 end
+
+interface Foo<'a>
+  required self.a
+  optional self.b :: b
+  include Qux
+  required not self -> a
+  required self === b -> c
+  required self[x] :: q
+  required x::a.foo(a :: B, c) -> d
+  required new (a :: b) -> r
+end
