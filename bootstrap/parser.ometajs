@@ -78,19 +78,19 @@ ometa OrigamiParser {
     kw('import') _ text:id _ kw('as') _ identifier:i -> ['import', id, i],
 
   Union =
-    kw('union') _ identifier:n _ TypeArgs?:t (_ UnionVariant)+:vs -> ['union', n, t || [], vs],
+    kw('export')? _ kw('union') _ identifier:n _ TypeArgs?:t (_ UnionVariant)+:vs -> ['union', n, t || [], vs],
 
   UnionVariant =
     kw('case') _ identifier:n _ VariantArgs:a -> ['case', n, a]
   | kw('case') _ identifier:n                 -> ['case', n, []],
 
   Define =
-    kw('define') _ DefineType?:t _ Param:l _ infix:op _ Param:r _ Body:b -> ['define', t, op, [l, r], b]
-  | kw('define') _ DefineType?:t _ kw('not') Param:p _ Body:b -> ['define', t, 'not', [p], b]
-  | kw('define') _ DefineType?:t _ identifier:i _ FnParams:p _ Body:b -> ['define', t, i, p, b],
+    kw('export')? _ kw('define') _ DefineType?:t _ Param:l _ infix:op _ Param:r _ Body:b -> ['define', t, op, [l, r], b]
+  | kw('export')? _ kw('define') _ DefineType?:t _ kw('not') Param:p _ Body:b -> ['define', t, 'not', [p], b]
+  | kw('export')? _ kw('define') _ DefineType?:t _ identifier:i _ FnParams:p _ Body:b -> ['define', t, i, p, b],
 
   Interface =
-    kw('interface') _ identifier:n _ TypeArgs?:t (_ InterfaceDef)+:xs _ kw('end') -> ['iface', n, t, xs],
+    kw('export')? _ kw('interface') _ identifier:n _ TypeArgs?:t (_ InterfaceDef)+:xs _ kw('end') -> ['iface', n, t, xs],
 
   InterfaceDef =
     kw('required') _ MemberTypeDecl:m -> ['required', m]

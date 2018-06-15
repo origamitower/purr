@@ -52,7 +52,7 @@ define fn(a :: Maybe<'a>, f :: ('a) -> 'b)
   do a; b; end;
 end
 
-interface Foo<'a>
+export interface Foo<'a>
   required self.a
   optional self.b :: b
   include Qux
