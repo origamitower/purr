@@ -62,3 +62,35 @@ export interface Foo<'a>
   required x::a.foo(a :: B, c) -> d
   required new (a :: b) -> r
 end
+
+export class Foo<'a>() extends Bar.Qux(1)
+  let x = 1;
+  2 + 3;
+with
+  implements A<'b>
+  implements C<'d>
+  
+  private member a.foo(x) = 1
+  protected member a and x = 2
+  public member not x = 3
+  member a.test = 4
+  member a.test <- val = 5
+
+  public static foo(x) = 1
+  protected static foo and bar = 3
+  private static not foo = 4
+  static foo = 3
+  static foo <- bar = 4
+end
+
+class A(b, c)
+  let x = b + c;
+  self.y <- x;
+with
+  field y :: Int
+end
+
+class B(_x, _y) with
+  member self.x = _x
+  member self.y = _y
+end

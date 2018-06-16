@@ -7,7 +7,7 @@ ometa OrigamiCompiler {
   compile_def =
     [#union :id :t [variant*:vs]] -> g.Union(id, vs)
   | [#import :id :n] -> { 'import * as ' + n + ' from ' + JSON.stringify(id) + ';' }
-  | [#define :t :n [param*:xs] [stmt*:b]] -> g.Define(n, t, xs, b)
+  | [#define [:t :n [param*:xs] [stmt*:b]]] -> g.Define(n, t, xs, b)
   | [#iface :n :t [iface_mem*:d]] -> g.Interface(n, t, d),
 
   iface_mem =

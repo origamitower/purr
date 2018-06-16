@@ -1,5 +1,5 @@
 function notReserved(x) {
-  const re = /^(import|as|exposing|define|end|where|assert|law|forall|async|await|generator|yield|union|abstract|class|extends|implements|let|mutable|include|without|renaming|member|static|export|match|with|if|then|else|do|foreach|of|repeat|from|to|by|break|continue|try|catch|case|const|debugger|default|delete|enum|finally|for|function|in|instanceof|new|return|super|throw|switch|this|typeof|var|void|while|interface|package|private|protected|public|required|optional|override|protocol|implement|and|or|not)$/;
+  const re = /^(import|as|exposing|define|end|where|assert|law|forall|async|await|generator|yield|union|abstract|class|extends|implements|let|mutable|include|without|renaming|member|static|export|match|with|if|then|else|do|foreach|of|repeat|from|to|by|break|continue|try|catch|case|const|debugger|default|delete|enum|finally|for|function|in|instanceof|new|return|super|throw|switch|this|typeof|var|void|while|interface|package|private|protected|public|required|optional|override|protocol|implement|and|or|not|field)$/;
 
   return !re.test(x);
 }
@@ -36,7 +36,7 @@ ometa OrigamiParser {
   idrest     = idstart | digit,
   name       = <idstart idrest*>,
   identifier = name:id ?notReserved(id),
-  integer    = <'-'? (digit | '_')+>:x -> x.replace(/_/, ''),
+  integer    = <'-'? digit (digit | '_')*>:x -> x.replace(/_/, ''),
   float      = <'-'? integer '.' integer>:x -> x.replace(/_/, ''),
   boolean    = kw("true") | kw("false"),
   infix      = (seq('===') | seq('=/=') | '>' | seq('>=') | seq('<') | seq('<=') | '+' | '-' | '*' | '/' | seq('and') | seq('or')):a,
@@ -71,7 +71,8 @@ ometa OrigamiParser {
     Union
   | Import
   | Define
-  | Interface,
+  | Interface
+  | ClassDef,
   
   // Definitions
   Import =
@@ -85,9 +86,7 @@ ometa OrigamiParser {
   | kw('case') _ identifier:n                 -> ['case', n, []],
 
   Define =
-    kw('export')? _ kw('define') _ DefineType?:t _ Param:l _ infix:op _ Param:r _ Body:b -> ['define', t, op, [l, r], b]
-  | kw('export')? _ kw('define') _ DefineType?:t _ kw('not') Param:p _ Body:b -> ['define', t, 'not', [p], b]
-  | kw('export')? _ kw('define') _ DefineType?:t _ identifier:i _ FnParams:p _ Body:b -> ['define', t, i, p, b],
+    kw('export')? _ kw('define') _ FunDef:f -> ['define', f],
 
   Interface =
     kw('export')? _ kw('interface') _ identifier:n _ TypeArgs?:t (_ InterfaceDef)+:xs _ kw('end') -> ['iface', n, t, xs],
@@ -96,6 +95,47 @@ ometa OrigamiParser {
     kw('required') _ MemberTypeDecl:m -> ['required', m]
   | kw('optional') _ MemberTypeDecl:m -> ['optional', m]
   | kw('include') _ TypeDef:t -> ['include', t],
+
+  ClassDef =
+    kw('export')? _ kw('class')
+    _ identifier:n _ TypeArgs?:t _ FnParams:p
+    (_ kw('extends') _ Expr)?:e
+    (_ Stmt)*:c
+    (_ kw('with'))
+    (_ ClassMemberDecl)*:xs
+    _ kw('end') -> ['class', n, t, p, e || 'none', c, xs],
+  
+  ClassMemberDecl =
+    kw('implements') _ TypeDef:t -> ['impl', t]
+  | kw('mutable')?:m _ kw('field') _ identifier:i (_ seq('::') _ TypeDef)?:t -> ['field', m, i, t]
+  | MemberVisibility:v _ kw('member') _ MemberDecl:m -> ['member', v, m]
+  | MemberVisibility:v _ kw('static') _ StaticMemberDecl:m -> ['static', v, m],
+
+  MemberVisibility =
+    kw('private')
+  | kw('protected')
+  | kw('public')
+  | empty -> 'public',
+
+  MemberDecl =
+    MethodDef:m -> ['meth', m]
+  | Param:s _ '.' _ identifier:i _ seq('<-') _ Param:v _ Body:b -> ['set', s, i, v, b]
+  | Param:s _ '.' _ identifier:i _ Body:b -> ['get', s, i, b],
+
+  StaticMemberDecl =
+    FunDef:f -> ['fun', f]
+  | identifier:i _ seq('<-') _ Param:v _ Body:b -> ['set', i, v, b]
+  | identifier:i _ Body:b -> ['get', i, b],
+
+  MethodDef =
+    DefineType?:t _ Param:l _ infix:op _ Param:r _ Body:b -> [t, op, l, [r], b]
+  | DefineType?:t _ kw('not') _ Param:p _ Body:b -> [t, 'not', p, [], b]
+  | DefineType?:t _ Param:s _ '.' _ identifier:i _ FnParams:p _ Body:b -> [t, i, s, p, b],
+
+  FunDef =
+    DefineType?:t _ Param:l _ infix:op _ Param:r _ Body:b -> [t, op, [l, r], b]
+  | DefineType?:t _ kw('not') _ Param:p _ Body:b -> [t, 'not', [p], b]
+  | DefineType?:t _ identifier:i _ FnParams:p _ Body:b -> [t, i, p, b],
 
   MemberTypeDecl =
     kw('not') _ SelfType:s _ RetParam:r -> ['fn', s, 'not', [], r]
