@@ -66,20 +66,21 @@ end
 export class Foo<'a>() extends Bar.Qux(1)
   let x = 1;
   2 + 3;
+  super(a);
 with
   implements A<'b>
   implements C<'d>
   
-  private member a.foo(x) = 1
+  private member async a.foo(x) = 1
   protected member a and x = 2
-  public member not x = 3
+  public member generator not x = 3
   member a.test = 4
   member a.test <- val = 5
 
   public static foo(x) = 1
   protected static foo and bar = 3
   private static not foo = 4
-  static foo = 3
+  static foo = super.foo()
   static foo <- bar = 4
 end
 
@@ -90,7 +91,7 @@ with
   field y :: Int
 end
 
-class B(_x, _y) with
-  member self.x = _x
-  member self.y = _y
+class B(x, y) with
+  member self.x = x
+  member self.y = y
 end

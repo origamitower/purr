@@ -8,7 +8,25 @@ ometa OrigamiCompiler {
     [#union :id :t [variant*:vs]] -> g.Union(id, vs)
   | [#import :id :n] -> { 'import * as ' + n + ' from ' + JSON.stringify(id) + ';' }
   | [#define [:t :n [param*:xs] [stmt*:b]]] -> g.Define(n, t, xs, b)
-  | [#iface :n :t [iface_mem*:d]] -> g.Interface(n, t, d),
+  | [#iface :n :t [iface_mem*:d]] -> g.Interface(n, t, d)
+  | [#class :n :t [param*:p] #none [stmt*:b] [class_mem*:m]] -> g.Class(n, t, p, '', b, m)
+  | [#class :n :t [param*:p] expr:e [stmt*:b] [class_mem*:m]] -> g.Class(n, t, p, e, b, m),
+
+  class_mem =
+    [#impl :t] -> ['impl', t]
+  | [#field :mut :n :t] -> ['field', mut, n, t]
+  | [#member :v imem:m] -> ['member', v, m]
+  | [#static :v smem:m] -> ['static', v, m],
+
+  imem =
+    [#meth [:t :n param:s [param*:xs] [stmt*:b]]] -> ['meth', t, n, s, xs, b]
+  | [#set param:s :i param:v [stmt*:b]] -> ['set', s, i, v, b]
+  | [#get param:s :i [stmt*:b]] -> ['get', s, i, b],
+
+  smem =
+    [#fun [:t :n [param*:xs] [stmt*:b]]] -> ['fun', t, n, xs, b]
+  | [#set :i param:v [stmt*:b]] -> ['sset', i, v, b]
+  | [#get :i [stmt*:b]] -> ['sget', i, b],
 
   iface_mem =
     [#include :t] -> ['include', t]

@@ -57,6 +57,112 @@ export interface ${name} {
   `;
 };
 
+exports.Class = (name, type, params, ext, body, mems) => {
+  const fields = params.map(x => `$$${x}`);
+  const fieldDecl = fields.map(x => `private ${x}: any;`);
+  const prelude = params.map(x => `let ${x} = this.$$${x};`).join("\n    ");
+
+  const mfields = mems
+    .filter(x => x[0] === "field")
+    .map(([_, mut, n]) => `private ${mut ? "" : "readonly"} ${n}: any;`);
+
+  const allmems = mems
+    .filter(x => x[0] === "static" || x[0] === "member")
+    .map(([t, v, m]) => compileMem(v, prelude, m));
+
+  const extDecl = ext ? `extends ${ext}` : "";
+
+  return `
+export class ${name} ${extDecl} {
+  constructor(${compileParams(params)}) {
+    ${body.join("\n    ")}
+  }
+  ${fieldDecl.join("\n  ")}
+  ${mfields.join("\n  ")}
+  ${allmems.join("\n  ")}
+}
+  `;
+};
+
+function compileParams(xs) {
+  return xs.map(x => `${x}: any`).join(", ");
+}
+
+function compileMem(v, prelude, member) {
+  switch (member[0]) {
+    case "meth": {
+      const [_, kind, name, self, params, body] = member;
+      const prefix = kind === "generator" ? "*" : kind || "";
+
+      return `
+  ${v} ${prefix} ${mangle(name)}(${compileParams(params)}): any {
+    const ${self} = this;
+    ${prelude}
+    ${body.join("\n    ")}
+  }
+`;
+    }
+
+    case "set": {
+      const [_, self, name, param, body] = member;
+
+      return `
+  ${v} set ${name}(${param}: any): void {
+    const ${self} = this;
+    ${prelude}
+    ${body.join("\n    ")}
+  }
+`;
+    }
+
+    case "get": {
+      const [_, self, name, body] = member;
+
+      return `
+  ${v} get ${name}(): any {
+    const ${self} = this;
+    ${prelude}
+    ${body.join("\n    ")}
+  }      
+`;
+    }
+
+    case "fun": {
+      const [_, kind, name, params, body] = member;
+      const prefix = kind === "generator" ? "*" : kind || "";
+
+      return `
+  ${v} static ${mangle(name)}(${compileParams(params)}): any {
+    ${body.join("\n    ")}
+  }
+`;
+    }
+
+    case "sset": {
+      const [_, name, param, body] = member;
+
+      return `
+  ${v} static set ${name}(${param}: any): void {
+    ${body.join("\n    ")}
+  }      
+`;
+    }
+
+    case "sget": {
+      const [_, name, body] = member;
+
+      return `
+  ${v} static get ${name}(): any {
+    ${body.join("\n    ")}
+  }      
+`;
+    }
+
+    default:
+      throw new Error(`Unknown member ${member[0]}`);
+  }
+}
+
 function compileBlock(block) {
   const [tag] = block;
 }

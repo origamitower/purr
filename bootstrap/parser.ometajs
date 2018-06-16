@@ -119,12 +119,12 @@ ometa OrigamiParser {
 
   MemberDecl =
     MethodDef:m -> ['meth', m]
-  | Param:s _ '.' _ identifier:i _ seq('<-') _ Param:v _ Body:b -> ['set', s, i, v, b]
+  | Param:s _ '.' _ identifier:i _ seq('<-') _ Param:v _ RawBody:b -> ['set', s, i, v, b]
   | Param:s _ '.' _ identifier:i _ Body:b -> ['get', s, i, b],
 
   StaticMemberDecl =
     FunDef:f -> ['fun', f]
-  | identifier:i _ seq('<-') _ Param:v _ Body:b -> ['set', i, v, b]
+  | identifier:i _ seq('<-') _ Param:v _ RawBody:b -> ['set', i, v, b]
   | identifier:i _ Body:b -> ['get', i, b],
 
   MethodDef =
@@ -175,9 +175,12 @@ ometa OrigamiParser {
 
 
   // Expressions
-  Body = 
-    '=' _ Expr:e         -> [['return', e]]
-  | Stmts:xs _ kw('end') -> fixReturn(xs),
+  Body = RawBody:b -> fixReturn(b),
+
+  RawBody =
+    '=' _ Expr:e         -> [['expr', e]]
+  | Stmts:xs _ kw('end') -> xs,
+
 
   Stmts = (_ Stmt)+,
 
@@ -257,7 +260,7 @@ ometa OrigamiParser {
   | PostfixCall,
 
   PostfixCall =
-    PostfixCall:p _ '.' _ name:n _ '(' _ listOf(#Expr, ','):args _ ')' -> ['send', n, args]
+    PostfixCall:p _ '.' _ name:n _ '(' _ listOf(#Expr, ','):args _ ')' -> ['send', p, n, args]
   | Postfix,
 
   Postfix =
@@ -269,6 +272,8 @@ ometa OrigamiParser {
   
   | PrimaryExpr:p _ seq('<-') _ Expr:e -> ['set', p, e]
   | kw('new') _ Postfix:p _ '(' _ listOf(#Expr, ','):args _ ')' -> ['new', p, args]
+  | kw('super') _ '.' _ name:n _ '(' _ listOf(#Expr, ','):args _ ')' -> ['send', ['ref', 'super'], n, args]
+  | kw('super') _ '(' _ listOf(#Expr, ','):args _ ')' -> ['call', ['ref', 'super'], args]
   | PrimaryExpr,
 
   PrimaryExpr =
