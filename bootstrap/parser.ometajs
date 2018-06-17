@@ -165,6 +165,9 @@ ometa OrigamiParser {
     identifier:i _ seq('::') _ TypeDef:t -> [i, t]
   | identifier:i                         -> [i, ['type-any']],
 
+  KwParam =
+    identifier:i _ ':' _ Param:p -> [i, p],
+
   DefineType = kw('async') | kw('generator'),
 
   FnParams = '(' _ listOf(#Param, ','):ps _ ')' -> ps,
