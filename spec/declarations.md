@@ -89,3 +89,81 @@ ExportDeclaration :
   - `export` FunctionDeclaration
   - `export` ClassDeclaration
   - `export` InterfaceDeclaration
+  - `export` ModuleBinding+ `from` TextLiteral
+  - `export` ModuleBinding
+
+### Semantics
+
+The semantics for import and export are provided by desugaring into TypeScript or Origami.
+
+#### Import declaration
+
+**Importing as a qualified name**
+
+```
+import <id> as <name> 
+--------------------- (TypeScript)
+import * as <name> from <id>
+```
+
+**Importing specific bindings**
+
+```
+import <id> exposing <name_0> as <alias_0>, ..., <name_n> as <alias_n>
+---------------------------------------------------------------------- (TypeScript)
+import { <name_0>: <alias_0>, ..., <name_n>: <alias_n> } from <id>
+```
+
+**Importing for side-effects**
+
+```
+import <id>
+----------- (TypeScript)
+import <id>
+```
+
+#### Export declaration
+
+**Functions**
+
+```
+export define <name>(...) = ...
+------------------------------- (Origami)
+define <name>(...) = ...
+export <name>
+```
+
+**Classes**
+
+```
+export class <name> ...
+----------------------- (Origami)
+class <name> ...
+export <name>
+```
+
+**Interfaces**
+
+```
+export interface <name> ...
+--------------------------- (Origami)
+interface <name> ...
+export <name>
+```
+
+**Re-exports**
+
+```
+export <name_0> as <alias_0>, ..., <name_n> as <alias_n> from <id>
+------------------------------------------------------------------ (TypeScript)
+import { <name_0> as <alias_0>, ..., <name_n> as <alias_n> } from <id>
+export { <alias_0>, ..., <alias_n> }
+```
+
+**Bindings**
+
+```
+export <name>
+------------- (TypeScript)
+export { <name> }
+```
