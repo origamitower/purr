@@ -164,7 +164,10 @@ function compileMem(v, prelude, member) {
 }
 
 const freshBox = new class {
-  id = 1;
+  constructor() {
+    this.id = 1;
+  }
+  
   next() {
     return `$$${this.id++}`;
   }

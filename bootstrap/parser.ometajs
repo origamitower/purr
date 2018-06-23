@@ -145,7 +145,7 @@ ometa OrigamiParser {
   | SelfType:s _ infix:op _ Param:p _ RetParam:r -> ['fn', s, op, [p], r], 
 
   VariantArgs =
-    '(' _ Param:v (_ ',' _ Param)*:vs _ ')' -> [v].concat(vs),
+    '(' _ listOf(#Param, ','):vs _ ')' -> vs,
 
   TypeArgs =
     '<' _ TypeDef:t (_ ',' _ TypeDef)*:ts _ '>' -> [t].concat(ts),
@@ -222,7 +222,7 @@ ometa OrigamiParser {
   | Pipe,
 
   Match =
-    kw('match') _ Expr:a _ kw('with') (_ MatchCase)+:ps -> ['match', a, ps],
+    kw('match') _ Expr:a _ kw('with') (_ MatchCase)+:ps _ kw('end') -> ['match', a, ps],
 
   MatchCase =
     kw('case') _ Pattern:p _ kw('do') _ Expr:e -> [p, e],
@@ -230,7 +230,7 @@ ometa OrigamiParser {
   Pattern =
     kw('anything') -> ['anything']
   | PrimitiveLiteral:l -> ['eq', l]
-  | Postfix:m _ '(' _ listOf(#identifier, ','):ps _ ') -> ['extractor', m, ps]
+  | Postfix:m _ '(' _ listOf(#identifier, ','):ps _ ')' -> ['extractor', m, ps]
   | identifier:i -> ['bind', i]
   | '(' _ Pattern:p _ ')' -> p,
 
