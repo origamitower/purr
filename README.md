@@ -29,3 +29,5 @@ The plan is to have decent tooling for Origami as well, which includes:
 - Full IDE support in at least VSCode through a language server;
 
 Check the [ROADMAP](./notes/roadmap.md) for the current status of this project.
+
+Check the [Language Features](./notes/features.md) for current and planned features.
