@@ -28,4 +28,4 @@ The plan is to have decent tooling for Origami as well, which includes:
 - Testing and benchmarking tools;
 - Full IDE support in at least VSCode through a language server;
 
-Check the [ROADMAP](./notes/ROADMAP.md) for the current status of this project.
+Check the [ROADMAP](./notes/roadmap.md) for the current status of this project.

@@ -33,7 +33,7 @@ define fn(a :: Maybe<'a>, f :: ('a) -> 'b)
 
   a |> b;
   f(a, b, c);
-  a + x; a or x; a === x;
+  a + x; a or x; a === x; a ++ b;
   if a then b else c;
   a <- b;
   a.c <- b;

@@ -34,7 +34,7 @@ function $div(a: any, b: any) {
   return a / b;
 }
 
-function $mul(a: any, b: any) {
+function $times(a: any, b: any) {
   return a * b;
 }
 

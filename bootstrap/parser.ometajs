@@ -198,8 +198,8 @@ ometa OrigamiParser {
 
   Loop =
     kw('foreach') _ identifier:v _ kw('of') _ Expr:e _ Block:b -> ['foreach', v, e, b]
-  | kw('repeat') _ kw('while') _ Expr:e _ Block:b -> ['while', e, b]
-  | kw('repeat') _ kw('until') _ Expr:e _ Block:b -> ['until', e, b]
+  | kw('repeat') _ kw('while') _ Expr:e _ kw('do') _ Block:b -> ['while', e, b]
+  | kw('repeat') _ kw('until') _ Expr:e _ kw('do') _ Block:b -> ['until', e, b]
   | kw('repeat') _ kw('with') _ identifier:n _ kw('from') _ Expr:s _ kw('to') _ Expr:e (_ kw('by') _ Expr)?:k _ Block:b -> ['for', n, s, e, k || 1, b]
   | kw('repeat') _ Stmts:b _ kw('end') -> ['repeat', b],
 
@@ -260,7 +260,7 @@ ometa OrigamiParser {
   | Add,
 
   Add =
-    Add:l _ ('+' | '-'):op _ Mul:r -> ['opcall', op, [l, r]]
+    Add:l _ (seq('++') | '+' | '-'):op _ Mul:r -> ['opcall', op, [l, r]]
   | Mul,
 
   Mul =

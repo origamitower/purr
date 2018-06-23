@@ -244,10 +244,12 @@ function mangle(name) {
       return "$lte";
     case "+":
       return "$plus";
+    case "++":
+      return "$concat";
     case "-":
       return "$minus";
     case "*":
-      return "$mul";
+      return "$times";
     case "/":
       return "$div";
     case "or":
