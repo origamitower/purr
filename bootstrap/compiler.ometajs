@@ -156,7 +156,7 @@ ometa OrigamiCompiler {
   pattern =
     [#anything] -> ['any']
   | [#eq expr:e] -> ['eq', e]
-  | [#extractor expr:m [*:p]] -> ['extract', m, p]
+  | [#extractor expr:m :p] -> ['extract', m, p]
   | [#bind :i] -> ['bind', i],
 
   assoc =

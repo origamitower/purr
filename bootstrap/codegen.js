@@ -167,21 +167,25 @@ const freshBox = new class {
   constructor() {
     this.id = 1;
   }
-  
+
   next() {
     return `$$${this.id++}`;
   }
 }
 
 exports.Match = (expr, cases) => {
+  console.log('=> Match');
+  console.log(expr);
+  console.log('-');
+  console.log(cases);
   const name = freshBox.next();
   return `((${name}) => {
-  ${cases.map(compileCase(name)).join('\n\n  ')} 
-})(${expr})`;
+    ${cases.map(compileCase(name)).join('\n\n  ')} 
+  })(${expr})`;
 };
 
 function compileCase(id) {
-  return (pattern, body) => {
+  return ([pattern, body]) => {
     const [tag] = pattern;
     switch (tag) {
       case 'any':
@@ -190,24 +194,24 @@ function compileCase(id) {
       case 'eq': {
         const [_, val] = pattern;
         return `if (${mangle}('===')(${id}, ${val})) {
-    return ${body};
-  }`
+      return ${body};
+    }`
       }
 
       case 'extract': {
         const [_, m, names] = pattern;
         const name = freshBox.next();
         return `const ${name} = ${m}; 
-  if (${id} instanceof ${name}) { 
-    const [${names.join(', ')}] = ${name}.unapply(${id}); 
-    return ${body} ;
-  }`;
+    if (${id} instanceof ${name}) { 
+      const [${names.join(', ')}] = ${name}.unapply(${id}); 
+      return ${body} ;
+    }`;
       }
 
       case 'bind': {
         const [_, name] = pattern;
         return `const ${name} = ${id};
-  return ${body};`
+    return ${body};`
       }
 
       default:
