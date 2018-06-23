@@ -1,0 +1,23 @@
+% version: 1
+
+export union Maybe<'A>
+  case Just(value :: 'A)
+  case Nothing()
+end
+
+export define just(value :: 'A) -> Maybe<'A> =
+  new Maybe.Just(value)
+
+export define nothing() -> Maybe<never> =
+  new Maybe.Nothing()
+
+
+export define map(maybe :: Maybe<'A>, with: fn :: ('A) -> 'B) -> Maybe<'B> =
+  match maybe with
+    case Maybe.Just(value) do just(fn(value))
+    case Maybe.Nothing()   do nothing()
+
+export define chain(maybe :: Maybe<'A>, with: fn :: ('A) -> Maybe<'B>) -> Maybe<'B> =
+  match maybe with
+    case Maybe.Just(value) do fn(value)
+    case Maybe.Nothing()   do nothing()

@@ -117,6 +117,7 @@ ometa OrigamiCompiler {
   | [#call expr:e [expr*:xs]] -> { '(' + e + ')(' + xs.join(', ') + ')' }
   | [#opcall :n [expr*:xs]] -> { g.mangle(n) + '(' + xs.join(', ') + ')' }
   | [#if expr:a expr:b expr:c] -> { '((' + a + ') ? (' + b + ') : (' + c + '))' }
+  | [#match expr:e [matchcase*:ps]] -> g.Match(e, ps)
   | [#set expr:l expr:r] -> { '(' + l + ') = (' + r + ')' }
   | [#setprop expr:l :n expr:r] -> { '(' + l + ')[' + JSON.stringify(n) + '] = (' + r + ')'  }
   | [#putat expr:l expr:k expr:r] -> { '$atput(' + l + ', ' + k + ', ' + r + ')' }
@@ -148,6 +149,15 @@ ometa OrigamiCompiler {
   | [#lit_str :s] -> JSON.stringify(s)
   | [#do [stmt*:xs]] -> { '(function(){ ' + xs.join('; ') + ' })' }
   | [#ref :i] -> i,
+
+  matchcase =
+    [pattern:p expr:e] -> [p, e],
+
+  pattern =
+    [#anything] -> ['any']
+  | [#eq expr:e] -> ['eq', e]
+  | [#extractor expr:m [*:p]] -> ['extract', m, p]
+  | [#bind :i] -> ['bind', i],
 
   assoc =
     [:n expr:e] -> [n, e]

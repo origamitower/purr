@@ -163,6 +163,56 @@ function compileMem(v, prelude, member) {
   }
 }
 
+const freshBox = new class {
+  id = 1;
+  next() {
+    return `$$${this.id++}`;
+  }
+}
+
+exports.Match = (expr, cases) => {
+  const name = freshBox.next();
+  return `((${name}) => {
+  ${cases.map(compileCase(name)).join('\n\n  ')} 
+})(${expr})`;
+};
+
+function compileCase(id) {
+  return (pattern, body) => {
+    const [tag] = pattern;
+    switch (tag) {
+      case 'any':
+        return `return ${body};`
+
+      case 'eq': {
+        const [_, val] = pattern;
+        return `if (${mangle}('===')(${id}, ${val})) {
+    return ${body};
+  }`
+      }
+
+      case 'extract': {
+        const [_, m, names] = pattern;
+        const name = freshBox.next();
+        return `const ${name} = ${m}; 
+  if (${id} instanceof ${name}) { 
+    const [${names.join(', ')}] = ${name}.unapply(${id}); 
+    return ${body} ;
+  }`;
+      }
+
+      case 'bind': {
+        const [_, name] = pattern;
+        return `const ${name} = ${id};
+  return ${body};`
+      }
+
+      default:
+        throw new Error(`No pattern ${tag}`);
+    }
+  }
+}
+
 function compileBlock(block) {
   const [tag] = block;
 }

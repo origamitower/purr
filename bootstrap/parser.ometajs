@@ -79,11 +79,10 @@ ometa OrigamiParser {
     kw('import') _ text:id _ kw('as') _ identifier:i -> ['import', id, i],
 
   Union =
-    kw('export')? _ kw('union') _ identifier:n _ TypeArgs?:t (_ UnionVariant)+:vs -> ['union', n, t || [], vs],
+    kw('export')? _ kw('union') _ identifier:n _ TypeArgs?:t (_ UnionVariant)+:vs _ kw('end') -> ['union', n, t || [], vs],
 
   UnionVariant =
-    kw('case') _ identifier:n _ VariantArgs:a -> ['case', n, a]
-  | kw('case') _ identifier:n                 -> ['case', n, []],
+    kw('case') _ identifier:n _ VariantArgs:a -> ['case', n, a],
 
   Define =
     kw('export')? _ kw('define') _ FunDef:f -> ['define', f],
@@ -219,7 +218,21 @@ ometa OrigamiParser {
 
   Expr = 
     If
+  | Match
   | Pipe,
+
+  Match =
+    kw('match') _ Expr:a _ kw('with') (_ MatchCase)+:ps -> ['match', a, ps],
+
+  MatchCase =
+    kw('case') _ Pattern:p _ kw('do') _ Expr:e -> [p, e],
+
+  Pattern =
+    kw('anything') -> ['anything']
+  | PrimitiveLiteral:l -> ['eq', l]
+  | Postfix:m _ '(' _ listOf(#identifier, ','):ps _ ') -> ['extractor', m, ps]
+  | identifier:i -> ['bind', i]
+  | '(' _ Pattern:p _ ')' -> p,
 
   If =
     kw('if') _ Expr:a _ kw('then') _ Expr:b _ kw('else') _ Expr:c -> ['if', a, b, c],
@@ -294,10 +307,14 @@ ometa OrigamiParser {
   | float:n -> ['lit_dec', n]
   | integer:n -> ['lit_int', n],
 
-  Literal =
+  PrimitiveLiteral =
     boolean:b -> ['lit_bool', b]
   | NumericLiteral
-  | text:s -> ['lit_str', s]
+  | text:s -> ['lit_str', s],
+  
+
+  Literal =
+    PrimitiveLiteral
   | seq('[|') _ listOf(#Expr, ','):e _ seq('|]') -> ['array', e]
   | '[' _ listOf(#Pair, ','):e _ ']' -> ['map', e]
   | '[' _ listOf(#Expr, ','):e _ ']' -> ['vector', e]
