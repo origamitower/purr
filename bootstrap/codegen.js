@@ -179,7 +179,7 @@ exports.Match = (expr, cases) => {
   console.log('-');
   console.log(cases);
   const name = freshBox.next();
-  return `((${name}) => {
+  return `((${name}: any) => {
     ${cases.map(compileCase(name)).join('\n\n    ')} 
   })(${expr})`;
 };
