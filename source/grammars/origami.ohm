@@ -1,0 +1,94 @@
+// The grammar for the Origami language.
+
+Origami {
+  //== Lexical rules
+  identifier_start = letter | "_"
+  identifier_rest  = identifier_start | digit
+  name             = identifier_start identifier_rest*
+
+  infix = op_equals       | op_not_equals 
+        | op_compose      | op_greater_or_equal   | op_greater_than
+        | op_compose_left | op_less_or_equal      | op_less_than
+        | op_concatenate  | op_plus
+        | op_power        | op_times
+        | op_minus 
+        | op_divide
+        | op_and
+        | op_not
+        | op_or
+        | op_pipe
+
+  
+
+  // Infix names
+  op_equals = "==="
+  op_not_equals = "=/="
+  op_greater_than = ">"
+  op_greater_or_equal = ">="
+  op_less_than = "<"
+  op_less_or_equal = "<="
+  op_plus = "+"
+  op_minus = "-"
+  op_times = "*"
+  op_power = "**"
+  op_divide = "/"
+  op_and = "and"
+  op_or = "or"
+  op_not = "not"
+  op_pipe = "|>"
+  op_compose = ">>"
+  op_compose_left = "<<"
+  op_concatenate = "++"
+
+  // Keywords
+  import = "import" 
+  as = "as"
+  exposing = "exposing"
+  define = "define"
+  end = "end"
+  where = "where"
+  assert = "assert"
+  test = "test"
+  law = "law"
+  forall = "forall"
+  async = "async"
+  await = "await"
+  generator = "generator"
+  yield = "yield"
+  union = "union"
+  abstract = "abstract"
+  class = "class"
+  extends = "extends"
+  implements = "implements"
+  let = "let"
+  mutable = "mutable"
+  member = "member"
+  static = "static"
+  export = "export"
+  match = "match"
+  with = "with"
+  if = "if"
+  then = "then"
+  else = "else"
+  do = "do"
+  foreach = "foreach"
+  of = "of"
+  repeat = "repeat"
+  from = "from"
+  to = "to"
+  by = "by"
+  break = "break"
+  continue = "continue"
+  try = "try"
+  catch = "catch"
+  case = "case"
+  debugger = "debugger"
+  new = "new"
+  super = "super"
+  throw = "throw"
+  interface = "interface"
+  private = "private"
+  protected = "protected"
+  public = "public"
+  field = "field"
+}

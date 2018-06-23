@@ -6,7 +6,7 @@ Origami is a small, functional-first programming language that targets TypeScrip
 
 In a sense, Origami’s goals are similar to F#, with the difference that we don’t have different inference algorithm—though we might consider better local inference in the future.
 
-Semantics that Origami adds:
+Semantics that Origami will add:
 
 - First-class support for immutable types (lists, vectors, maps);
 - First-class support for richer numeric types (bigints, bigdecimals, bigrationals);
@@ -28,32 +28,4 @@ The plan is to have decent tooling for Origami as well, which includes:
 - Testing and benchmarking tools;
 - Full IDE support in at least VSCode through a language server;
 
-# Roadmap
-
-- **Runtime basics**
-  - Numeric tower
-  - Immutable & Mutable collections
-  - Iterators
-  - Maybe, Result, Validation
-  - Function combinators
-  - Protocols
-  - Operators (based on protocols)
-  - Testing/Benchmarking
-  - Parsing
-  - JSON serialisation
-  - Debug representation/tools
-- **Origami basics**
-  - Bootstrapped compiler for level 0 language (functional/imperative parts, no classes/OOP yet)
-- **Tooling basics**
-  - Build system;
-  - Reference documentation tool;
-  - Testing/Benchmarking;
-- **Migration support**
-  - Tracing migration assistant for Folktale (traces in lib + trace analysis to point places that need to be changed)
-- **Origami lv2**
-  - Self-hosted compiler;
-  - Compiler plugins + automatic derivations;
-  - OOP
-- **Origami lv3**
-  - Type-based specialisation (needs to reimplement TS’s type system first)
-  - Traits (still need to figure out how to do this)
+Check the [ROADMAP](./notes/ROADMAP.md) for the current status of this project.
