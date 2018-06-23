@@ -17,7 +17,11 @@ define foo() =
 
 define a + b = a |> b |> c
 
-define fn(a :: Maybe<'a>, f :: ('a) -> 'b)
+define fold(container, from: start, using: fn) do
+  fn(start, fold(container, from: start, using: fn));
+end
+
+define fn(a :: Maybe<'a>, f :: ('a) -> 'b) -> a do
   let mutable y = x;
   let x = a + 1;
   foreach x of y do z; end
@@ -44,7 +48,7 @@ define fn(a :: Maybe<'a>, f :: ('a) -> 'b)
   a[c] <- a;
   new a.c(foo, bar);
   new a();
-  (a, b, c) => a + b + c;
+  (a, b, c) -> a + b + c;
   [a, b, c];
   [a: b, c: d];
   [| a, b, c |];
@@ -68,6 +72,7 @@ export interface Foo<'a>
   required self[x] :: q
   required x::a.foo(a :: B, c) -> d
   required new (a :: b) -> r
+  required self.foo(a :: number, b: x :: number) -> y
 end
 
 export class Foo<'a>() extends Bar.Qux(1)
@@ -81,8 +86,10 @@ with
   private member async a.foo(x) = 1
   protected member a and x = 2
   public member generator not x = 3
-  member a.test = 4
+  member a.test :: number = 4
   member a.test <- val = 5
+
+  member foo(a, kw: x) = 1
 
   public static foo(x) = 1
   protected static foo and bar = 3

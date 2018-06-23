@@ -9,7 +9,6 @@ A very simple compiler implementing a minor subset of the language to allow the 
 - [x] Collection and numeric literals
 - [x] Infix functions
 - [x] Imperative statements
-- [ ] Language support for example & property-based tests
 - [ ] Keyword functions/methods
 - [ ] Parsing inline tests
 
@@ -19,6 +18,7 @@ A very simple compiler implementing a minor subset of the language to allow the 
 A proper re-implementation of the bootstrap compiler in Origami. And a proper runtime to support it.
 
 - [ ] Move the parser from OMeta to Ohm
+- [ ] Language support for example & property-based tests
 - [ ] Translate Origami to TypeScript's AST
 - [ ] Pretty print TS's AST to file (maybe the TS compiler already has something like this?)
 - [ ] Implement built-in testing facilities

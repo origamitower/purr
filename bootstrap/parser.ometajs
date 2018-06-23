@@ -31,6 +31,18 @@ function fixReturn(xs) {
   }
 }
 
+function kwName(i, ps) {
+  return i + '$' + ps[1].map(function(x) { return x[0] }).join('$');
+}
+
+function kwParams(ps) {
+  return ps.map(function(x) { return x[1] });
+}
+
+function kwArgs(xs) {
+  return xs[0].concat(xs[1].map(function(x) { return x[1] }));
+}
+
 ometa OrigamiParser {
   idstart    = letter | '_',
   idrest     = idstart | digit,
@@ -52,8 +64,11 @@ ometa OrigamiParser {
   text       = '"' stringChar*:as '"' -> as.join(''),
 
   kw :xs = seq(xs) ~(letter | digit),
+
   listOf :p :s = apply(p):h (_ seq(s) _ apply(p))*:tl -> [h].concat(tl)
                | empty                                -> [],
+
+  neListOf :p :s = apply(p):h (_ seq(s) _ apply(p))*:tl -> [h].concat(tl),
 
   comment = fromTo('#', '\n'),
   wspace = /\s/,
@@ -119,26 +134,29 @@ ometa OrigamiParser {
   MemberDecl =
     MethodDef:m -> ['meth', m]
   | Param:s _ '.' _ identifier:i _ seq('<-') _ Param:v _ RawBody:b -> ['set', s, i, v, b]
-  | Param:s _ '.' _ identifier:i _ Body:b -> ['get', s, i, b],
+  | Param:s _ '.' _ Param:i _ Body:b -> ['get', s, i[0], b],
 
   StaticMemberDecl =
     FunDef:f -> ['fun', f]
   | identifier:i _ seq('<-') _ Param:v _ RawBody:b -> ['set', i, v, b]
-  | identifier:i _ Body:b -> ['get', i, b],
+  | Param:i _ Body:b -> ['get', i[0], b],
 
   MethodDef =
-    DefineType?:t _ Param:l _ infix:op _ Param:r _ Body:b -> [t, op, l, [r], b]
-  | DefineType?:t _ kw('not') _ Param:p _ Body:b -> [t, 'not', p, [], b]
-  | DefineType?:t _ Param:s _ '.' _ identifier:i _ FnParams:p _ Body:b -> [t, i, s, p, b],
+    DefineType?:t _ Param:l _ infix:op _ Param:r _ RetParam:ret _ Body:b -> [t, op, l, [r], b]
+  | DefineType?:t _ kw('not') _ Param:p _ RetParam:ret _ Body:b -> [t, 'not', p, [], b]
+  | DefineType?:t _ Param:s _ '.' _ identifier:i _ KwParams:p _ RetParam:ret _ Body:b -> [t, kwName(i, p), s, kwParams(p), b]
+  | DefineType?:t _ Param:s _ '.' _ identifier:i _ FnParams:p _ RetParam:ret _ Body:b -> [t, i, s, p, b],
 
   FunDef =
-    DefineType?:t _ Param:l _ infix:op _ Param:r _ Body:b -> [t, op, [l, r], b]
-  | DefineType?:t _ kw('not') _ Param:p _ Body:b -> [t, 'not', [p], b]
-  | DefineType?:t _ identifier:i _ FnParams:p _ Body:b -> [t, i, p, b],
+    DefineType?:t _ Param:l _ infix:op _ Param:r _ RetParam:ret _ Body:b -> [t, op, [l, r], b]
+  | DefineType?:t _ kw('not') _ Param:p _ RetParam:ret _ Body:b -> [t, 'not', [p], b]
+  | DefineType?:t _ identifier:i _ KwParams:p _ RetParam:ret _ Body:b -> [t, kwName(i, p), kwParams(p), b]
+  | DefineType?:t _ identifier:i _ FnParams:p _ RetParam:ret _ Body:b -> [t, i, p, b],
 
   MemberTypeDecl =
     kw('not') _ SelfType:s _ RetParam:r -> ['fn', s, 'not', [], r]
   | kw('new') _ FnParams:p _ RetParam:r -> ['new', p, r]
+  | SelfType:s _ '.' _ identifier:i _ KwParams:p _ RetParam:r -> ['fn', s, kwName(i, p), kwParams(p), r]
   | SelfType:s _ '.' _ identifier:i _ FnParams:p _ RetParam:r -> ['fn', s, i, p, r]
   | SelfType:s _ '.' _ identifier:i (_ seq('::') _ TypeDef)?:t -> ['prop', s, i, t || ['type-any']]
   | SelfType:s _ '[' _ TypeDef:t _ ']' (_ seq('::') _ TypeDef)?:r -> ['at', s, t, r || ['type-any']]
@@ -165,11 +183,13 @@ ometa OrigamiParser {
   | identifier:i                         -> [i, ['type-any']],
 
   KwParam =
-    identifier:i _ ':' _ Param:p -> [i, p],
+    name:i _ ':' _ Param:p -> [i, p],
 
   DefineType = kw('async') | kw('generator'),
 
   FnParams = '(' _ listOf(#Param, ','):ps _ ')' -> ps,
+
+  KwParams = '(' _ Param:p (_ ',' _ KwParam)+:ps _ ')' -> [p, ps],
 
   RetParam =
     seq('->') _ TypeDef:t -> t
@@ -181,7 +201,7 @@ ometa OrigamiParser {
 
   RawBody =
     '=' _ Expr:e         -> [['expr', e]]
-  | Stmts:xs _ kw('end') -> xs,
+  | kw('do') _ Stmts:xs _ kw('end') -> xs,
 
 
   Stmts = (_ Stmt)+,
@@ -198,8 +218,8 @@ ometa OrigamiParser {
 
   Loop =
     kw('foreach') _ identifier:v _ kw('of') _ Expr:e _ Block:b -> ['foreach', v, e, b]
-  | kw('repeat') _ kw('while') _ Expr:e _ kw('do') _ Block:b -> ['while', e, b]
-  | kw('repeat') _ kw('until') _ Expr:e _ kw('do') _ Block:b -> ['until', e, b]
+  | kw('repeat') _ kw('while') _ Expr:e _ Block:b -> ['while', e, b]
+  | kw('repeat') _ kw('until') _ Expr:e _ Block:b -> ['until', e, b]
   | kw('repeat') _ kw('with') _ identifier:n _ kw('from') _ Expr:s _ kw('to') _ Expr:e (_ kw('by') _ Expr)?:k _ Block:b -> ['for', n, s, e, k || 1, b]
   | kw('repeat') _ Stmts:b _ kw('end') -> ['repeat', b],
 
@@ -272,11 +292,13 @@ ometa OrigamiParser {
   | Call,
 
   Call =
-    Call:callee _ '(' _ listOf(#Expr, ','):args _ ')' -> ['call', callee, args]
+    identifier:i _ KwArgs:args -> ['call', kwName(i, args), kwArgs(args)]
+  | Call:callee _ '(' _ listOf(#Expr, ','):args _ ')' -> ['call', callee, args]
   | PostfixCall,
 
   PostfixCall =
-    PostfixCall:p _ '.' _ name:n _ '(' _ listOf(#Expr, ','):args _ ')' -> ['send', p, n, args]
+    PostfixCall:p _ '.' _ name:n _ KwArgs:args -> ['send', p, kwName(n, args), kwArgs(args)]
+  | PostfixCall:p _ '.' _ name:n _ '(' _ listOf(#Expr, ','):args _ ')' -> ['send', p, n, args]
   | Postfix,
 
   Postfix =
@@ -288,6 +310,7 @@ ometa OrigamiParser {
   
   | PrimaryExpr:p _ seq('<-') _ Expr:e -> ['set', p, e]
   | kw('new') _ Postfix:p _ '(' _ listOf(#Expr, ','):args _ ')' -> ['new', p, args]
+  | kw('super') _ '.' _ name:n _ KwArgs:args -> ['send', ['ref', 'super'], kwName(n, args), kwArgs(args)]
   | kw('super') _ '.' _ name:n _ '(' _ listOf(#Expr, ','):args _ ')' -> ['send', ['ref', 'super'], n, args]
   | kw('super') _ '(' _ listOf(#Expr, ','):args _ ')' -> ['call', ['ref', 'super'], args]
   | PrimaryExpr,
@@ -300,7 +323,7 @@ ometa OrigamiParser {
   | '(' _ Expr:e _ ')' -> e,
 
   Lambda =
-    '(' _ listOf(#Param, ','):p _ ')' _ seq('=>') _ Expr:e -> ['fn', p, e],
+    '(' _ listOf(#Param, ','):p _ ')' _ seq('->') _ Expr:e -> ['fn', p, e],
 
   NumericLiteral =
     float:n 'f' -> ['lit_float', n]
@@ -319,6 +342,9 @@ ometa OrigamiParser {
   | '[' _ listOf(#Pair, ','):e _ ']' -> ['map', e]
   | '[' _ listOf(#Expr, ','):e _ ']' -> ['vector', e]
   | '{' _ listOf(#Pair, ','):e _ '}' -> ['record', e],
+
+  KwArgs = '(' _ Expr:e (_ ',' _ KwArg)+:es _ ')' -> [e, es],
+  KwArg = name:n _ ':' _ Expr:e -> [n, e],
 
   Pair =
     name:n _ ':' _ Expr:e -> [n, e],
