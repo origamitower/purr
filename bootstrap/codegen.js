@@ -180,7 +180,7 @@ exports.Match = (expr, cases) => {
   console.log(cases);
   const name = freshBox.next();
   return `((${name}) => {
-    ${cases.map(compileCase(name)).join('\n\n  ')} 
+    ${cases.map(compileCase(name)).join('\n\n    ')} 
   })(${expr})`;
 };
 
@@ -201,16 +201,18 @@ function compileCase(id) {
       case 'extract': {
         const [_, m, names] = pattern;
         const name = freshBox.next();
-        return `const ${name} = ${m}; 
+        const unapply = names.length > 0 ? 
+          `const [${names.join(', ')}]: any = ${name}.unapply(${id});\n    ` 
+          : ''
+        return `const ${name}: any = ${m}; 
     if (${id} instanceof ${name}) { 
-      const [${names.join(', ')}] = ${name}.unapply(${id}); 
-      return ${body} ;
+      ${ unapply }return ${body} ;
     }`;
       }
 
       case 'bind': {
         const [_, name] = pattern;
-        return `const ${name} = ${id};
+        return `const ${name}: any = ${id};
     return ${body};`
       }
 
