@@ -2,7 +2,7 @@ exports.Union = (id, cases) => {
   const tagNames = cases.map(x => x[0]);
 
   const mainClass = `
-export class ${id} {
+export abstract class ${id} {
   readonly "origami/type" = "${id}";
   abstract "origami/tag": ${tagNames.map(JSON.stringify).join(" | ")};
 
@@ -10,19 +10,33 @@ ${cases
     .map(([n, xs]) => {
       const args = xs.map(x => `${x}: any`).join(", ");
       const ns = xs.join(", ");
-      return `  static ${n}(${args}) {\n    return new ${n}(${ns});\n  }`;
+      return `  static get ${n}() {\n    return ${id}_${n};\n  }`;
     })
     .join("\n\n")}
+
+  static hasInstance(value: any) {
+    return value instanceof ${id};
+  }
 }`;
 
   const subClasses = cases.map(([n, xs]) => {
     const args = xs.map(x => `readonly ${x}: any`).join(", ");
 
     return `
-class ${n} extends ${id} {
+class ${id}_${n} extends ${id} {
   readonly "origami/tag" = ${JSON.stringify(n)};
 
-  constructor(${args}) {}
+  constructor(${args}) {
+    super();
+  }
+
+  static hasInstance(value: any) {
+    return value instanceof ${id}_${n};
+  }
+
+  unapply(): any {
+    return [${xs.map(x => `this.${x}`).join(', ')}];
+  }
 }`;
   });
 
@@ -198,10 +212,10 @@ function compileCase(id) {
         const [_, m, names] = pattern;
         const name = freshBox.next();
         const unapply = names.length > 0 ? 
-          `const [${names.join(', ')}]: any = ${name}.unapply(${id});\n      ` 
+          `const [${names.join(', ')}]: any = ${id}.unapply();\n      ` 
           : ''
         return `const ${name}: any = ${m}; 
-    if (${id} instanceof ${name}) { 
+    if (${name}.hasInstance(${id})) { 
       ${ unapply }return ${body} ;
     }`;
       }
