@@ -250,7 +250,7 @@ ometa OrigamiParser {
     kw('match') _ Expr:a _ kw('with') (_ MatchCase)+:ps _ kw('end') -> ['match', a, ps],
 
   MatchCase =
-    kw('case') _ Pattern:p _ kw('do') _ Expr:e -> [p, e],
+    kw('case') _ Pattern:p _ kw('then') _ Expr:e -> [p, e],
 
   Pattern =
     kw('anything') -> ['anything']

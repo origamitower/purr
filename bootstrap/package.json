@@ -4,5 +4,8 @@
   "dependencies": {
     "ometajs": "^4.0.0",
     "yargs": "^11.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^2.9.2"
   }
 }

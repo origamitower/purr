@@ -11,8 +11,8 @@ end
 
 define foo() =
   match new Maybe.Just(2) with
-    case Maybe.Just(value) do value + 1
-    case Maybe.Nothing()   do "nope"
+    case Maybe.Just(value) then value + 1
+    case Maybe.Nothing()   then "nope"
   end
 
 define a + b do 

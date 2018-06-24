@@ -1,0 +1,14 @@
+union Maybe
+  case Just(value)
+  case Nothing()
+end
+
+define main() do
+  let v = new Maybe.Just(1);
+  let y = match v with
+    case Maybe.Just(v)   then v + 1
+    case Maybe.Nothing() then 0
+  end;
+
+  console.log("Result: " ++ y);
+end

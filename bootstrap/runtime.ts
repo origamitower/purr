@@ -82,6 +82,10 @@ function $at_put(o: any, k: any, v: any) {
   o[k] = v;
 }
 
+function $concat(a: any, b: any) {
+  return a + b;
+}
+
 function $assert_equals(a: any, b: any) {
   if (!$equals(a, b)) {
     throw new Error(`Expected ${a} to equal ${b}`);
