@@ -226,6 +226,8 @@ exports.compileBlock = compileBlock;
 
 function mangle(name) {
   switch (name) {
+    case '==>':
+      return '$assert_equals'
     case "===":
       return "$equals";
     case "=/=":

@@ -9,8 +9,8 @@ A very simple compiler implementing a minor subset of the language to allow the 
 - [x] Collection and numeric literals
 - [x] Infix functions
 - [x] Imperative statements
-- [ ] Keyword functions/methods
-- [ ] Parsing inline tests
+- [x] Keyword functions/methods
+- [x] Parsing inline tests
 
 
 ## Self-hosted compiler and Runtime

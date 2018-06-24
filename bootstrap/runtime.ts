@@ -78,7 +78,14 @@ function $dec(a: any) {
   return Number(a);
 }
 
-function $putat(o: any, k: any, v: any) {
+function $at_put(o: any, k: any, v: any) {
   o[k] = v;
+}
+
+function $assert_equals(a: any, b: any) {
+  if (!$equals(a, b)) {
+    throw new Error(`Expected ${a} to equal ${b}`);
+  }
+  return true;
 }
 // <runtime ends here>

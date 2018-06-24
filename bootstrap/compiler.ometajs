@@ -120,7 +120,7 @@ ometa OrigamiCompiler {
   | [#match expr:e [matchcase*:ps]] -> g.Match(e, ps)
   | [#set expr:l expr:r] -> { '(' + l + ') = (' + r + ')' }
   | [#setprop expr:l :n expr:r] -> { '(' + l + ')[' + JSON.stringify(n) + '] = (' + r + ')'  }
-  | [#putat expr:l expr:k expr:r] -> { '$atput(' + l + ', ' + k + ', ' + r + ')' }
+  | [#putat expr:l expr:k expr:r] -> { '$at_put(' + l + ', ' + k + ', ' + r + ')' }
   | [#send expr:c :n [expr*:xs]] -> { '(' + c + ').' + n + '(' + xs.join(', ') + ')' }
   | [#get expr:m :n] -> { '(' + m + ')[' + JSON.stringify(n) + ']' }
   | [#at expr:m expr:i] -> { '$at(' + m + ', ' + i + ')' }

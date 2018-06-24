@@ -140,6 +140,7 @@ end
 | not a     | Logical negation           | $not(a)                          |
 | a[b]      | Subscript                  | $at(a, b)                        |
 | a[b] <- c | Subscript update           | $at_put(a, b, c)                 |
+| a ==> b   | Assert a equals to b       | $assert_equals(a, b)             |
 
 Note that introduction and elimination of operator forms use the *same syntax*. That is, you write:
 

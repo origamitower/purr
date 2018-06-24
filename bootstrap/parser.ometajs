@@ -51,7 +51,7 @@ ometa OrigamiParser {
   integer    = <'-'? digit (digit | '_')*>:x -> x.replace(/_/, ''),
   float      = <'-'? integer '.' integer>:x -> x.replace(/_/, ''),
   boolean    = kw("true") | kw("false"),
-  infix      = (seq('===') | seq('=/=') | '>' | seq('>=') | seq('<') | seq('<=') | '+' | '-' | '*' | '/' | seq('and') | seq('or')):a,
+  infix      = (seq('==>') | seq('===') | seq('=/=') | '>' | seq('>=') | seq('<') | seq('<=') | '+' | '-' | '*' | '/' | seq('and') | seq('or')):a,
   
   stringEscape = '\\' ( 'b' -> '\b'
                | 'f' -> '\f'
@@ -117,6 +117,7 @@ ometa OrigamiParser {
     (_ Stmt)*:c
     (_ kw('with'))
     (_ ClassMemberDecl)*:xs
+    _ Tests?
     _ kw('end') -> ['class', n, t, p, e || 'none', c, xs],
   
   ClassMemberDecl =
@@ -201,7 +202,7 @@ ometa OrigamiParser {
 
   RawBody =
     '=' _ Expr:e         -> [['expr', e]]
-  | kw('do') _ Stmts:xs _ kw('end') -> xs,
+  | kw('do') _ Stmts:xs (_ Tests)? _ kw('end') -> xs,
 
 
   Stmts = (_ Stmt)+,
@@ -239,6 +240,10 @@ ometa OrigamiParser {
   Expr = 
     If
   | Match
+  | AssertEq,
+
+  AssertEq =
+    AssertEq:l _ seq('==>'):op _ Pipe:r -> ['opcall', op, [l, r]]
   | Pipe,
 
   Match =
@@ -346,5 +351,11 @@ ometa OrigamiParser {
     name:n _ ':' _ Expr:e -> [n, e],
 
   Do =
-    kw('do') _ Stmts:b _ kw('end') -> ['do', fixReturn(b)]
+    kw('do') _ Stmts:b _ kw('end') -> ['do', fixReturn(b)],
+
+  Tests =
+    kw('where') (_ TestStmt+),
+
+  TestStmt =
+    Stmt,
 }

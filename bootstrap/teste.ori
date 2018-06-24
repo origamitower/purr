@@ -15,10 +15,16 @@ define foo() =
     case Maybe.Nothing()   do "nope"
   end
 
-define a + b = a |> b |> c
+define a + b do 
+  a |> b |> c;
+where 
+  1 + 2 ==> 3; 
+end
 
 define fold(container, from: start, using: fn) do
   fn(start, fold(container, from: start, using: fn));
+where
+  1 ==> 1;
 end
 
 define fn(a :: Maybe<'a>, f :: ('a) -> 'b) -> a do
