@@ -147,7 +147,7 @@ ometa OrigamiCompiler {
   | [#lit_int :n] -> { '$int(' + JSON.stringify(n) + ')' }
   | [#lit_dec :n] -> { '$dec(' + JSON.stringify(n) + ')' }
   | [#lit_str :s] -> JSON.stringify(s)
-  | [#do [stmt*:xs]] -> { '(function(){ ' + xs.join('; ') + ' })' }
+  | [#do [stmt*:xs]] -> { '(() => { ' + xs.join('; ') + ' })()' }
   | [#ref :i] -> i,
 
   matchcase =

@@ -36,11 +36,11 @@ function kwName(i, ps) {
 }
 
 function kwParams(ps) {
-  return ps.map(function(x) { return x[1] });
+  return [ps[0]].concat(ps[1].map(function(x) { return x[1] }));
 }
 
 function kwArgs(xs) {
-  return xs[0].concat(xs[1].map(function(x) { return x[1] }));
+  return [xs[0]].concat(xs[1].map(function(x) { return x[1] }));
 }
 
 ometa OrigamiParser {
@@ -292,19 +292,15 @@ ometa OrigamiParser {
   | Call,
 
   Call =
-    identifier:i _ KwArgs:args -> ['call', kwName(i, args), kwArgs(args)]
-  | Call:callee _ '(' _ listOf(#Expr, ','):args _ ')' -> ['call', callee, args]
-  | PostfixCall,
-
-  PostfixCall =
-    PostfixCall:p _ '.' _ name:n _ KwArgs:args -> ['send', p, kwName(n, args), kwArgs(args)]
-  | PostfixCall:p _ '.' _ name:n _ '(' _ listOf(#Expr, ','):args _ ')' -> ['send', p, n, args]
+    identifier:i _ KwArgs:args -> ['call', ['ref', kwName(i, args)], kwArgs(args)]
+  | PrimaryExpr:p _ '.' _ name:n _ KwArgs:args -> ['send', p, kwName(n, args), kwArgs(args)]
+  | PrimaryExpr:p _ '.' _ name:n _ '(' _ listOf(#Expr, ','):args _ ')' -> ['send', p, n, args]
+  | PrimaryExpr:p _ '(' _ listOf(#Expr, ','):args _ ')' -> ['call', p, args]
   | Postfix,
 
   Postfix =
     Postfix:p _ '.' _ name:n _ seq('<-') _ Expr:e -> ['setprop', p, n, e]
   | Postfix:p _ '[' _ Expr:k _ ']' _ seq('<-') _ Expr:e -> ['putat', p, k, e]
-
   | Postfix:p _ '.' _ name:n -> ['get', p, n]
   | Postfix:p _ '[' _ Expr:e _ ']' -> ['at', p, e]
   

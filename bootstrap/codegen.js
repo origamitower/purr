@@ -174,10 +174,6 @@ const freshBox = new class {
 }
 
 exports.Match = (expr, cases) => {
-  console.log('=> Match');
-  console.log(expr);
-  console.log('-');
-  console.log(cases);
   const name = freshBox.next();
   return `((${name}: any) => {
     ${cases.map(compileCase(name)).join('\n\n    ')} 
@@ -202,7 +198,7 @@ function compileCase(id) {
         const [_, m, names] = pattern;
         const name = freshBox.next();
         const unapply = names.length > 0 ? 
-          `const [${names.join(', ')}]: any = ${name}.unapply(${id});\n    ` 
+          `const [${names.join(', ')}]: any = ${name}.unapply(${id});\n      ` 
           : ''
         return `const ${name}: any = ${m}; 
     if (${id} instanceof ${name}) { 

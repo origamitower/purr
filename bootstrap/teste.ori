@@ -42,6 +42,7 @@ define fn(a :: Maybe<'a>, f :: ('a) -> 'b) -> a do
   a <- b;
   a.c <- b;
   a.c(foo, bar);
+  a.c(foo, kw: bar);
   a[c];
   a.b[c].d <- a;
   a.b[c] <- a;
@@ -78,6 +79,7 @@ end
 export class Foo<'a>() extends Bar.Qux(1)
   let x = 1;
   2 + 3;
+  super.foo(a, b: c);
   super(a);
 with
   implements A<'b>
@@ -89,7 +91,7 @@ with
   member a.test :: number = 4
   member a.test <- val = 5
 
-  member foo(a, kw: x) = 1
+  member _.foo(a, kw: x) = 1
 
   public static foo(x) = 1
   protected static foo and bar = 3
