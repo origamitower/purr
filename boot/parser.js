@@ -23,7 +23,7 @@ function parse(source) {
       };
     },
 
-    Import_as(_1, id, _2, alias) {
+    Import_as(_1, id, _2, alias, _3) {
       return {
         type: "Import",
         tag: "As",
@@ -32,7 +32,7 @@ function parse(source) {
       };
     },
 
-    Import_exposing(_1, id, _2, bindings) {
+    Import_exposing(_1, id, _2, bindings, _3) {
       return {
         type: "Import",
         tag: "Exposing",
@@ -52,7 +52,8 @@ function parse(source) {
     Binding_original(name) {
       return {
         type: "Binding",
-        name: name.toAST(visitor)
+        name: name.toAST(visitor),
+        alias: name.toAST(visitor)
       };
     },
 
@@ -104,10 +105,21 @@ function parse(source) {
       };
     },
 
+    ClassDeclaration(_1, name, params, superClass, _2, ctor, members, _3) {
+      return {
+        name: name.toAST(visitor),
+        params: params.toAST(visitor) || [],
+        superclass: superClass.toAST(visitor),
+        constructor: ctor.toAST(visitor),
+        members: members.toAST(visitor)
+      };
+    },
+
     SuperClass(_, ctor) {
       return {
         type: "SuperClass",
-        expression: ctor.toAST(visitor)
+        expression: ctor.toAST(visitor),
+        params: []
       };
     },
 
@@ -145,7 +157,7 @@ function parse(source) {
         type: "MemberSetter",
         self: self.toAST(visitor),
         name: name.toAST(visitor),
-        param: param.toAST(visitor),
+        params: [param.toAST(visitor)],
         block: block.toAST(visitor)
       };
     },
@@ -155,6 +167,7 @@ function parse(source) {
         type: "MemberGetter",
         self: self.toAST(visitor),
         name: name.toAST(visitor),
+        params: [],
         block: block.toAST(visitor)
       };
     },

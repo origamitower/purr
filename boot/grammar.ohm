@@ -13,8 +13,8 @@ Origami {
 
   // ## Imports
   Import
-    = import_ String as_ Name                                   -- as
-    | import_ String exposing_ NonemptyListOf<Binding, ",">     -- exposing
+    = import_ String as_ Name ";"                                   -- as
+    | import_ String exposing_ NonemptyListOf<Binding, ","> ";"     -- exposing
 
   Binding
     = Name as_ Name   -- aliased
@@ -42,19 +42,19 @@ Origami {
     | Metadata? ClassDeclaration            -- regular
 
   ClassDeclaration
-    = class_ Name SuperClass? "{" ClassMember* "}"
+    = class_ Name ParamList? SuperClass? "{" Statement* ClassMember* "}"
 
   SuperClass
     = extends_ Expression 
 
   ClassMember
     = Metadata? static_ MemberDeclaration    -- static
-    | Metadata? member_ MemberDeclaration  -- instance
+    | Metadata? member_ MemberDeclaration    -- instance
 
   MemberDeclaration
-    = FunctionType? Name "." Name ParamList Block    -- method
-    | Name "." Name "<-" Name Block                 -- setter
-    | Name "." Name Block                           -- getter
+    = FunctionType? Name "." Name ParamList Block     -- method
+    | Name "." Name "<-" Name Block                   -- setter
+    | Name "." Name Block                             -- getter
 
   String
     = #"\"\"\"" #raw_character* #"\"\"\""       -- raw

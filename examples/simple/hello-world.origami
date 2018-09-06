@@ -1,5 +1,15 @@
 % version: 1
 
-function main() {
+import "foo" as bar;
+import "foo" exposing x, y as z;
+
+function main(args) {
   "Hello, world";
+}
+
+class Base {}
+data class Greet(who, what) extends Base {
+  static _.hello() { who; }
+  member _.whose { who; }
+  member _.whose <- that { who; }
 }
