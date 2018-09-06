@@ -134,7 +134,7 @@ Origami {
     | "-"
     | "**"  | "*"
     | "/"
-    | and_  | or_   | not_
+    | and_  | or_
 
 
   hex_digit = "0" .. "9" | "a" .. "f" | "A" .. "F" 
