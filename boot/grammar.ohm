@@ -1,0 +1,142 @@
+Origami {
+  Program
+    = Header* Definition* end
+
+  Header
+    = "%" line
+
+  Definition
+    = Import
+    | Function
+    | Class
+
+
+  // ## Imports
+  Import
+    = import_ String as_ Name                                   -- as
+    | import_ String exposing_ NonemptyListOf<Binding, ",">     -- exposing
+
+  Binding
+    = Name as_ Name   -- aliased
+    | Name            -- original
+
+
+  // ## Functions
+  Function
+    = Metadata? function_ FunctionSignature Block
+
+  FunctionSignature
+    = FunctionType? Name ParamList
+
+  ParamList
+    = "(" ListOf<Name, ","> ")"
+
+  FunctionType
+    = "*"     -- generator
+    | async_  -- async
+
+
+  // ## Classes
+  Class
+    = Metadata? data_ ClassDeclaration      -- data
+    | Metadata? ClassDeclaration            -- regular
+
+  ClassDeclaration
+    = class_ Name SuperClass? "{" ClassMember* "}"
+
+  SuperClass
+    = extends_ Expression 
+
+  ClassMember
+    = Metadata? static_ MemberDeclaration    -- static
+    | Metadata? member_ MemberDeclaration  -- instance
+
+  MemberDeclaration
+    = FunctionType? Name "." Name ParamList Block    -- method
+    | Name "." Name "<-" Name Block                 -- setter
+    | Name "." Name Block                           -- getter
+
+  String
+    = #"\"\"\"" #raw_character* #"\"\"\""       -- raw
+    | #"\"" #string_character* #"\""            -- double
+  
+  Metadata
+    = doc_comment
+
+  Block
+    = "{" Statement* "}"
+
+  Statement
+    = Expression ";"    -- expression
+
+  Expression
+    = Name                  -- variable
+    | Literal               -- literal
+    | "(" Expression ")"    -- group
+
+  Literal
+    = String
+
+  Name
+    = ~reserved id
+
+  //-- LEXICAL --------------------------------------------------------
+  newline = "\n" | "\r"
+  line = (~newline any)*
+  comment = "//" line
+  doc_comment = "/*" (~"*/" any)* "*/"
+  space += comment
+
+  id_start = letter | "_"
+  id_rest = id_start | digit
+  id = id_start id_rest*
+
+  kw<word> = word ~id_rest
+
+
+  hex_digit = "0" .. "9" | "a" .. "f" | "A" .. "F" 
+
+  raw_character 
+    = ~"\"\"\"" any
+
+  escape_sequence
+    = "b"                 -- backspace
+    | "f"                 -- form_feed
+    | "n"                 -- newline
+    | "r"                 -- return
+    | "t"                 -- tab
+    | "u" unicode_escape  -- unicode
+
+  string_character
+    = ~("\"" | "\\") any    -- non_escaped
+    | "\\" escape_sequence   -- escaped
+
+  unicode_escape 
+    = hex_digit hex_digit hex_digit hex_digit
+
+
+
+  import_ = kw<"import">
+  exposing_ = kw<"exposing">
+  as_ = kw<"as">
+
+  function_ = kw<"function">
+  async_ = kw<"async">
+
+  data_ = kw<"data">
+  class_ = kw<"class">
+  abstract_ = kw<"abstract">
+  extends_ = kw<"extends">
+  static_ = kw<"static">
+  member_ = kw<"member">
+
+  reserved
+    = abstract_ | async_ | as_
+    | class_
+    | data_
+    | exposing_ | extends_
+    | function_
+    | import_
+    | member_
+    | static_
+}
