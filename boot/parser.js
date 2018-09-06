@@ -299,6 +299,74 @@ function parse(source) {
       };
     },
 
+    UnaryExpression_not(_, arg) {
+      return {
+        type: "UnaryExpression",
+        prefix: true,
+        operator: "not",
+        argument: arg.toAST(visitor)
+      };
+    },
+
+    SendExpression_send(base, cont) {
+      return cont.toAST(visitor)(base.toAST(visitor));
+    },
+
+    SendContinuation_call(params) {
+      return base => ({
+        type: "CallExpression",
+        callee: base,
+        params: params.toAST(visitor)
+      });
+    },
+
+    SendContinuation_method_call(_, method, params) {
+      return base => ({
+        type: "MethodCallExpression",
+        object: base,
+        method: method.toAST(visitor),
+        params: params.toAST(visitor)
+      });
+    },
+
+    SendContinuation_property(prop) {
+      return prop.toAST(visitor);
+    },
+
+    Property_at(_1, expr, _2) {
+      return base => ({
+        type: "AtExpression",
+        object: base.toAST(visitor),
+        key: expr.toAST(visitor)
+      });
+    },
+
+    Property_get(_, name) {
+      return base => ({
+        type: "GetExpression",
+        object: base,
+        name: name.toAST(visitor)
+      });
+    },
+
+    MemberExpression_member(object, prop) {
+      return prop.toAST(visitor)(object.toAST(visitor));
+    },
+
+    NewExpression_new(_, object, params) {
+      return {
+        type: "NewExpression",
+        constructor: object.toAST(visitor),
+        params: params.toAST(visitor)
+      };
+    },
+
+    PrimaryExpression_super(_) {
+      return {
+        type: "SuperExpression"
+      };
+    },
+
     PrimaryExpression_variable(name) {
       return {
         type: "VariableExpression",

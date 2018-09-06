@@ -81,6 +81,9 @@ Origami {
     = IfExpression
     | PipeExpression
 
+  IfExpression
+    = if_ Expression then_ Expression else_ Expression
+
   PipeExpression
     = PipeExpression "|>" BinaryExpression  -- pipe
     | YieldAwait
@@ -96,15 +99,34 @@ Origami {
     | UnaryExpression
     
   UnaryExpression
-    = PrimaryExpression
+    = not_ CallExpression -- not
+    | SendExpression
 
-  IfExpression
-    = if_ Expression then_ Expression else_ Expression
+  SendExpression
+    = SendExpression SendContinuation   -- send
+    | MemberExpression
 
+  SendContinuation
+    = ParamList             -- call
+    | "." Name ParamList    -- method_call
+    | Property              -- property
+
+  Property
+    = "[" Expression "]"    -- at
+    | "." Name              -- get
+
+  MemberExpression
+    = MemberExpression Property   -- member
+    | NewExpression
+
+  NewExpression
+    = new_ MemberExpression ParamList   -- new
+    | PrimaryExpression
   
   PrimaryExpression
     = Name                  -- variable
     | Literal               -- literal
+    | super_                -- super
     | "(" Expression ")"    -- group
 
   Literal
@@ -189,6 +211,9 @@ Origami {
   await_ = kw<"await">
   yield_ = kw<"yield">
 
+  new_ = kw<"new">
+  super_ = kw<"super">
+
   reserved
     = abstract_ | and_ | assert_ | async_ | as_ | await_
     | class_
@@ -198,9 +223,9 @@ Origami {
     | if_ | import_
     | let_
     | member_ | mutable_
-    | not_
+    | new_ | not_
     | or_
-    | static_
+    | static_ | super_
     | then_
     | yield_
 }

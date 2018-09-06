@@ -61,6 +61,12 @@ function mangle(name) {
     case "not":
       return `origami$${name}`;
 
+    case "[]":
+      return `origami$at`;
+
+    case "[]<-":
+      return `origami$atPut`;
+
     default:
       throw new Error(`Unknown operator ${name}`);
   }
@@ -170,6 +176,38 @@ function compile(node) {
         compile(node.left),
         compile(node.right)
       ]);
+
+    case "UnaryExpression":
+      return t.callExpression(id(mangle(node.operator)), [
+        compile(node.argument)
+      ]);
+
+    case "CallExpression":
+      return t.callExpression(compile(node.callee), node.params.map(compile));
+
+    case "MethodCallExpression":
+      return t.callExpression(
+        t.memberExpression(compile(node.object), id(node.method)),
+        node.params.map(compile)
+      );
+
+    case "AtExpression":
+      return t.callExpression(id(mangle("[]")), [
+        compile(node.object),
+        compile(node.key)
+      ]);
+
+    case "GetExpression":
+      return t.memberExpression(compile(node.object), id(node.name));
+
+    case "NewExpression":
+      return t.newExpression(
+        compile(node.constructor),
+        node.params.map(compile)
+      );
+
+    case "SuperExpression":
+      return id("super");
 
     case "VariableExpression":
       return t.identifier(node.name);
