@@ -4,6 +4,7 @@ import "foo" as bar;
 import "foo" exposing x, y as z;
 
 function main(args) {
+  assert (a + b) + c;
   "Hello, world";
 }
 

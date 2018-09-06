@@ -9,6 +9,10 @@ const grammarSource = fs.readFileSync(
 );
 const grammar = ohm.grammar(grammarSource);
 
+function sliceSource(source) {
+  return source.sourceString.slice(source.startIdx, source.endIdx);
+}
+
 function parse(source) {
   const match = grammar.match(source);
   if (match.failed()) {
@@ -222,6 +226,23 @@ function parse(source) {
       return statements.toAST(visitor);
     },
 
+    LetStatement(_1, mutable, name, _2, expr, _3) {
+      return {
+        type: "LetStatement",
+        mutable: mutable === "mutable",
+        name: name.toAST(visitor),
+        expression: expr.toAST(visitor)
+      };
+    },
+
+    AssertStatement(_1, expr, _2) {
+      return {
+        type: "AssertStatement",
+        expression: expr.toAST(visitor),
+        code: sliceSource(expr.source)
+      };
+    },
+
     Statement_expression(expr, _) {
       return {
         type: "ExpressionStatement",
@@ -229,14 +250,63 @@ function parse(source) {
       };
     },
 
-    Expression_variable(name) {
+    IfExpression(_1, test, _2, consequent, _3, alternate) {
+      return {
+        type: "IfExpression",
+        test: test.toAST(visitor),
+        consequent: consequent.toAST(visitor),
+        alternate: alternate.toAST(visitor)
+      };
+    },
+
+    PipeExpression_pipe(left, _, right) {
+      return {
+        type: "PipeExpression",
+        left: left.toAST(visitor),
+        right: right.toAST(visitor)
+      };
+    },
+
+    YieldAwait_await(_, expr) {
+      return {
+        type: "AwaitExpression",
+        expression: expr.toAST(visitor)
+      };
+    },
+
+    YieldAwait_yield_all(_1, _2, expr) {
+      return {
+        type: "YieldExpression",
+        generator: true,
+        expression: expr.toAST(visitor)
+      };
+    },
+
+    YieldAwait_yield(_1, expr) {
+      return {
+        type: "YieldExpression",
+        generator: false,
+        expression: expr.toAST(visitor)
+      };
+    },
+
+    BinaryExpression_binary(left, operator, right) {
+      return {
+        type: "BinaryExpression",
+        left: left.toAST(visitor),
+        operator: operator.toAST(visitor),
+        right: right.toAST(visitor)
+      };
+    },
+
+    PrimaryExpression_variable(name) {
       return {
         type: "VariableExpression",
         name: name.toAST(visitor)
       };
     },
 
-    Expression_literal(lit) {
+    PrimaryExpression_literal(lit) {
       return {
         type: "LiteralExpression",
         literal: lit.toAST(visitor)

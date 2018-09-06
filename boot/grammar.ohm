@@ -67,9 +67,42 @@ Origami {
     = "{" Statement* "}"
 
   Statement
-    = Expression ";"    -- expression
+    = LetStatement
+    | AssertStatement
+    | Expression ";"    -- expression
+
+  LetStatement
+    = let_ mutable_? Name "=" Expression ";"
+
+  AssertStatement
+    = assert_ Expression ";"
 
   Expression
+    = IfExpression
+    | PipeExpression
+
+  PipeExpression
+    = PipeExpression "|>" BinaryExpression  -- pipe
+    | YieldAwait
+
+  YieldAwait
+    = await_ BinaryExpression       -- await
+    | yield_ "*" BinaryExpression   -- yield_all
+    | yield_ BinaryExpression       -- yield
+    | BinaryExpression
+
+  BinaryExpression
+    = UnaryExpression operator UnaryExpression  -- binary
+    | UnaryExpression
+    
+  UnaryExpression
+    = PrimaryExpression
+
+  IfExpression
+    = if_ Expression then_ Expression else_ Expression
+
+  
+  PrimaryExpression
     = Name                  -- variable
     | Literal               -- literal
     | "(" Expression ")"    -- group
@@ -92,6 +125,16 @@ Origami {
   id = id_start id_rest*
 
   kw<word> = word ~id_rest
+
+  operator 
+    = "===" | "=/=" | "==>"
+    | ">="  | ">>"  | ">"
+    | "<="  | "<<"  | "<"
+    | "++"  | "+"
+    | "-"
+    | "**"  | "*"
+    | "/"
+    | and_  | or_   | not_
 
 
   hex_digit = "0" .. "9" | "a" .. "f" | "A" .. "F" 
@@ -130,13 +173,34 @@ Origami {
   static_ = kw<"static">
   member_ = kw<"member">
 
+  let_ = kw<"let">
+  mutable_ = kw<"mutable">
+
+  assert_ = kw<"assert">
+
+  if_ = kw<"if">
+  then_ = kw<"then">
+  else_ = kw<"else">
+
+  and_ = kw<"and">
+  or_ = kw<"or">
+  not_ = kw<"not">
+  
+  await_ = kw<"await">
+  yield_ = kw<"yield">
+
   reserved
-    = abstract_ | async_ | as_
+    = abstract_ | and_ | assert_ | async_ | as_ | await_
     | class_
     | data_
-    | exposing_ | extends_
+    | else_ | exposing_ | extends_
     | function_
-    | import_
-    | member_
+    | if_ | import_
+    | let_
+    | member_ | mutable_
+    | not_
+    | or_
     | static_
+    | then_
+    | yield_
 }

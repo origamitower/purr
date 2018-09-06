@@ -9,6 +9,63 @@ function flatmap(xs, f) {
   return xs.map(f).reduce((a, b) => a.concat(b), []);
 }
 
+function mangle(name) {
+  switch (name) {
+    case "===":
+      return "origami$equals";
+
+    case "=/=":
+      return "origami$notEquals";
+
+    case "==>":
+      return "origami$imply";
+
+    case ">=":
+      return "origami$gte";
+
+    case ">>":
+      return "origami$composeRight";
+
+    case ">":
+      return "origami$gt";
+
+    case "<=":
+      return "origami$lte";
+
+    case "<<":
+      return "origami$composeLeft";
+
+    case "<":
+      return "origami$lt";
+
+    case "++":
+      return "origami$concat";
+
+    case "+":
+      return "origami$plus";
+
+    case "-":
+      return "origami$minus";
+
+    case "**":
+      return "origami$power";
+
+    case "*":
+      return "origami$multiply";
+
+    case "/":
+      return "origami$divide";
+
+    case "and":
+    case "or":
+    case "not":
+      return `origami$${name}`;
+
+    default:
+      throw new Error(`Unknown operator ${name}`);
+  }
+}
+
 function fixReturns(block) {
   if (block.length === 0) {
     return [];
@@ -26,6 +83,10 @@ function fixReturns(block) {
           expression: last.expression
         }
       ];
+
+    case "LetStatement":
+    case "AssertStatement":
+      return [...initial, last];
 
     default:
       throw new Error(`Unknown node type ${last.type}`);
@@ -67,9 +128,48 @@ function compile(node) {
     case "ExpressionStatement":
       return t.expressionStatement(compile(node.expression));
 
+    case "LetStatement":
+      return t.variableDeclaration(node.mutable ? "let" : "const", [
+        t.variableDeclarator(id(node.name), compile(node.expression))
+      ]);
+
+    case "AssertStatement":
+      return t.ifStatement(
+        t.unaryExpression("!", compile(node.expression), true),
+        t.blockStatement([
+          t.throwStatement(
+            t.newExpression(id("Error"), [
+              t.stringLiteral(`Assertion failed: ${node.code}`)
+            ])
+          )
+        ])
+      );
+
     // Note: this node doesn't exist in the grammar, it's added by the ReturnLast pass
     case "ReturnStatement":
       return t.returnStatement(compile(node.expression));
+
+    case "IfExpression":
+      return t.conditionalExpression(
+        compile(node.test),
+        compile(node.consequent),
+        compile(node.alternate)
+      );
+
+    case "PipeExpression":
+      return t.callExpression(compile(node.right), [compile(node.left)]);
+
+    case "AwaitExpression":
+      return t.awaitExpression(compile(node.expression));
+
+    case "YieldExpression":
+      return t.yieldExpression(compile(node.expression), node.generator);
+
+    case "BinaryExpression":
+      return t.callExpression(id(mangle(node.operator)), [
+        compile(node.left),
+        compile(node.right)
+      ]);
 
     case "VariableExpression":
       return t.identifier(node.name);
