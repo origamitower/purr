@@ -11,7 +11,7 @@ const grammar = ohm.grammar(grammarSource);
 
 function parse(source) {
   const match = grammar.match(source);
-  if (match.failed) {
+  if (match.failed()) {
     throw new SyntaxError(match.message);
   }
 
@@ -32,7 +32,7 @@ function parse(source) {
       };
     },
 
-    Import_Exposing(_1, id, _2, bindings) {
+    Import_exposing(_1, id, _2, bindings) {
       return {
         type: "Import",
         tag: "Exposing",
@@ -162,7 +162,7 @@ function parse(source) {
     String_raw(_1, characters, _2) {
       return {
         type: "String",
-        value: characters.join("")
+        value: characters.toAST(visitor).join("")
       };
     },
 
@@ -170,6 +170,7 @@ function parse(source) {
       return {
         type: "String",
         value: characters
+          .toAST(visitor)
           .map(x => {
             if (x.startsWith("\\")) {
               switch (x[1]) {
