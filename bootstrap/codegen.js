@@ -184,6 +184,9 @@ function compile(node) {
     case "Binding":
       return t.importSpecifier(id(node.alias), id(node.name));
 
+    case "DefaultBinding":
+      return t.importDefaultSpecifier(id(node.name));
+
     case "ExpressionStatement":
       return t.expressionStatement(compile(node.expression));
 
@@ -341,7 +344,7 @@ function compile(node) {
       return t.identifier(node.name);
 
     case "LiteralExpression":
-      return compile(node.literal);
+      return compileLiteral(node.literal);
 
     case "ArrayExpression":
       return t.arrayExpression(node.items.map(compile));

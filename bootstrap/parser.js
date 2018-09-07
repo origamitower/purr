@@ -54,6 +54,13 @@ function parse(source) {
       };
     },
 
+    Binding_default(_1, _2, alias) {
+      return {
+        type: "DefaultBinding",
+        name: name.toAST(visitor)
+      };
+    },
+
     Binding_original(name) {
       return {
         type: "Binding",
@@ -783,6 +790,8 @@ function parse(source) {
         block: block.toAST(visitor)
       };
     },
+
+    ArgList: 1,
 
     Pair(name, _, expr) {
       return {
