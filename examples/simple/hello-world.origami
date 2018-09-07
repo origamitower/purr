@@ -9,8 +9,6 @@ function main(args) {
 
 class Base() {}
 data class Greet(who, what) extends Base() {
-  member a[b] <- c { }
-  member a[b] { }
-  member a + b { }
-  member not a { }
+  field x = a;
+  x <- who + what;
 }
