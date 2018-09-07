@@ -12,7 +12,7 @@ In particular, this means that:
 
 - It's a meta-language by supporting compiler plugins, inline DSLs, and pluggable literals.
 
-## Why not <insert-other-language-here>?
+## Why not (insert-other-language-here)?
 
 There are many languages that compile to JavaScript, and for most of these languages it's kinda fine if you only consume JavaScript objects without ever letting your language's objects be consumed by JavaScript, but:
 
