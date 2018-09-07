@@ -92,6 +92,11 @@ function fixReturns(block) {
 
     case "LetStatement":
     case "AssertStatement":
+    case "ForeachStatement":
+    case "WhileStatement":
+    case "UntilStatement":
+    case "ForStatement":
+    case "RepeatStatement":
       return [...initial, last];
 
     default:
@@ -128,9 +133,6 @@ function compile(node) {
     case "Binding":
       return t.importSpecifier(id(node.alias), id(node.name));
 
-    case "String":
-      return t.stringLiteral(node.value);
-
     case "ExpressionStatement":
       return t.expressionStatement(compile(node.expression));
 
@@ -149,6 +151,40 @@ function compile(node) {
             ])
           )
         ])
+      );
+
+    case "ForeachStatement":
+      return t.forOfStatement(
+        id(node.name),
+        compile(node.iterator),
+        t.blockStatement(node.block.map(compile))
+      );
+
+    case "WhileStatement":
+      return t.whileStatement(
+        compile(node.predicate),
+        t.blockStatement(node.block.map(compile))
+      );
+
+    case "UntilStatement":
+      return t.doWhileStatement(
+        compile(node.predicate),
+        t.blockStatement(node.block.map(compile))
+      );
+
+    case "ForStatement":
+      return t.forStatement(
+        t.variableDeclaration("let", [
+          t.variableDeclarator(id(node.name), compile(node.start))
+        ]),
+        t.binaryExpression("<=", id(node.name), compile(node.end)),
+        t.assignmentExpression("+=", id(name), compile(node.by))
+      );
+
+    case "RepeatStatement":
+      return t.whileStatement(
+        t.booleanLiteral(true),
+        t.blockStatement(node.block.map(compile))
       );
 
     // Note: this node doesn't exist in the grammar, it's added by the ReturnLast pass
@@ -355,6 +391,27 @@ function compileFunction(node) {
   ];
 }
 
+function compileLiteral(node) {
+  switch (node.type) {
+    case "String":
+      return t.stringLiteral(node.value);
+
+    case "Integer":
+      return t.numericLiteral(Number(`${node.sign || ""}${node.digits}`));
+
+    case "Decimal":
+      return t.numericLiteral(
+        Number(`${node.sign || ""}${node.integer}.${node.decimal}`)
+      );
+
+    case "Boolean":
+      return t.booleanLiteral(node.value);
+
+    default:
+      throw new Error(`Unknown node type ${node.type}`);
+  }
+}
+
 function generate(ast) {
   return generateJs(compileModule(ast));
 }
@@ -366,5 +423,6 @@ module.exports = {
   compileClass,
   compileFunction,
   compileImport,
+  compileLiteral,
   generate
 };

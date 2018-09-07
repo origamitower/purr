@@ -202,13 +202,78 @@ function parse(source) {
                 case "t":
                   return "\t";
                 case "u":
-                  return String.fromCodePoint(parseInt(x.slice(2), 16));
+                  return String.fromCodePoint(
+                    parseInt(x.slice(2).replace(/_/g, ""), 16)
+                  );
               }
             } else {
               return x;
             }
           })
           .join("")
+      };
+    },
+
+    Integer_negative(_, digits) {
+      return {
+        type: "Integer",
+        sign: "-",
+        digits: digits.toAST(visitor).replace(/_/g, "")
+      };
+    },
+
+    Integer_positive(_, digits) {
+      return {
+        type: "Integer",
+        sign: "+",
+        digits: digits.toAST(visitor).replace(/_/g, "")
+      };
+    },
+
+    Integer_unsigned(digits) {
+      return {
+        type: "Integer",
+        digits: digits.toAST(visitor).replace(/_/g, "")
+      };
+    },
+
+    Decimal_negative(_1, integer, _2, decimal) {
+      return {
+        type: "Decimal",
+        sign: "-",
+        integer: integer.toAST(visitor).replace(/_/g, ""),
+        decimal: decimal.toAST(visitor).replace(/_/g, "")
+      };
+    },
+
+    Decimal_positive(_1, integer, _2, decimal) {
+      return {
+        type: "Decimal",
+        sign: "+",
+        integer: integer.toAST(visitor).replace(/_/g, ""),
+        decimal: decimal.toAST(visitor).replace(/_/g, "")
+      };
+    },
+
+    Decimal_unsigned(integer, _, decimal) {
+      return {
+        type: "Decimal",
+        integer: integer.toAST(visitor).replace(/_/g, ""),
+        decimal: decimal.toAST(visitor).replace(/_/g, "")
+      };
+    },
+
+    Boolean_true(_) {
+      return {
+        type: "Boolean",
+        value: true
+      };
+    },
+
+    Boolean_false(_) {
+      return {
+        type: "Boolean",
+        value: false
       };
     },
 
@@ -240,6 +305,63 @@ function parse(source) {
         type: "AssertStatement",
         expression: expr.toAST(visitor),
         code: sliceSource(expr.source)
+      };
+    },
+
+    LoopStatement_foreach(_1, name, _2, iterator, block) {
+      return {
+        type: "ForeachStatement",
+        name: name.toAST(visitor),
+        iterator: iterator.toAST(visitor),
+        block: block.toAST(visitor)
+      };
+    },
+
+    LoopStatement_while(_1, _2, predicate, block) {
+      return {
+        type: "WhileStatement",
+        predicate: predicate.toAST(visitor),
+        block: block.toAST(visitor)
+      };
+    },
+
+    LoopStatement_until(_1, _2, predicate, block) {
+      return {
+        type: "UntilStatement",
+        predicate: predicate.toAST(visitor),
+        block: block.toAST(visitor)
+      };
+    },
+
+    LoopStatement_for(_1, _2, name, _3, start, _4, end, block) {
+      return {
+        type: "ForStatement",
+        name: name.toAST(visitor),
+        start: start.toAST(visitor),
+        end: end.toAST(visitor),
+        by: {
+          type: "LiteralExpression",
+          literal: { type: "Integer", digits: "1" }
+        },
+        block: block.toAST(visitor)
+      };
+    },
+
+    LoopStatement_for_by(_1, _2, name, _3, start, _4, end, _5, by, block) {
+      return {
+        type: "ForStatement",
+        name: name.toAST(visitor),
+        start: start.toAST(visitor),
+        end: end.toAST(visitor),
+        by: by.toAST(visitor),
+        block: block.toAST(visitor)
+      };
+    },
+
+    LoopStatement_repeat(_1, block) {
+      return {
+        type: "RepeatStatement",
+        block: block.toAST(visitor)
       };
     },
 

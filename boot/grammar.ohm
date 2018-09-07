@@ -60,6 +60,20 @@ Origami {
     = #"\"\"\"" #raw_character* #"\"\"\""       -- raw
     | #"\"" #string_character* #"\""            -- double
   
+  Integer
+    = #"-" #integral_number   -- negative
+    | #"+" #integral_number   -- positive
+    | integral_number         -- unsigned
+
+  Decimal
+    = #"-" #decimal_digit+ #"." #decimal_digit+   -- negative
+    | #"+" #decimal_digit+ #"." #decimal_digit+   -- positive
+    | #decimal_digit+ #"." #decimal_digit+        -- unsigned
+  
+  Boolean
+    = true    -- true
+    | false   -- false
+
   Metadata
     = doc_comment
 
@@ -69,6 +83,10 @@ Origami {
   Statement
     = LetStatement
     | AssertStatement
+    | LoopStatement
+    | IfStatement
+    | TryStatement
+    | ThrowStatement
     | Expression ";"    -- expression
 
   LetStatement
@@ -76,6 +94,14 @@ Origami {
 
   AssertStatement
     = assert_ Expression ";"
+
+  LoopStatement
+    = foreach_ Name of_ Expression Block                      -- foreach
+    | repeat_ while_ Expression Block                         -- while
+    | repeat_ until_ Expression Block                         -- until
+    | repeat_ with_ Name from_ Expr to_ Expr Block            -- for
+    | repeat_ with_ Name from_ Expr to_ Expr by_ Expr Block   -- for_by
+    | repeat_ Block                                            -- repeat
 
   Expression
     = IfExpression
@@ -131,6 +157,9 @@ Origami {
 
   Literal
     = String
+    | Boolean
+    | Integer
+    | Decimal
 
   Name
     = ~reserved id
@@ -159,7 +188,17 @@ Origami {
     | and_  | or_
 
 
-  hex_digit = "0" .. "9" | "a" .. "f" | "A" .. "F" 
+  octal_digit = "0" .. "7" | "_"
+  hex_digit = "0" .. "9" | "a" .. "f" | "A" .. "F" | "_"
+  bin_digit = "0" | "1" | "_"
+  decimal_digit = "0" .. "9" | "_"
+
+  integral_number 
+    = "0o" octal_digit+       -- octal
+    | "0x" hex_digit+         -- hex
+    | "0b" bin_digit+         -- binary
+    | decimal_digit+          -- decimal
+
 
   raw_character 
     = ~"\"\"\"" any
@@ -214,18 +253,34 @@ Origami {
   new_ = kw<"new">
   super_ = kw<"super">
 
+  foreach_ = kw<"foreach">
+  of_ = kw<"of">
+  repeat_ = kw<"repeat">
+  while_ = kw<"while">
+  until_ = kw<"until">
+  from_ = kw<"from">
+  to_ = kw<"to">
+  by_ = kw<"by">
+
+  true_ = kw<"true">
+  false_ = kw<"false">
+
   reserved
     = abstract_ | and_ | assert_ | async_ | as_ | await_
+    | by_
     | class_
     | data_
     | else_ | exposing_ | extends_
-    | function_
+    | false_ | foreach_ | from_ | function_
     | if_ | import_
     | let_
     | member_ | mutable_
     | new_ | not_
-    | or_
+    | of_ | or_
+    | repeat_
     | static_ | super_
-    | then_
+    | then_ | to_ | true_
+    | until_
+    | while_
     | yield_
 }
