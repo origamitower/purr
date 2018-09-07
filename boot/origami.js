@@ -1,5 +1,5 @@
 const { parse } = require("./parser");
-const { compileModule, generate } = require("./codegen");
+const { generate } = require("./codegen");
 const { inspect } = require("util");
 const fs = require("fs");
 

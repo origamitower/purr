@@ -1,60 +1,60 @@
 function mangle(name) {
   switch (name) {
     case "===":
-      return "origami$equals";
+      return "$equals";
 
     case "=/=":
-      return "origami$notEquals";
+      return "$notEquals";
 
     case "==>":
-      return "origami$imply";
+      return "$imply";
 
     case ">=":
-      return "origami$gte";
+      return "$gte";
 
     case ">>":
-      return "origami$composeRight";
+      return "$composeRight";
 
     case ">":
-      return "origami$gt";
+      return "$gt";
 
     case "<=":
-      return "origami$lte";
+      return "$lte";
 
     case "<<":
-      return "origami$composeLeft";
+      return "$composeLeft";
 
     case "<":
-      return "origami$lt";
+      return "$lt";
 
     case "++":
-      return "origami$concat";
+      return "$concat";
 
     case "+":
-      return "origami$plus";
+      return "$plus";
 
     case "-":
-      return "origami$minus";
+      return "$minus";
 
     case "**":
-      return "origami$power";
+      return "$power";
 
     case "*":
-      return "origami$multiply";
+      return "$multiply";
 
     case "/":
-      return "origami$divide";
+      return "$divide";
 
     case "and":
     case "or":
     case "not":
-      return `origami$${name}`;
+      return `$${name}`;
 
     case "[]":
-      return `origami$at`;
+      return `$at`;
 
     case "[]<-":
-      return `origami$atPut`;
+      return `$atPut`;
 
     default:
       throw new Error(`Unknown operator ${name}`);
