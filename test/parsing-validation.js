@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { parse } = require("../boot/parser");
+const { parse } = require("../bootstrap/parser");
 
 describe("Parsing (validation only)", () => {
   const root = path.join(__dirname, "fixtures/parsing");
