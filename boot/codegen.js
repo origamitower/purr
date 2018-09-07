@@ -5,6 +5,17 @@ const t = require("@babel/types");
 
 const id = x => t.identifier(x);
 
+const fresh = {
+  current: 1,
+  next(name = "ref") {
+    return `$$${name}_${this.current++}`;
+  }
+};
+
+function isArray(a) {
+  return t.callExpression(t.memberExpression(id("Array"), id("isArray")), [a]);
+}
+
 function flatmap(xs, f) {
   return xs.map(f).reduce((a, b) => a.concat(b), []);
 }
@@ -262,6 +273,9 @@ function compile(node) {
       return compileIf(node);
     }
 
+    case "MatchStatement":
+      return t.blockStatement(compileMatch(node.match));
+
     // Note: this node doesn't exist in the grammar, it's added by the ReturnLast pass
     case "ReturnStatement":
       return t.returnStatement(compile(node.expression));
@@ -512,6 +526,155 @@ function compileLiteral(node) {
     default:
       throw new Error(`Unknown node type ${node.type}`);
   }
+}
+
+function compileMatch(match) {
+  const bind = id(fresh.next());
+
+  const compilePattern = (bind, pattern) => {
+    switch (pattern.tag) {
+      case "Literal":
+        return e =>
+          t.ifStatement(
+            t.binaryExpression("=", bind, compile(pattern.literal)),
+            e
+          );
+
+      case "Array": {
+        const pat = pattern.pattern;
+        switch (pat.tag) {
+          case "Spread": {
+            const spreadBind = fresh.next();
+            return e =>
+              t.ifStatement(
+                t.logicalExpression(
+                  "&&",
+                  isArray(bind),
+                  t.binaryExpression(
+                    "===",
+                    t.memberExpression(bind, id("length")),
+                    t.numericLiteral(pat.items.length)
+                  )
+                ),
+                pat.items.reduceRight(
+                  ([bind, e], newPattern, i) => {
+                    const newBind = fresh.next();
+                    return [
+                      newBind,
+                      t.blockStatement([
+                        t.variableDeclaration("const", [
+                          t.variableDeclarator(
+                            newBind,
+                            t.memberExpression(bind, t.numericLiteral(i), true)
+                          )
+                        ]),
+                        compilePattern(newBind, newPattern)(e)
+                      ])
+                    ];
+                  },
+                  [
+                    bind,
+                    t.blockStatement([
+                      t.variableDeclaration("const", [
+                        t.variableDeclarator(
+                          spreadBind,
+                          t.callExpression(
+                            t.memberExpression(bind, id("slice")),
+                            [t.numericLiteral(pat.items.length)]
+                          )
+                        )
+                      ]),
+                      compilePattern(spreadBind, pat.spread)(e)
+                    ])
+                  ]
+                )
+              );
+          }
+
+          case "Regular": {
+            return e =>
+              t.ifStatement(
+                t.logicalExpression(
+                  "&&",
+                  isArray(bind),
+                  t.binaryExpression(
+                    "===",
+                    t.memberExpression(bind, id("length")),
+                    t.numericLiteral(pat.items.length)
+                  )
+                ),
+                pat.items.reduceRight(
+                  ([bind, e], newPattern, i) => {
+                    const newBind = fresh.next();
+                    return [
+                      newBind,
+                      t.blockStatement([
+                        t.variableDeclaration("const", [
+                          t.variableDeclarator(
+                            newBind,
+                            t.memberExpression(bind, t.numericLiteral(i), true)
+                          )
+                        ]),
+                        compilePattern(newBind, newPattern)(e)
+                      ])
+                    ];
+                  },
+                  [bind, e]
+                )
+              );
+          }
+
+          default:
+            throw new Error(`Unknown array pattern ${pat.tag}`);
+        }
+      }
+
+      case "Bind":
+        return e =>
+          t.blockStatement([
+            t.variableDeclaration("const", [
+              t.variableDeclarator(id(pattern.name), bind)
+            ]),
+            e
+          ]);
+
+      default:
+        throw new Error(`Unknown pattern tag ${pattern.tag}`);
+    }
+  };
+
+  const compileCase = bind => matchCase => {
+    switch (matchCase.tag) {
+      case "When":
+        return compilePattern(bind, matchCase.pattern)(f =>
+          f(
+            t.ifStatement(
+              compile(matchCase.predicate),
+              t.blockStatement(matchCase.block.map(compile))
+            )
+          )
+        );
+
+      case "Case":
+        return compilePattern(bind, matchCase.pattern)(f =>
+          f(t.blockStatement(matchCase.block.map(compile)))
+        );
+
+      case "Default":
+        return t.blockStatement(matchCase.block.map(compile));
+
+      default:
+        throw new Error(`Unknown match case tag ${matchCase.tag}`);
+    }
+  };
+
+  return [
+    t.variableDeclaration(
+      "const",
+      t.variableDeclarator(bind, compile(match.value))
+    ),
+    ...match.cases.map(compileCase(bind))
+  ];
 }
 
 function generate(ast) {

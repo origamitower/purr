@@ -125,14 +125,15 @@ Origami {
 
   Pattern
     = Literal                                         -- literal
-    | "[" ListOf<ArrayPattern, ","> "]"               -- array
+    | "[" ArrayPattern "]"                            -- array
     | "{" ListOf<PairPattern, ","> "}"                -- object
     | MemberExpression "(" ListOf<Pattern, ","> ")"   -- extractor
     | Name                                            -- bind
 
   ArrayPattern
-    = "..." Pattern   -- spread
-    | Pattern         -- element
+    = NonemptyListOf<Pattern, ","> "," "..." Pattern  -- spread1
+    | "..." Pattern                                   -- spread0
+    | ListOf<Pattern, ",">                            -- regular
 
   PairPattern
     = Name ":" Pattern

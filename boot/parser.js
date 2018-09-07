@@ -456,11 +456,11 @@ function parse(source) {
       };
     },
 
-    Pattern_array(_1, items, _2) {
+    Pattern_array(_1, pattern, _2) {
       return {
         type: "Pattern",
         tag: "Array",
-        patterns: items.toAST(visitor)
+        pattern: pattern.toAST(visitor)
       };
     },
 
@@ -489,17 +489,29 @@ function parse(source) {
       };
     },
 
-    ArrayPattern_spread(_1, pattern) {
+    ArrayPattern_spread1(items, _1, _2, spread) {
       return {
-        type: "ArrayPatternSpread",
-        pattern: pattern.toAST(visitor)
+        type: "ArrayPattern",
+        tag: "Spread",
+        items: items.toAST(visitor),
+        spread: spread.toAST(visitor)
       };
     },
 
-    ArrayPattern_element(pattern) {
+    ArrayPattern_spread0(_1, spread) {
       return {
-        type: "ArrayPatternElement",
-        pattern: pattern.toAST(visitor)
+        type: "ArrayPattern",
+        tag: "Spread",
+        items: [],
+        spread: spread.toAST(visitor)
+      };
+    },
+
+    ArrayPattern_regular(items) {
+      return {
+        type: "ArrayPattern",
+        tag: "Regular",
+        items: items.toAST(visitor)
       };
     },
 
