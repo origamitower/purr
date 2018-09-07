@@ -1,12 +1,10 @@
 {
-  "$schema":
-    "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "Origami",
   "patterns": [
     {
       "name": "keyword.control.origami",
-      "match":
-        "(?<![a-zA-Z0-9_\\.\\^])(import|as|exposing|define|end|where|assert|law|forall|async|await|generator|yield|union|abstract|class|extends|implements|let|mutable|include|without|renaming|member|static|export|match|with|if|then|else|do|foreach|of|repeat|from|to|by|break|continue|try|catch|case|const|debugger|default|delete|enum|finally|for|function|in|instanceof|new|return|super|throw|switch|this|typeof|var|void|while|interface|package|private|protected|public|required|optional|override|protocol|implement|and|or|not)(?![a-zA-Z0-9_])"
+      "match": "(?<![a-zA-Z0-9_\\.\\^])(abstract|and|assert|async|as|await|by|catch|class|data|else|exposing|extends|finally|foreach|from|function|if|import|let|member|mutable|new|not|of|or|repeat|static|super|then|to|try|until|while|yield)(?![a-zA-Z0-9_])"
     },
     {
       "name": "constant.language.origami",
@@ -34,8 +32,7 @@
     },
     {
       "name": "constant.numeric.decimal.origami",
-      "match":
-        "(?<![a-zA-Z0-9_])[\\-\\+]?[0-9][0-9_]*(\\.[0-9][0-9_]*)?([eE][\\-\\+]?[0-9][0-9_]*)?"
+      "match": "(?<![a-zA-Z0-9_])[\\-\\+]?[0-9][0-9_]*(\\.[0-9][0-9_]*)?([eE][\\-\\+]?[0-9][0-9_]*)?"
     },
     {
       "name": "storage.type.origami",
@@ -44,10 +41,6 @@
     {
       "name": "variable.name.origami",
       "match": "(?<![a-zA-Z0-9_])[a-zA-Z][a-zA-Z0-9_]*"
-    },
-    {
-      "name": "keyword.symbol.origami",
-      "match": "'[a-zA-Z][a-zA-Z0-9_]*"
     },
     {
       "name": "string.quoted.triple",
@@ -61,12 +54,16 @@
     },
     {
       "name": "comment.line",
-      "match": "#.+"
+      "match": "//.+"
+    },
+    {
+      "name": "comment.block.documentation",
+      "begin": "/\\*",
+      "end": "\\*/"
     },
     {
       "name": "keyword.operator.origami",
-      "match":
-        "(?<![a-zA-Z0-9\\-])(==>|\\->|=>|===|=/=|>|>=|<|<=|\\+|\\-|\\*|/|@|\\|>|`|\\$)(?!a-zA-Z0-9\\-)"
+      "match": "(?<![a-zA-Z0-9\\-])(`|\\|>|===|=/=|==>|>=|>>|>|<=|<<|<|\\+\\+|\\+|\\-|\\*\\*|\\*|/)(?!a-zA-Z0-9\\-)"
     }
   ],
   "scopeName": "source.origami"

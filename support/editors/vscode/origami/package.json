@@ -19,7 +19,8 @@
           "origami"
         ],
         "extensions": [
-          ".ori"
+          ".ori",
+          ".origami"
         ],
         "configuration": "./language-configuration.json"
       }
