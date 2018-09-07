@@ -1,0 +1,82 @@
+% version: 1
+% pass: true
+
+/* Documentation */
+class A() { }
+
+/* Documentation */
+data class A() { }
+
+// Classes with a super
+class A(b) extends B(c) { }
+
+// Classes with members + constructor
+class A() {
+  constructor;
+
+  /* Documentation */
+  static _.f() { }
+  static _.f(a, b) { }
+  static async _.f() { }
+  static* _.f() { }
+  static _.f <- g { }
+  static _.f { }
+  static _[a] { }
+  static _[a] <- b { }
+  static a === b { }
+  static a =/= b { }
+  static a ==> b { }
+  static a >= b { }
+  static a >= b { }
+  static a >> b { }
+  static a > b { }
+  static a << b { }
+  static a < b { } 
+  static a ++ b { }
+  static a + b { }
+  static a - b { }
+  static a ** b { }
+  static a * b { }
+  static a / b { }
+  static a and b { }
+  static a or b { }
+  static not a { }
+
+  /* Documentation */
+  member _.f() { }
+  member _.f(a, b) { }
+  member async _.f() { }
+  member* _.f() { }
+  member _.f <- g { }
+  member _.f { }
+  member _[a] { }
+  member _[a] <- b { }
+  member a === b { }
+  member a =/= b { }
+  member a ==> b { }
+  member a >= b { }
+  member a >= b { }
+  member a >> b { }
+  member a > b { }
+  member a << b { }
+  member a < b { } 
+  member a ++ b { }
+  member a + b { }
+  member a - b { }
+  member a ** b { }
+  member a * b { }
+  member a / b { }
+  member a and b { }
+  member a or b { }
+  member not a { }  
+}
+
+
+// Classes + fields + constructor
+class A() {
+  /* Doc */
+  field x = 1;
+  field y = 2;
+  let a = b;
+  x <- y;
+}

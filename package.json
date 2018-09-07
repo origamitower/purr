@@ -4,7 +4,7 @@
   "description": "A simple compile-to-JS language for teaching and live-programming.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "keywords": [
     "programming",
@@ -15,11 +15,11 @@
   "author": "Quil",
   "license": "MIT",
   "devDependencies": {
-    "spec-md": "^0.6.0",
     "ts-node": "^4.1.0",
     "typescript": "^2.6.2"
   },
   "dependencies": {
+    "mocha": "^5.2.0",
     "ohm-js": "^0.14.0",
     "reflect-metadata": "^0.1.12"
   }

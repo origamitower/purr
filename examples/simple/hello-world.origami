@@ -1,0 +1,5 @@
+% version: 1
+
+function main(argv) {
+  console.log("Hello, world");
+}

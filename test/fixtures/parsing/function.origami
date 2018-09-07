@@ -1,0 +1,16 @@
+% version: 1
+% pass: true
+
+/**
+ * Documentation goes here
+ */
+function f() { }
+
+// Asynchronous functions
+function async f() { }
+
+// Generator functions
+function* f() { }
+
+// Multiple parameter functions
+function f(a, b, c) { }

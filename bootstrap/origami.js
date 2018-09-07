@@ -1,37 +1,49 @@
 #!/usr/bin/env node
-require("ometajs");
-const { OrigamiParser } = require("./parser.ometajs");
-const { OrigamiCompiler } = require("./compiler.ometajs");
+const { parse } = require("./parser");
+const { compileModule, generate } = require("./codegen");
+const babel = require("@babel/core");
+const { inspect } = require("util");
 const fs = require("fs");
-const ts = require('typescript');
+const path = require("path");
 
-const runtime = fs.readFileSync(__dirname + "/runtime.ts", "utf8");
-
-function parse(code) {
-  return OrigamiParser.matchAll(code, "Module");
+function read(f) {
+  return fs.readFileSync(f, "utf8");
 }
 
-function compile(ast) {
-  return runtime + "\n\n" + OrigamiCompiler.match(ast, "compile");
+function compile(program) {
+  const js = generate(parse(program)).code;
+  return `${runtime}\n${js}`;
 }
+
+function compileToNode(program) {
+  const jsAst = compileModule(parse(program));
+  const js = babel.transformFromAstSync(jsAst, null, {
+    plugins: ["@babel/plugin-transform-modules-commonjs"]
+  });
+  return `${runtime}\n${js.code}`;
+}
+
+const runtime = read(path.join(__dirname, "runtime.js"));
 
 // CLI
 require("yargs")
   .command("ast <file>", "shows the ast for <file>", {}, argv => {
-    const program = fs.readFileSync(argv.file, "utf8");
-    console.log(JSON.stringify(parse(program), null, 2));
+    const program = read(argv.file);
+    console.log(inspect(parse(program), false, null, true));
   })
-  .command("compile <file>", "compiles <file> to typescript", {}, argv => {
-    const program = fs.readFileSync(argv.file, "utf8");
-    console.log(compile(parse(program)));
+  .command("compile <file>", "compiles <file> to JavaScript", {}, argv => {
+    const program = read(argv.file);
+    console.log(compile(program));
   })
-  .command('run <file>', 'Runs the main declaration in <file>', {}, argv => {
-    const program = fs.readFileSync(argv.file, 'utf8');
-    const source = compile(parse(program));
-    const js = ts.transpileModule(source, {
-      module: ts.ModuleKind.CommonJS
-    });
-    eval(js.outputText + '; main()');
+  .command("run <file>", "runs the main() declaration in <file>", {}, argv => {
+    const params = argv.params || [];
+    require.extensions[".origami"] = (mod, file) => {
+      const program = read(file);
+      mod._compile(compileToNode(program), file);
+    };
+    const mod = require(argv.file);
+    mod.main(params);
   })
   .help()
-  .demandCommand().argv;
+  .strict()
+  .demandCommand(1).argv;

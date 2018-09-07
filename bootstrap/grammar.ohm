@@ -1,0 +1,365 @@
+Origami {
+  Program
+    = Header* Definition* end
+
+  Header
+    = "%" line
+
+  Definition
+    = Import
+    | Function
+    | Class
+
+
+  // ## Imports
+  Import
+    = import_ String as_ Name ";"                                   -- as
+    | import_ String exposing_ NonemptyListOf<Binding, ","> ";"     -- exposing
+
+  Binding
+    = Name as_ Name       -- aliased
+    | default_ as_ Name   -- default
+    | Name                -- original
+
+
+  // ## Functions
+  Function
+    = Metadata? function_ FunctionSignature Block
+
+  FunctionSignature
+    = FunctionType? Name ParamList
+
+  ParamList
+    = "(" ListOf<Name, ","> ")"
+
+  FunctionType
+    = "*"     -- generator
+    | async_  -- async
+
+
+  // ## Classes
+  Class
+    = Metadata? data_ ClassDeclaration      -- data
+    | Metadata? ClassDeclaration            -- regular
+
+  ClassDeclaration
+    = class_ Name ParamList SuperClass? "{" ClassField* Statement* ClassMember* "}"
+
+  SuperClass
+    = extends_ MemberExpression ParamList
+
+  ClassField
+    = Metadata? field_ Name "=" Expression ";"
+
+  ClassMember
+    = Metadata? static_ MemberDeclaration    -- static
+    | Metadata? member_ MemberDeclaration    -- instance
+
+  MemberDeclaration
+    = FunctionType? Name "." Name ParamList Block     -- method
+    | Name "." Name "<-" Name Block                   -- setter
+    | Name "." Name Block                             -- getter
+    | Name "[" Name "]" "<-" Name Block               -- atput
+    | Name "[" Name "]" Block                         -- at
+    | Name operator Name Block                        -- operator
+    | not_ Name Block                                 -- not
+
+  String
+    = #"\"\"\"" #raw_character* #"\"\"\""       -- raw
+    | #"\"" #string_character* #"\""            -- double
+  
+  Integer
+    = #"-" #integral_number   -- negative
+    | #"+" #integral_number   -- positive
+    | integral_number         -- unsigned
+
+  Decimal
+    = #"-" #decimal_digit+ #"." #decimal_digit+   -- negative
+    | #"+" #decimal_digit+ #"." #decimal_digit+   -- positive
+    | #decimal_digit+ #"." #decimal_digit+        -- unsigned
+  
+  Boolean
+    = true_    -- true
+    | false_   -- false
+
+  Metadata
+    = DocComment
+    
+  DocComment
+    = doc_comment
+
+  Block
+    = "{" Statement* "}"
+
+  Statement
+    = LetStatement
+    | AssertStatement
+    | LoopStatement
+    | IfStatement
+    | MatchStatement
+    | Expression ";"    -- expression
+
+  LetStatement
+    = let_ mutable_? Name "=" Expression ";"
+
+  AssertStatement
+    = assert_ Expression ";"
+
+  LoopStatement
+    = foreach_ Name of_ Expression Block                                        -- foreach
+    | repeat_ while_ Expression Block                                           -- while
+    | repeat_ until_ Expression Block                                           -- until
+    | repeat_ with_ Name from_ Expression to_ Expression Block                  -- for
+    | repeat_ with_ Name from_ Expression to_ Expression by_ Expression Block   -- for_by
+    | repeat_ Block                                                             -- repeat
+
+  IfStatement
+    = if_ Expression Block AlternateStatement?
+
+  AlternateStatement
+    = else_ IfStatement   -- elseif
+    | else_ Block         -- else
+
+  MatchStatement
+    = Match
+
+  Match
+    = match_ Expression "{" MatchCase* "}"
+
+  MatchCase
+    = case_ Pattern when_ Expression ":" Statement*   -- case_when
+    | case_ Pattern ":" Statement*                    -- case
+    | default_ ":" Statement*                         -- default
+
+  Pattern
+    = Literal                                         -- literal
+    | "[" ArrayPattern "]"                            -- array
+    | "{" ListOf<PairPattern, ","> "}"                -- object
+    | MemberExpression "(" ListOf<Pattern, ","> ")"   -- extractor
+    | Name                                            -- bind
+
+  ArrayPattern
+    = NonemptyListOf<Pattern, ","> "," "..." Pattern  -- spread1
+    | "..." Pattern                                   -- spread0
+    | ListOf<Pattern, ",">                            -- regular
+
+  PairPattern
+    = Name ":" Pattern
+    
+  
+  Expression
+    = IfExpression
+    | PipeExpression
+
+  IfExpression
+    = if_ Expression then_ Expression else_ Expression
+
+  PipeExpression
+    = PipeExpression "|>" BinaryExpression  -- pipe
+    | YieldAwait
+
+  YieldAwait
+    = await_ BinaryExpression       -- await
+    | yield_ "*" BinaryExpression   -- yield_all
+    | yield_ BinaryExpression       -- yield
+    | BinaryExpression
+
+  BinaryExpression
+    = UnaryExpression operator UnaryExpression  -- binary
+    | UnaryExpression
+    
+  UnaryExpression
+    = not_ SendExpression -- not
+    | SendExpression
+
+  SendExpression
+    = SendExpression SendContinuation   -- send
+    | AssignExpression
+
+  SendContinuation
+    = ArgList                   -- call
+    | "." Name ArgList          -- method_call
+    | Property "<-" Expression  -- assign
+    | Property                  -- property
+
+  Property
+    = "[" Expression "]"    -- at
+    | "." Name              -- get
+
+  AssignExpression
+    = MemberExpression "<-" Expression  -- assign
+    | MemberExpression
+
+  MemberExpression
+    = MemberExpression Property   -- member
+    | NewExpression
+
+  NewExpression
+    = new_ MemberExpression ArgList   -- new
+    | PrimaryExpression
+  
+  PrimaryExpression
+    = Name                  -- variable
+    | super_                -- super
+    | Literal               -- literal
+    | ArrayExpression       -- array
+    | ObjectExpression      -- object
+    | FunctionExpression    -- function
+    | "(" Expression ")"    -- group
+
+  ArrayExpression
+    = "[" ListOf<Expression, ","> "]"
+
+  ObjectExpression
+    = "{" ListOf<Pair, ","> "}"
+
+  FunctionExpression
+    = FunctionType? ParamList "=>" Block
+
+  Literal
+    = String
+    | Boolean
+    | Decimal
+    | Integer
+
+  ArgList
+    = "(" ListOf<Expression, ","> ")"
+
+  Pair
+    = Name ":" Expression
+
+  Name
+    = ~reserved id
+
+  //-- LEXICAL --------------------------------------------------------
+  newline = "\n" | "\r"
+  line = (~newline any)*
+  comment = "//" line
+  doc_comment = "/*" (~"*/" any)* "*/"
+  space += comment
+
+  id_start = letter | "_"
+  id_rest = id_start | digit
+  id = id_start id_rest*
+
+  kw<word> = word ~id_rest
+
+  operator 
+    = "===" | "=/=" | "==>"
+    | ">="  | ">>"  | ">"
+    | "<="  | "<<"  | "<"
+    | "++"  | "+"
+    | "-"
+    | "**"  | "*"
+    | "/"
+    | and_  | or_
+
+
+  octal_digit = "0" .. "7" | "_"
+  hex_digit = "0" .. "9" | "a" .. "f" | "A" .. "F" | "_"
+  bin_digit = "0" | "1" | "_"
+  decimal_digit = "0" .. "9" | "_"
+
+  integral_number 
+    = "0o" octal_digit+       -- octal
+    | "0x" hex_digit+         -- hex
+    | "0b" bin_digit+         -- binary
+    | decimal_digit+          -- decimal
+
+
+  raw_character 
+    = ~"\"\"\"" any
+
+  escape_sequence
+    = "b"                 -- backspace
+    | "f"                 -- form_feed
+    | "n"                 -- newline
+    | "r"                 -- return
+    | "t"                 -- tab
+    | "u" unicode_escape  -- unicode
+
+  string_character
+    = ~("\"" | "\\") any    -- non_escaped
+    | "\\" escape_sequence   -- escaped
+
+  unicode_escape 
+    = hex_digit hex_digit hex_digit hex_digit
+
+
+
+  import_ = kw<"import">
+  exposing_ = kw<"exposing">
+  as_ = kw<"as">
+
+  function_ = kw<"function">
+  async_ = kw<"async">
+
+  data_ = kw<"data">
+  class_ = kw<"class">
+  abstract_ = kw<"abstract">
+  extends_ = kw<"extends">
+  static_ = kw<"static">
+  member_ = kw<"member">
+  field_ = kw<"field">
+
+  let_ = kw<"let">
+  mutable_ = kw<"mutable">
+
+  assert_ = kw<"assert">
+
+  if_ = kw<"if">
+  then_ = kw<"then">
+  else_ = kw<"else">
+
+  and_ = kw<"and">
+  or_ = kw<"or">
+  not_ = kw<"not">
+  
+  await_ = kw<"await">
+  yield_ = kw<"yield">
+
+  new_ = kw<"new">
+  super_ = kw<"super">
+
+  foreach_ = kw<"foreach">
+  of_ = kw<"of">
+  repeat_ = kw<"repeat">
+  with_ = kw<"with">
+  while_ = kw<"while">
+  until_ = kw<"until">
+  from_ = kw<"from">
+  to_ = kw<"to">
+  by_ = kw<"by">
+
+  true_ = kw<"true">
+  false_ = kw<"false">
+
+  try_ = kw<"try">
+  finally_ = kw<"finally">
+  catch_ = kw<"catch">
+
+  match_ = kw<"match">
+  case_ = kw<"case">
+  when_ = kw<"when">
+  default_ = kw<"default">
+
+
+  reserved
+    = abstract_ | and_ | assert_ | async_ | as_ | await_
+    | by_
+    | case_ | catch_ | class_
+    | data_ | default_
+    | else_ | exposing_ | extends_
+    | false_ | field_ | finally_ | foreach_ | from_ | function_
+    | if_ | import_
+    | let_
+    | match_ | member_ | mutable_
+    | new_ | not_
+    | of_ | or_
+    | repeat_
+    | static_ | super_
+    | then_ | to_ | true_ | try_
+    | until_
+    | with_ | when_ | while_
+    | yield_
+}

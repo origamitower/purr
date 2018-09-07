@@ -1,0 +1,6 @@
+% version: 1
+% pass: true
+
+import "id" as name;
+import "id" exposing a;
+import "id" exposing a, b as c, d;
