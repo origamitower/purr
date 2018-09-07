@@ -241,8 +241,14 @@ function parse(source) {
       return {
         type: "Decimal",
         sign: "-",
-        integer: integer.toAST(visitor).replace(/_/g, ""),
-        decimal: decimal.toAST(visitor).replace(/_/g, "")
+        integer: integer
+          .toAST(visitor)
+          .join("")
+          .replace(/_/g, ""),
+        decimal: decimal
+          .toAST(visitor)
+          .join("")
+          .replace(/_/g, "")
       };
     },
 
@@ -250,16 +256,28 @@ function parse(source) {
       return {
         type: "Decimal",
         sign: "+",
-        integer: integer.toAST(visitor).replace(/_/g, ""),
-        decimal: decimal.toAST(visitor).replace(/_/g, "")
+        integer: integer
+          .toAST(visitor)
+          .join("")
+          .replace(/_/g, ""),
+        decimal: decimal
+          .toAST(visitor)
+          .join("")
+          .replace(/_/g, "")
       };
     },
 
     Decimal_unsigned(integer, _, decimal) {
       return {
         type: "Decimal",
-        integer: integer.toAST(visitor).replace(/_/g, ""),
-        decimal: decimal.toAST(visitor).replace(/_/g, "")
+        integer: integer
+          .toAST(visitor)
+          .join("")
+          .replace(/_/g, ""),
+        decimal: decimal
+          .toAST(visitor)
+          .join("")
+          .replace(/_/g, "")
       };
     },
 
@@ -454,7 +472,7 @@ function parse(source) {
     },
 
     SendExpression_send(base, cont) {
-      return cont.toAST(visitor)(base.toAST(visitor));
+      return cont.toAST(visitor)(base);
     },
 
     SendContinuation_call(params) {
@@ -481,7 +499,7 @@ function parse(source) {
     Property_at(_1, expr, _2) {
       return base => ({
         type: "AtExpression",
-        object: base.toAST(visitor),
+        object: base,
         key: expr.toAST(visitor)
       });
     },

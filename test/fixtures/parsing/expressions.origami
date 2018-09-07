@@ -57,6 +57,10 @@ function main() {
   0xcafe_cafe;
   0o123;
   0b1010101;
+  -1_000;
+  +1_000;
+  -1_000.000_000;
+  +1_000.000_000;
 
   "some string \n foo \u0032";
   """some raw string""";
