@@ -1,14 +1,5 @@
 % version: 1
 
-import "foo" as bar;
-import "foo" exposing x, y as z;
-
-function main(args) {
-  async (a, b) => { };
-}
-
-class Base() {}
-data class Greet(who, what) extends Base() {
-  field x = a;
-  x <- who + what;
+function main(argv) {
+  console.log("Hello, world");
 }
