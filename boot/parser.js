@@ -406,6 +406,110 @@ function parse(source) {
       };
     },
 
+    MatchStatement(match) {
+      return {
+        type: "MatchStatement",
+        match: match.toAST(visitor)
+      };
+    },
+
+    Match(_1, value, _2, cases, _3) {
+      return {
+        type: "Match",
+        value: value.toAST(visitor),
+        cases: cases.toAST(visitor)
+      };
+    },
+
+    MatchCase_case_when(_1, pattern, _2, predicate, _3, block) {
+      return {
+        type: "MatchCase",
+        tag: "When",
+        pattern: pattern.toAST(visitor),
+        predicate: predicate.toAST(visitor),
+        block: block.toAST(visitor)
+      };
+    },
+
+    MatchCase_case(_1, pattern, _2, block) {
+      return {
+        type: "MatchCase",
+        tag: "Case",
+        pattern: pattern.toAST(visitor),
+        block: block.toAST(visitor)
+      };
+    },
+
+    MatchCase_default(_1, _2, block) {
+      return {
+        type: "MatchCase",
+        tag: "Default",
+        block: block.toAST(visitor)
+      };
+    },
+
+    Pattern_literal(lit) {
+      return {
+        type: "Pattern",
+        tag: "Literal",
+        literal: lit.toAST(visitor)
+      };
+    },
+
+    Pattern_array(_1, items, _2) {
+      return {
+        type: "Pattern",
+        tag: "Array",
+        patterns: items.toAST(visitor)
+      };
+    },
+
+    Pattern_object(_1, pairs, _2) {
+      return {
+        type: "Pattern",
+        tag: "Object",
+        pairs: pairs.toAST(visitor)
+      };
+    },
+
+    Pattern_extractor(object, _1, patterns, _2) {
+      return {
+        type: "Pattern",
+        tag: "Extractor",
+        object: object.toAST(visitor),
+        patterns: patterns.toAST(visitor)
+      };
+    },
+
+    Pattern_bind(name) {
+      return {
+        type: "Pattern",
+        tag: "Bind",
+        name: name.toAST(visitor)
+      };
+    },
+
+    ArrayPattern_spread(_1, pattern) {
+      return {
+        type: "ArrayPatternSpread",
+        pattern: pattern.toAST(visitor)
+      };
+    },
+
+    ArrayPattern_element(pattern) {
+      return {
+        type: "ArrayPatternElement",
+        pattern: pattern.toAST(visitor)
+      };
+    },
+
+    PairPattern(name, _, pattern) {
+      return {
+        name: name.toAST(visitor),
+        pattern: pattern.toAST(visitor)
+      };
+    },
+
     Statement_expression(expr, _) {
       return {
         type: "ExpressionStatement",

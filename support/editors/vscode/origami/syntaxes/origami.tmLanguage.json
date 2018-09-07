@@ -4,7 +4,7 @@
   "patterns": [
     {
       "name": "keyword.control.origami",
-      "match": "(?<![a-zA-Z0-9_\\.\\^])(abstract|and|assert|async|as|await|by|catch|class|data|else|exposing|extends|finally|foreach|from|function|if|import|let|member|mutable|new|not|of|or|repeat|static|super|then|to|try|until|with|while|yield)(?![a-zA-Z0-9_])"
+      "match": "(?<![a-zA-Z0-9_\\.\\^])(abstract|and|assert|async|as|await|by|case|catch|class|data|default|else|exposing|extends|finally|foreach|from|function|if|import|let|match|member|mutable|new|not|of|or|repeat|static|super|then|to|try|until|with|when|while|yield)(?![a-zA-Z0-9_])"
     },
     {
       "name": "constant.language.origami",
