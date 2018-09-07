@@ -2,6 +2,7 @@ const ohm = require("ohm-js");
 const { toAST } = require("ohm-js/extras");
 const fs = require("fs");
 const path = require("path");
+const { mangle } = require("./utils");
 
 const grammarSource = fs.readFileSync(
   path.join(__dirname, "./grammar.ohm"),
@@ -171,6 +172,46 @@ function parse(source) {
         type: "MemberGetter",
         self: self.toAST(visitor),
         name: name.toAST(visitor),
+        params: [],
+        block: block.toAST(visitor)
+      };
+    },
+
+    MemberDeclaration_atput(self, _1, key, _2, _3, value, block) {
+      return {
+        type: "MemberMethod",
+        self: self.toAST(visitor),
+        name: mangle("[]<-"),
+        params: [key.toAST(visitor), value.toAST(visitor)],
+        block: block.toAST(visitor)
+      };
+    },
+
+    MemberDeclaration_at(self, _1, key, _2, block) {
+      return {
+        type: "MemberMethod",
+        self: self.toAST(visitor),
+        name: mangle("[]"),
+        params: [key.toAST(visitor)],
+        block: block.toAST(visitor)
+      };
+    },
+
+    MemberDeclaration_operator(self, op, arg, block) {
+      return {
+        type: "MemberMethod",
+        self: self.toAST(visitor),
+        name: mangle(op.toAST(visitor)),
+        params: [arg.toAST(visitor)],
+        block: block.toAST(visitor)
+      };
+    },
+
+    MemberDeclaration_not(_1, self, block) {
+      return {
+        type: "MemberMethod",
+        self: self.toAST(visitor),
+        name: mangle("not"),
         params: [],
         block: block.toAST(visitor)
       };

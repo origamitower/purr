@@ -9,7 +9,8 @@ function main(args) {
 
 class Base() {}
 data class Greet(who, what) extends Base() {
-  static _.hello() { who; }
-  member _.whose { who; }
-  member _.whose <- that { who; }
+  member a[b] <- c { }
+  member a[b] { }
+  member a + b { }
+  member not a { }
 }

@@ -55,6 +55,10 @@ Origami {
     = FunctionType? Name "." Name ParamList Block     -- method
     | Name "." Name "<-" Name Block                   -- setter
     | Name "." Name Block                             -- getter
+    | Name "[" Name "]" "<-" Name Block               -- atput
+    | Name "[" Name "]" Block                         -- at
+    | Name operator Name Block                        -- operator
+    | not_ Name Block                                 -- not
 
   String
     = #"\"\"\"" #raw_character* #"\"\"\""       -- raw
