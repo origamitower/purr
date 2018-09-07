@@ -365,6 +365,29 @@ function parse(source) {
       };
     },
 
+    IfStatement(_1, test, block, alternate) {
+      return {
+        type: "IfStatement",
+        test: test.toAST(visitor),
+        block: block.toAST(visitor),
+        alternate: alternate.toAST(visitor)
+      };
+    },
+
+    AlternateStatement_elseif(_1, stmt) {
+      return {
+        type: "ElseIf",
+        if: stmt.toAST(visitor)
+      };
+    },
+
+    AlternateStatement_else(_1, block) {
+      return {
+        type: "Else",
+        block: block.toAST(visitor)
+      };
+    },
+
     Statement_expression(expr, _) {
       return {
         type: "ExpressionStatement",

@@ -90,6 +90,37 @@ function fixReturns(block) {
         }
       ];
 
+    case "IfStatement": {
+      const fixAlternate = node => {
+        switch (node.type) {
+          case "ElseIf":
+            return {
+              type: "ElseIf",
+              if: fixReturns([node.if][0])
+            };
+
+          case "Else":
+            return {
+              type: "Else",
+              block: fixReturns(node.block)
+            };
+
+          default:
+            throw new Error(`Unknown node ${node.type}`);
+        }
+      };
+
+      return [
+        ...initial,
+        {
+          type: "IfStatement",
+          test: last.test,
+          block: fixReturns(last.block),
+          alternate: last.alternate ? fixAlternate(last.alternate) : null
+        }
+      ];
+    }
+
     case "LetStatement":
     case "AssertStatement":
     case "ForeachStatement":
@@ -186,6 +217,30 @@ function compile(node) {
         t.booleanLiteral(true),
         t.blockStatement(node.block.map(compile))
       );
+
+    case "IfStatement": {
+      const compileIf = node => {
+        return t.ifStatement(
+          compile(node.test),
+          t.blockStatement(node.block.map(compile)),
+          alternate ? compileAlternate(alternate) : null
+        );
+      };
+      const compileAlternate = node => {
+        switch (node.type) {
+          case "ElseIf":
+            return compileIf(node.if);
+
+          case "Else":
+            return t.blockStatement(node.block.map(compile));
+
+          default:
+            throw new Error(`Unknown node ${node.type}`);
+        }
+      };
+
+      return compileIf(node);
+    }
 
     // Note: this node doesn't exist in the grammar, it's added by the ReturnLast pass
     case "ReturnStatement":
