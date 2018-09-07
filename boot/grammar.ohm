@@ -157,14 +157,29 @@ Origami {
   PrimaryExpression
     = Name                  -- variable
     | Literal               -- literal
+    | ArrayExpression       -- array
+    | ObjectExpression      -- object
+    | FunctionExpression    -- function
     | super_                -- super
     | "(" Expression ")"    -- group
+
+  ArrayExpression
+    = "[" ListOf<Expression, ","> "]"
+
+  ObjectExpression
+    = "{" ListOf<Pair, ","> "}"
+
+  FunctionExpression
+    = FunctionType? ParamList "=>" Block
 
   Literal
     = String
     | Boolean
     | Integer
     | Decimal
+
+  Pair
+    = Name ":" Expression
 
   Name
     = ~reserved id

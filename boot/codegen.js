@@ -306,6 +306,33 @@ function compile(node) {
     case "LiteralExpression":
       return compile(node.literal);
 
+    case "ArrayExpression":
+      return t.arrayExpression(node.items.map(compile));
+
+    case "ObjectExpression":
+      return t.objectExpression(
+        node.pairs.map(({ key, expression }) => {
+          return t.objectProperty(id(key), compile(expression));
+        })
+      );
+
+    case "FunctionExpression": {
+      if (node.kind === "generator") {
+        return t.functionExpression(
+          null,
+          node.params.map(id),
+          fixReturns(node.block).map(compile),
+          true
+        );
+      } else {
+        return t.arrowFunctionExpression(
+          params.map(id),
+          fixReturns(node.block).map(compile),
+          node.kind === "async"
+        );
+      }
+    }
+
     default:
       throw new Error(`Unknown node ${node.type}`);
   }

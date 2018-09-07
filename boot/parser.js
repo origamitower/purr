@@ -526,6 +526,36 @@ function parse(source) {
       };
     },
 
+    ArrayExpression(_1, items, _2) {
+      return {
+        type: "ArrayExpression",
+        items: items.toAST(visitor)
+      };
+    },
+
+    ObjectExpression(_1, pairs, _2) {
+      return {
+        type: "ObjectExpression",
+        pairs: pairs.toAST(visitor)
+      };
+    },
+
+    FunctionExpression(kind, params, _, block) {
+      return {
+        type: "FunctionExpression",
+        kind: kind.toAST(visitor),
+        params: params.toAST(visitor),
+        block: block.toAST(visitor)
+      };
+    },
+
+    Pair(name, _, expr) {
+      return {
+        name: name.toAST(visitor),
+        expression: expr.toAST(visitor)
+      };
+    },
+
     Expression_group: 1
   };
 
