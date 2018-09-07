@@ -90,6 +90,8 @@ function main() {
 
   () => { };
   (a, b, c) => { };
+  *(a, b) => { };
+  async (a, b) => { };
 
   (a);
 }

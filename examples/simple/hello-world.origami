@@ -4,7 +4,7 @@ import "foo" as bar;
 import "foo" exposing x, y as z;
 
 function main(args) {
-  a.b()[c] <- d;
+  async (a, b) => { };
 }
 
 class Base() {}

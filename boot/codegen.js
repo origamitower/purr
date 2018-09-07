@@ -358,13 +358,13 @@ function compile(node) {
         return t.functionExpression(
           null,
           node.params.map(id),
-          fixReturns(node.block).map(compile),
+          t.blockStatement(fixReturns(node.block).map(compile)),
           true
         );
       } else {
         return t.arrowFunctionExpression(
-          params.map(id),
-          fixReturns(node.block).map(compile),
+          node.params.map(id),
+          t.blockStatement(fixReturns(node.block).map(compile)),
           node.kind === "async"
         );
       }
