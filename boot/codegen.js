@@ -397,7 +397,14 @@ function compileImport(node) {
 
 function compileClass(node) {
   const isData = node.tag === "Data";
-  const { name, params, superclass, constructor, members } = node.declaration;
+  const {
+    name,
+    params,
+    superclass,
+    fields,
+    constructor,
+    members
+  } = node.declaration;
 
   const field = x => t.memberExpression(t.thisExpression(), id(`__${x}`));
 
@@ -435,9 +442,18 @@ function compileClass(node) {
   }
 
   // We always set all properties in the class
-  const constructorPrelude = params.map(x => {
-    return t.expressionStatement(t.assignmentExpression("=", field(x), id(x)));
-  });
+  const constructorPrelude = [
+    ...params.map(x => {
+      return t.expressionStatement(
+        t.assignmentExpression("=", field(x), id(x))
+      );
+    }),
+    ...fields.map(x => {
+      return t.expressionStatement(
+        t.assignmentExpression("=", field(x.name), compile(x.value))
+      );
+    })
+  ];
 
   const superPrelude = superclass
     ? [
@@ -450,11 +466,10 @@ function compileClass(node) {
       ]
     : [];
 
-  const unpackPrelude = params.map(x => {
-    return t.variableDeclaration("const", [
-      t.variableDeclarator(id(x), field(x))
-    ]);
-  });
+  const unpackPrelude = [
+    ...params.map(x => defConst(id(x), field(x))),
+    ...fields.map(x => defConst(id(x.name), field(x.name)))
+  ];
 
   const compiledMembers = members.map(compileMember);
 

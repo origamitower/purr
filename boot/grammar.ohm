@@ -42,10 +42,13 @@ Origami {
     | Metadata? ClassDeclaration            -- regular
 
   ClassDeclaration
-    = class_ Name ParamList SuperClass? "{" Statement* ClassMember* "}"
+    = class_ Name ParamList SuperClass? "{" ClassField* Statement* ClassMember* "}"
 
   SuperClass
     = extends_ MemberExpression ParamList
+
+  ClassField
+    = Metadata? field_ Name "=" Expression ";"
 
   ClassMember
     = Metadata? static_ MemberDeclaration    -- static
@@ -293,6 +296,7 @@ Origami {
   extends_ = kw<"extends">
   static_ = kw<"static">
   member_ = kw<"member">
+  field_ = kw<"field">
 
   let_ = kw<"let">
   mutable_ = kw<"mutable">
@@ -342,7 +346,7 @@ Origami {
     | case_ | catch_ | class_
     | data_ | default_
     | else_ | exposing_ | extends_
-    | false_ | finally_ | foreach_ | from_ | function_
+    | false_ | field_ | finally_ | foreach_ | from_ | function_
     | if_ | import_
     | let_
     | match_ | member_ | mutable_

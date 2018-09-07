@@ -110,11 +110,22 @@ function parse(source) {
       };
     },
 
-    ClassDeclaration(_1, name, params, superClass, _2, ctor, members, _3) {
+    ClassDeclaration(
+      _1,
+      name,
+      params,
+      superClass,
+      _2,
+      fields,
+      ctor,
+      members,
+      _3
+    ) {
       return {
         name: name.toAST(visitor),
         params: params.toAST(visitor) || [],
         superclass: superClass.toAST(visitor),
+        fields: fields.toAST(visitor),
         constructor: ctor.toAST(visitor),
         members: members.toAST(visitor)
       };
@@ -125,6 +136,15 @@ function parse(source) {
         type: "SuperClass",
         constructor: ctor.toAST(visitor),
         params: params.toAST(visitor)
+      };
+    },
+
+    ClassField(meta, _1, name, _2, value, _3) {
+      return {
+        type: "ClassField",
+        meta: meta.toAST(visitor),
+        name: name.toAST(visitor),
+        value: value.toAST(visitor)
       };
     },
 
