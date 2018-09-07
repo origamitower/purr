@@ -159,6 +159,7 @@ Origami {
   
   PrimaryExpression
     = Name                  -- variable
+    | super_                -- super
     | Literal               -- literal
     | ArrayExpression       -- array
     | ObjectExpression      -- object
