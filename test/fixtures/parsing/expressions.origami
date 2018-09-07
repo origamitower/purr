@@ -40,6 +40,15 @@ function main() {
   a.a.a.a.a(b, c, d);
   a[a].a[a](b, c, d);
 
+  // Update
+  a.a().b <- c;
+  a.a()[b] <- c;
+
+  a.a <- b;
+  a[a] <- b;
+
+  a <- b;
+
   // Property
   a.b.c.d;
   a[b].c[d];

@@ -166,16 +166,21 @@ Origami {
 
   SendExpression
     = SendExpression SendContinuation   -- send
-    | MemberExpression
+    | AssignExpression
 
   SendContinuation
-    = ParamList             -- call
-    | "." Name ParamList    -- method_call
-    | Property              -- property
+    = ParamList                 -- call
+    | "." Name ParamList        -- method_call
+    | Property "<-" Expression  -- assign
+    | Property                  -- property
 
   Property
     = "[" Expression "]"    -- at
     | "." Name              -- get
+
+  AssignExpression
+    = MemberExpression "<-" Expression  -- assign
+    | MemberExpression
 
   MemberExpression
     = MemberExpression Property   -- member

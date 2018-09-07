@@ -612,6 +612,28 @@ function parse(source) {
       return prop.toAST(visitor);
     },
 
+    SendContinuation_assign(propNode, _, expr) {
+      return base => {
+        const prop = propNode.toAST(visitor)(base);
+        if (prop.type === "AtExpression") {
+          return {
+            type: "AtPutExpression",
+            object: base,
+            property: prop.key,
+            value: expr.toAST(visitor)
+          };
+        } else if (prop.type === "GetExpression") {
+          return {
+            type: "UpdateExpression",
+            location: prop,
+            value: expr.toAST(visitor)
+          };
+        } else {
+          throw new Error(`Unknown property type ${prop.type}`);
+        }
+      };
+    },
+
     Property_at(_1, expr, _2) {
       return base => ({
         type: "AtExpression",
@@ -626,6 +648,14 @@ function parse(source) {
         object: base,
         name: name.toAST(visitor)
       });
+    },
+
+    AssignExpression_assign(location, _, value) {
+      return {
+        type: "UpdateExpression",
+        location: location.toAST(visitor),
+        value: value.toAST(visitor)
+      };
     },
 
     MemberExpression_member(object, prop) {
