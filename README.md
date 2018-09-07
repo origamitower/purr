@@ -25,6 +25,7 @@ There are many languages that compile to JavaScript, and for most of these langu
 ## Roadmap
 
 - [ ] Foundation library (a standard library for Origami)
+- [ ] Partial application
 - [ ] Rest and named parameters
 - [ ] Array and object spread
 - [ ] Modules (lazy top-level objects)
