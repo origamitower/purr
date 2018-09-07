@@ -517,6 +517,25 @@ function compileClass(node) {
       })
     : [];
 
+  const genMethods = isData
+    ? [
+        t.classMethod(
+          "method",
+          id("unapply"),
+          [id("object")],
+          t.blockStatement([
+            t.ifStatement(
+              t.binaryExpression("instanceof", id("object"), id(name)),
+              t.blockStatement([
+                t.returnStatement(t.arrayExpression(params.map(field)))
+              ]),
+              t.blockStatement([t.returnStatement(t.nullLiteral())])
+            )
+          ])
+        )
+      ]
+    : [];
+
   return [
     t.exportNamedDeclaration(
       t.classDeclaration(
@@ -534,6 +553,7 @@ function compileClass(node) {
             ])
           ),
           ...genGetters,
+          ...genMethods,
           ...compiledMembers
         ])
       ),

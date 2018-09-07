@@ -5,13 +5,7 @@ import "foo" exposing x, y as z;
 
 function main(args) {
   match a {
-    case "hello": a;
-    case [1, 2, 3] when a: b;
-    case [1, ...b]: b;
-    case { a: 1, b: c }: c;
-    case Nothing(): e;
-    case Just(a): a;
-    default: b;
+    case Greet(who, what): who;
   }
 }
 
