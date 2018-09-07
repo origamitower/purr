@@ -119,11 +119,11 @@ function parse(source) {
       };
     },
 
-    SuperClass(_, ctor) {
+    SuperClass(_, ctor, params) {
       return {
         type: "SuperClass",
-        expression: ctor.toAST(visitor),
-        params: []
+        constructor: ctor.toAST(visitor),
+        params: params.toAST(visitor)
       };
     },
 

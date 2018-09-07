@@ -436,7 +436,7 @@ function compileClass(node) {
     t.exportNamedDeclaration(
       t.classDeclaration(
         id(name),
-        superclass ? compile(superclass.expression) : null,
+        superclass ? compile(superclass.constructor) : null,
         t.classBody([
           t.classMethod(
             "constructor",
