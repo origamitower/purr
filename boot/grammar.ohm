@@ -71,8 +71,8 @@ Origami {
     | #decimal_digit+ #"." #decimal_digit+        -- unsigned
   
   Boolean
-    = true    -- true
-    | false   -- false
+    = true_    -- true
+    | false_   -- false
 
   Metadata
     = DocComment
@@ -97,12 +97,12 @@ Origami {
     = assert_ Expression ";"
 
   LoopStatement
-    = foreach_ Name of_ Expression Block                      -- foreach
-    | repeat_ while_ Expression Block                         -- while
-    | repeat_ until_ Expression Block                         -- until
-    | repeat_ with_ Name from_ Expr to_ Expr Block            -- for
-    | repeat_ with_ Name from_ Expr to_ Expr by_ Expr Block   -- for_by
-    | repeat_ Block                                            -- repeat
+    = foreach_ Name of_ Expression Block                                        -- foreach
+    | repeat_ while_ Expression Block                                           -- while
+    | repeat_ until_ Expression Block                                           -- until
+    | repeat_ with_ Name from_ Expression to_ Expression Block                  -- for
+    | repeat_ with_ Name from_ Expression to_ Expression by_ Expression Block   -- for_by
+    | repeat_ Block                                                             -- repeat
 
   IfStatement
     = if_ Expression Block AlternateStatement?
@@ -133,7 +133,7 @@ Origami {
     | UnaryExpression
     
   UnaryExpression
-    = not_ CallExpression -- not
+    = not_ SendExpression -- not
     | SendExpression
 
   SendExpression
@@ -163,7 +163,6 @@ Origami {
     | ArrayExpression       -- array
     | ObjectExpression      -- object
     | FunctionExpression    -- function
-    | super_                -- super
     | "(" Expression ")"    -- group
 
   ArrayExpression
@@ -178,8 +177,8 @@ Origami {
   Literal
     = String
     | Boolean
-    | Integer
     | Decimal
+    | Integer
 
   Pair
     = Name ":" Expression
@@ -279,6 +278,7 @@ Origami {
   foreach_ = kw<"foreach">
   of_ = kw<"of">
   repeat_ = kw<"repeat">
+  with_ = kw<"with">
   while_ = kw<"while">
   until_ = kw<"until">
   from_ = kw<"from">
@@ -307,8 +307,8 @@ Origami {
     | of_ | or_
     | repeat_
     | static_ | super_
-    | then_ | to_ | true_ | try
+    | then_ | to_ | true_ | try_
     | until_
-    | while_
+    | with_ | while_
     | yield_
 }

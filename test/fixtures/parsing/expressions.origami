@@ -1,0 +1,91 @@
+% version: 1
+% pass: true
+
+function main() {
+  // If
+  if a then b else c;
+
+  // Pipe
+  a |> b |> c;
+
+  // Binary
+  a === b;
+  a =/= b;
+  a ==> b;
+  a >= b;
+  a >> b;
+  a > b;
+  a <= b;
+  a << b;
+  a < b;
+  a ++ b;
+  a + b;
+  a - b;
+  a ** b;
+  a * b;
+  a / b;
+  a and b;
+  a or b;
+
+  // Unary
+  not a;
+
+  // Call
+  a();
+  a(b, c, d);
+
+  // Send
+  a.a();
+  a.a(b, c, d);
+  a.a.a.a.a(b, c, d);
+  a[a].a[a](b, c, d);
+
+  // Property
+  a.b.c.d;
+  a[b].c[d];
+
+  // New
+  new a.b.c.d(a, b, c);
+  new a.b();
+
+  // Variables
+  foo;
+
+  // Values
+  1_000;
+  1_000.000_000;
+  0xcafe_cafe;
+  0o123;
+  0b1010101;
+
+  "some string \n foo \u0032";
+  """some raw string""";
+  
+  "this
+   can
+   have
+   newlines";
+
+  """this
+     too
+     can
+     have
+     newlines""";
+
+  [1, "foo", a];
+  { a: b, c: d };
+
+  () => { };
+  (a, b, c) => { };
+
+  (a);
+}
+
+function* gen() {
+  yield a;
+  yield* a;
+}
+
+function async prom() {
+  await a;
+}

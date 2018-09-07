@@ -1,0 +1,32 @@
+% version: 1
+% pass: true
+
+/* Documentation */
+class A() { }
+
+/* Documentation */
+data class A() { }
+
+// Classes with a super
+class A(b) extends B(c) { }
+
+// Classes with members + constructor
+class A() {
+  constructor;
+
+  /* Documentation */
+  static _.f() { }
+  static _.f(a, b) { }
+  static async _.f() { }
+  static* _.f() { }
+  static _.f <- g { }
+  static _.f { }
+
+  /* Documentation */
+  member _.f() { }
+  member _.f(a, b) { }
+  member async _.f() { }
+  member* _.f() { }
+  member _.f <- g { }
+  member _.f { }
+}
