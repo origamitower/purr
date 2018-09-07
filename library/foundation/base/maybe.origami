@@ -1,0 +1,27 @@
+% version: 1
+% doc:
+%   A data structure to model the presence or abscence of a value.
+
+class Maybe() {}
+data class Nothing() extends Maybe() {}
+data class Just(value) extends Maybe() {}
+
+
+function nothing() {
+  new Nothing();
+}
+
+function just(value) {
+  new Just(value);
+}
+
+function chain(maybe, fn) {
+  match maybe {
+    case Nothing(): maybe;
+    case Just(value): just(fn(value));
+  }
+}
+
+function map(maybe, fn) {
+  chain(maybe, (value) => { just(fn(value)) });
+}
