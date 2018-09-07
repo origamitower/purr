@@ -121,6 +121,26 @@ function fixReturns(block) {
       ];
     }
 
+    case "MatchStatement": {
+      const fixCase = matchCase => {
+        return Object.assign({}, matchCase, {
+          block: fixReturns(matchCase.block)
+        });
+      };
+
+      return [
+        ...initial,
+        {
+          type: "MatchStatement",
+          match: {
+            type: "Match",
+            value: last.match.value,
+            cases: last.match.cases.map(fixCase)
+          }
+        }
+      ];
+    }
+
     case "LetStatement":
     case "AssertStatement":
     case "ForeachStatement":
