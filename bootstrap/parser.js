@@ -782,7 +782,16 @@ function parse(source) {
       };
     },
 
-    FunctionExpression(kind, params, _, block) {
+    FunctionExpression_expr(kind, params, _, expr) {
+      return {
+        type: "FunctionExpression",
+        kind: kind.toAST(visitor),
+        params: params.toAST(visitor),
+        expr: expr.toAST(visitor)
+      };
+    },
+
+    FunctionExpression_block(kind, params, _, block) {
       return {
         type: "FunctionExpression",
         kind: kind.toAST(visitor),

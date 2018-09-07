@@ -214,7 +214,8 @@ Origami {
     = "{" ListOf<Pair, ","> "}"
 
   FunctionExpression
-    = FunctionType? ParamList "=>" Block
+    = FunctionType? ParamList "=>" Block        -- block
+    | FunctionType? ParamList "=>" Expression   -- expr
 
   Literal
     = String
