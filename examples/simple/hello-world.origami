@@ -8,6 +8,9 @@ function main(args) {
     case "hello": a;
     case [1, 2, 3] when a: b;
     case [1, ...b]: b;
+    case { a: 1, b: c }: c;
+    case Nothing(): e;
+    case Just(a): a;
     default: b;
   }
 }

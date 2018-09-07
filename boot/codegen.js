@@ -16,6 +16,34 @@ function isArray(a) {
   return t.callExpression(t.memberExpression(id("Array"), id("isArray")), [a]);
 }
 
+function isNull(a) {
+  return t.binaryExpression("===", a, t.nullLiteral());
+}
+
+function isNone(a) {
+  return t.binaryExpression("==", a, t.nullLiteral());
+}
+
+function isntNone(a) {
+  return t.binaryExpression("!=", a, t.nullLiteral());
+}
+
+function isntNull(a) {
+  return t.binaryExpression("!==", a, t.nullLiteral());
+}
+
+function typeOf(a) {
+  return t.unaryExpression("typeof", a, true);
+}
+
+function isObject(a) {
+  return t.logicalExpression(
+    "&&",
+    isntNull(a),
+    t.binaryExpression("===", typeOf(a), t.stringLiteral("object"))
+  );
+}
+
 function hasLength(a, op, i) {
   return t.binaryExpression(op, t.memberExpression(a, id("length")), i);
 }
@@ -30,6 +58,13 @@ function at(obj, i) {
 
 function send(obj, message, args) {
   return t.callExpression(t.memberExpression(obj, id(message)), args);
+}
+
+function $assert(expr, message) {
+  return t.ifStatement(
+    t.unaryExpression("!", expr),
+    t.throwStatement(t.callExpression(id("Error"), [t.stringLiteral(message)]))
+  );
 }
 
 function flatmap(xs, f) {
@@ -611,6 +646,49 @@ function compileMatch(match) {
           default:
             throw new Error(`Unknown array pattern ${pat.tag}`);
         }
+      }
+
+      case "Object": {
+        return e => [
+          t.ifStatement(
+            isObject(bind),
+            pattern.pairs.reduceRight((e, pair) => {
+              const newBind = id(fresh.next());
+              return t.blockStatement([
+                defConst(newBind, at(bind, t.stringLiteral(pair.name))),
+                ...compilePattern(newBind, pair.pattern)(e)
+              ]);
+            }, e)
+          )
+        ];
+      }
+
+      case "Extractor": {
+        return e => {
+          const unapplied = id(fresh.next());
+          return [
+            defConst(
+              unapplied,
+              send(compile(pattern.object), "unapply", [bind])
+            ),
+            t.ifStatement(
+              isntNone(unapplied),
+              t.blockStatement([
+                $assert(
+                  isArray(unapplied),
+                  "unapply() must return null or an array"
+                ),
+                pattern.patterns.reduceRight((e, newPattern, i) => {
+                  const newBind = id(fresh.next());
+                  return t.blockStatement([
+                    defConst(newBind, at(unapplied, t.numericLiteral(i))),
+                    ...compilePattern(newBind, newPattern)(e)
+                  ]);
+                }, e)
+              ])
+            )
+          ];
+        };
       }
 
       case "Bind":
