@@ -42,7 +42,7 @@ Origami {
     | Metadata? ClassDeclaration            -- regular
 
   ClassDeclaration
-    = class_ Name ParamList? SuperClass? "{" Statement* ClassMember* "}"
+    = class_ Name ParamList SuperClass? "{" Statement* ClassMember* "}"
 
   SuperClass
     = extends_ MemberExpression ParamList

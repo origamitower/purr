@@ -4,12 +4,16 @@ import "foo" as bar;
 import "foo" exposing x, y as z;
 
 function main(args) {
-  assert (a + b) + c;
-  "Hello, world";
+  match a {
+    case "hello": a;
+    case [1, 2, 3] when a: b;
+    case [1, ...b]: b;
+    default: b;
+  }
 }
 
-class Base {}
-data class Greet(who, what) extends Base {
+class Base() {}
+data class Greet(who, what) extends Base() {
   static _.hello() { who; }
   member _.whose { who; }
   member _.whose <- that { who; }

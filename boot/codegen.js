@@ -16,6 +16,22 @@ function isArray(a) {
   return t.callExpression(t.memberExpression(id("Array"), id("isArray")), [a]);
 }
 
+function hasLength(a, op, i) {
+  return t.binaryExpression(op, t.memberExpression(a, id("length")), i);
+}
+
+function defConst(name, value) {
+  return t.variableDeclaration("const", [t.variableDeclarator(name, value)]);
+}
+
+function at(obj, i) {
+  return t.memberExpression(obj, i, true);
+}
+
+function send(obj, message, args) {
+  return t.callExpression(t.memberExpression(obj, id(message)), args);
+}
+
 function flatmap(xs, f) {
   return xs.map(f).reduce((a, b) => a.concat(b), []);
 }
@@ -378,13 +394,13 @@ function compileImport(node) {
       return [
         t.importDeclaration(
           [t.importNamespaceSpecifier(id(node.alias))],
-          compile(node.id)
+          compileLiteral(node.id)
         )
       ];
 
     case "Exposing":
       return [
-        t.importDeclaration(node.bindings.map(compile), compile(node.id))
+        t.importDeclaration(node.bindings.map(compile), compileLiteral(node.id))
       ];
 
     default:
@@ -534,94 +550,62 @@ function compileMatch(match) {
   const compilePattern = (bind, pattern) => {
     switch (pattern.tag) {
       case "Literal":
-        return e =>
+        return e => [
           t.ifStatement(
-            t.binaryExpression("=", bind, compile(pattern.literal)),
+            t.binaryExpression("===", bind, compileLiteral(pattern.literal)),
             e
-          );
+          )
+        ];
 
       case "Array": {
         const pat = pattern.pattern;
+        const isValidArray = (a, op, i) =>
+          t.logicalExpression(
+            "&&",
+            isArray(a),
+            hasLength(a, op, t.numericLiteral(i))
+          );
+
         switch (pat.tag) {
           case "Spread": {
-            const spreadBind = fresh.next();
-            return e =>
+            const spreadBind = id(fresh.next());
+            return e => [
               t.ifStatement(
-                t.logicalExpression(
-                  "&&",
-                  isArray(bind),
-                  t.binaryExpression(
-                    "===",
-                    t.memberExpression(bind, id("length")),
-                    t.numericLiteral(pat.items.length)
-                  )
-                ),
+                isValidArray(bind, ">=", pat.items.length),
                 pat.items.reduceRight(
-                  ([bind, e], newPattern, i) => {
-                    const newBind = fresh.next();
-                    return [
-                      newBind,
-                      t.blockStatement([
-                        t.variableDeclaration("const", [
-                          t.variableDeclarator(
-                            newBind,
-                            t.memberExpression(bind, t.numericLiteral(i), true)
-                          )
-                        ]),
-                        compilePattern(newBind, newPattern)(e)
-                      ])
-                    ];
+                  (e, newPattern, i) => {
+                    const newBind = id(fresh.next());
+                    return t.blockStatement([
+                      defConst(newBind, at(bind, t.numericLiteral(i))),
+                      ...compilePattern(newBind, newPattern)(e)
+                    ]);
                   },
-                  [
-                    bind,
-                    t.blockStatement([
-                      t.variableDeclaration("const", [
-                        t.variableDeclarator(
-                          spreadBind,
-                          t.callExpression(
-                            t.memberExpression(bind, id("slice")),
-                            [t.numericLiteral(pat.items.length)]
-                          )
-                        )
-                      ]),
-                      compilePattern(spreadBind, pat.spread)(e)
-                    ])
-                  ]
+                  /**/
+                  t.blockStatement([
+                    defConst(
+                      spreadBind,
+                      send(bind, "slice", [t.numericLiteral(pat.items.length)])
+                    ),
+                    ...compilePattern(spreadBind, pat.spread)(e)
+                  ])
                 )
-              );
+              )
+            ];
           }
 
           case "Regular": {
-            return e =>
+            return e => [
               t.ifStatement(
-                t.logicalExpression(
-                  "&&",
-                  isArray(bind),
-                  t.binaryExpression(
-                    "===",
-                    t.memberExpression(bind, id("length")),
-                    t.numericLiteral(pat.items.length)
-                  )
-                ),
-                pat.items.reduceRight(
-                  ([bind, e], newPattern, i) => {
-                    const newBind = fresh.next();
-                    return [
-                      newBind,
-                      t.blockStatement([
-                        t.variableDeclaration("const", [
-                          t.variableDeclarator(
-                            newBind,
-                            t.memberExpression(bind, t.numericLiteral(i), true)
-                          )
-                        ]),
-                        compilePattern(newBind, newPattern)(e)
-                      ])
-                    ];
-                  },
-                  [bind, e]
-                )
-              );
+                isValidArray(bind, "===", pat.items.length),
+                pat.items.reduceRight((e, newPattern, i) => {
+                  const newBind = id(fresh.next());
+                  return t.blockStatement([
+                    defConst(newBind, at(bind, t.numericLiteral(i))),
+                    ...compilePattern(newBind, newPattern)(e)
+                  ]);
+                }, e)
+              )
+            ];
           }
 
           default:
@@ -630,13 +614,12 @@ function compileMatch(match) {
       }
 
       case "Bind":
-        return e =>
-          t.blockStatement([
-            t.variableDeclaration("const", [
-              t.variableDeclarator(id(pattern.name), bind)
-            ]),
-            e
-          ]);
+        return e => [
+          t.variableDeclaration("const", [
+            t.variableDeclarator(id(pattern.name), bind)
+          ]),
+          e
+        ];
 
       default:
         throw new Error(`Unknown pattern tag ${pattern.tag}`);
@@ -646,8 +629,8 @@ function compileMatch(match) {
   const compileCase = bind => matchCase => {
     switch (matchCase.tag) {
       case "When":
-        return compilePattern(bind, matchCase.pattern)(f =>
-          f(
+        return t.blockStatement(
+          compilePattern(bind, matchCase.pattern)(
             t.ifStatement(
               compile(matchCase.predicate),
               t.blockStatement(matchCase.block.map(compile))
@@ -656,8 +639,10 @@ function compileMatch(match) {
         );
 
       case "Case":
-        return compilePattern(bind, matchCase.pattern)(f =>
-          f(t.blockStatement(matchCase.block.map(compile)))
+        return t.blockStatement(
+          compilePattern(bind, matchCase.pattern)(
+            t.blockStatement(matchCase.block.map(compile))
+          )
         );
 
       case "Default":
@@ -669,10 +654,9 @@ function compileMatch(match) {
   };
 
   return [
-    t.variableDeclaration(
-      "const",
+    t.variableDeclaration("const", [
       t.variableDeclarator(bind, compile(match.value))
-    ),
+    ]),
     ...match.cases.map(compileCase(bind))
   ];
 }
