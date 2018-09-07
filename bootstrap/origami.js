@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const { parse } = require("./parser");
-const { generate } = require("./codegen");
+const { compileModule, generate } = require("./codegen");
+const babel = require("@babel/core");
 const { inspect } = require("util");
 const fs = require("fs");
 const path = require("path");
@@ -12,6 +13,14 @@ function read(f) {
 function compile(program) {
   const js = generate(parse(program)).code;
   return `${runtime}\n${js}`;
+}
+
+function compileToNode(program) {
+  const jsAst = compileModule(parse(program));
+  const js = babel.transformFromAstSync(jsAst, null, {
+    plugins: ["@babel/plugin-transform-modules-commonjs"]
+  });
+  return `${runtime}\n${js.code}`;
 }
 
 const runtime = read(path.join(__dirname, "runtime.js"));
@@ -30,7 +39,7 @@ require("yargs")
     const params = argv.params || [];
     require.extensions[".origami"] = (mod, file) => {
       const program = read(file);
-      mod._compile(compile(program), file);
+      mod._compile(compileToNode(program), file);
     };
     const mod = require(argv.file);
     mod.main(params);
