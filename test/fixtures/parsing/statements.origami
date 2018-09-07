@@ -48,3 +48,20 @@ function pattern_matching() {
     default: a;
   }
 }
+
+function let_destructuring() {
+  // Simple values
+  let 1_000 = a;
+  let true = a;
+  let "foo" = a;
+
+  // Arrays
+  let [a, b, c] = a;
+  let [a, ...b] = a;
+
+  // Objects
+  let { a: b, c: d } = a;
+
+  // Extractors
+  let Foo(a, b, c) = a;
+}

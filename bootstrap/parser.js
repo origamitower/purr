@@ -377,11 +377,20 @@ function parse(source) {
       return statements.toAST(visitor);
     },
 
-    LetStatement(_1, mutable, name, _2, expr, _3) {
+    LetStatement_bind(_1, mutable, name, _2, expr, _3) {
       return {
         type: "LetStatement",
         mutable: mutable === "mutable",
         name: name.toAST(visitor),
+        expression: expr.toAST(visitor)
+      };
+    },
+
+    LetStatement_destructure(_1, mutable, pattern, _2, expr, _3) {
+      return {
+        type: "LetDestructureStatement",
+        mutable: mutable === "mutable",
+        pattern: pattern.toAST(visitor),
         expression: expr.toAST(visitor)
       };
     },

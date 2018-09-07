@@ -100,7 +100,8 @@ Origami {
     | Expression ";"    -- expression
 
   LetStatement
-    = let_ mutable_? Name "=" Expression ";"
+    = let_ mutable_? Name "=" Expression ";"      -- bind
+    | let_ mutable_? Pattern "=" Expression ";"   -- destructure
 
   AssertStatement
     = assert_ Expression ";"

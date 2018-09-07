@@ -142,6 +142,7 @@ function fixReturns(block) {
     }
 
     case "LetStatement":
+    case "LetDestructureStatement":
     case "AssertStatement":
     case "ForeachStatement":
     case "WhileStatement":
@@ -194,6 +195,37 @@ function compile(node) {
       return t.variableDeclaration(node.mutable ? "let" : "const", [
         t.variableDeclarator(id(node.name), compile(node.expression))
       ]);
+
+    case "LetDestructureStatement": {
+      const newBind = id(fresh.next());
+      const value = id(fresh.next());
+      const names = collectNames(node.pattern);
+      const freshNames = names.map(_ => id(fresh.next()));
+      return [
+        t.variableDeclaration("let", [
+          t.variableDeclarator(newBind, id("$$UNBOUND")),
+          t.variableDeclarator(value, compile(node.expression)),
+          ...freshNames.map(x => t.variableDeclarator(x))
+        ]),
+        compilePattern(value, node.pattern)(
+          t.blockStatement([
+            t.expressionStatement(t.assignmentExpression("=", newBind, value)),
+            ...names.map((x, i) =>
+              t.expressionStatement(
+                t.assignmentExpression("=", id(x), freshNames[i])
+              )
+            )
+          ])
+        ),
+        $$assert(
+          t.binaryExpression("!==", newBind, id("$$UNBOUND")),
+          `Pattern matching failed.`
+        ),
+        t.variableDeclaration(node.mutable ? "let" : "const", [
+          ...names.map((x, i) => t.variableDeclarator(id(x), freshNames[i]))
+        ])
+      ];
+    }
 
     case "AssertStatement":
       return t.ifStatement(
@@ -569,130 +601,161 @@ function compileLiteral(node) {
   }
 }
 
-function compileMatch(match) {
-  const bind = id(fresh.next());
+function collectNames(pattern) {
+  switch (pattern.tag) {
+    case "Literal":
+      return [];
 
-  const compilePattern = (bind, pattern) => {
-    switch (pattern.tag) {
-      case "Literal":
-        return e => [
-          t.ifStatement(
-            t.binaryExpression("===", bind, compileLiteral(pattern.literal)),
-            e
-          )
-        ];
+    case "Array": {
+      const pat = pattern.pattern;
+      switch (pat.tag) {
+        case "Spread":
+          return [
+            ...flatmap(pat.items, collectNames),
+            ...collectNames(pat.spread)
+          ];
+        case "Regular":
+          return flatmap(pat.items, collectNames);
+        default:
+          throw new Error(`Unknown array pattern tag ${pat.tag}`);
+      }
+    }
 
-      case "Array": {
-        const pat = pattern.pattern;
-        const isValidArray = (a, op, i) =>
-          t.logicalExpression(
-            "&&",
-            isArray(a),
-            hasLength(a, op, t.numericLiteral(i))
-          );
+    case "Object":
+      return flatmap(pattern.pairs.map(x => x.pattern), collectNames);
 
-        switch (pat.tag) {
-          case "Spread": {
-            const spreadBind = id(fresh.next());
-            return e => [
-              t.ifStatement(
-                isValidArray(bind, ">=", pat.items.length),
-                pat.items.reduceRight(
-                  (e, newPattern, i) => {
-                    const newBind = id(fresh.next());
-                    return t.blockStatement([
-                      defConst(newBind, at(bind, t.numericLiteral(i))),
-                      ...compilePattern(newBind, newPattern)(e)
-                    ]);
-                  },
-                  /**/
-                  t.blockStatement([
-                    defConst(
-                      spreadBind,
-                      send(bind, "slice", [t.numericLiteral(pat.items.length)])
-                    ),
-                    ...compilePattern(spreadBind, pat.spread)(e)
-                  ])
-                )
-              )
-            ];
-          }
+    case "Extractor":
+      return flatmap(pattern.patterns, collectNames);
 
-          case "Regular": {
-            return e => [
-              t.ifStatement(
-                isValidArray(bind, "===", pat.items.length),
-                pat.items.reduceRight((e, newPattern, i) => {
+    case "Bind":
+      return [pattern.name];
+
+    default:
+      throw new Error(`Unknown pattern tag ${pattern.tag}`);
+  }
+}
+
+function compilePattern(bind, pattern) {
+  switch (pattern.tag) {
+    case "Literal":
+      return e => [
+        t.ifStatement(
+          t.binaryExpression("===", bind, compileLiteral(pattern.literal)),
+          e
+        )
+      ];
+
+    case "Array": {
+      const pat = pattern.pattern;
+      const isValidArray = (a, op, i) =>
+        t.logicalExpression(
+          "&&",
+          isArray(a),
+          hasLength(a, op, t.numericLiteral(i))
+        );
+
+      switch (pat.tag) {
+        case "Spread": {
+          const spreadBind = id(fresh.next());
+          return e => [
+            t.ifStatement(
+              isValidArray(bind, ">=", pat.items.length),
+              pat.items.reduceRight(
+                (e, newPattern, i) => {
                   const newBind = id(fresh.next());
                   return t.blockStatement([
                     defConst(newBind, at(bind, t.numericLiteral(i))),
                     ...compilePattern(newBind, newPattern)(e)
                   ]);
-                }, e)
+                },
+                /**/
+                t.blockStatement([
+                  defConst(
+                    spreadBind,
+                    send(bind, "slice", [t.numericLiteral(pat.items.length)])
+                  ),
+                  ...compilePattern(spreadBind, pat.spread)(e)
+                ])
               )
-            ];
-          }
-
-          default:
-            throw new Error(`Unknown array pattern ${pat.tag}`);
-        }
-      }
-
-      case "Object": {
-        return e => [
-          t.ifStatement(
-            isObject(bind),
-            pattern.pairs.reduceRight((e, pair) => {
-              const newBind = id(fresh.next());
-              return t.blockStatement([
-                defConst(newBind, at(bind, t.stringLiteral(pair.name))),
-                ...compilePattern(newBind, pair.pattern)(e)
-              ]);
-            }, e)
-          )
-        ];
-      }
-
-      case "Extractor": {
-        return e => {
-          const unapplied = id(fresh.next());
-          return [
-            defConst(
-              unapplied,
-              send(compile(pattern.object), "unapply", [bind])
-            ),
-            t.ifStatement(
-              isntNone(unapplied),
-              t.blockStatement([
-                $assert(
-                  isArray(unapplied),
-                  "unapply() must return null or an array"
-                ),
-                pattern.patterns.reduceRight((e, newPattern, i) => {
-                  const newBind = id(fresh.next());
-                  return t.blockStatement([
-                    defConst(newBind, at(unapplied, t.numericLiteral(i))),
-                    ...compilePattern(newBind, newPattern)(e)
-                  ]);
-                }, e)
-              ])
             )
           ];
-        };
+        }
+
+        case "Regular": {
+          return e => [
+            t.ifStatement(
+              isValidArray(bind, "===", pat.items.length),
+              pat.items.reduceRight((e, newPattern, i) => {
+                const newBind = id(fresh.next());
+                return t.blockStatement([
+                  defConst(newBind, at(bind, t.numericLiteral(i))),
+                  ...compilePattern(newBind, newPattern)(e)
+                ]);
+              }, e)
+            )
+          ];
+        }
+
+        default:
+          throw new Error(`Unknown array pattern ${pat.tag}`);
       }
-
-      case "Bind":
-        return e => [
-          t.variableDeclaration("const", [
-            t.variableDeclarator(id(pattern.name), bind)
-          ]),
-          e
-        ];
-
-      default:
-        throw new Error(`Unknown pattern tag ${pattern.tag}`);
     }
-  };
+
+    case "Object": {
+      return e => [
+        t.ifStatement(
+          isObject(bind),
+          pattern.pairs.reduceRight((e, pair) => {
+            const newBind = id(fresh.next());
+            return t.blockStatement([
+              defConst(newBind, at(bind, t.stringLiteral(pair.name))),
+              ...compilePattern(newBind, pair.pattern)(e)
+            ]);
+          }, e)
+        )
+      ];
+    }
+
+    case "Extractor": {
+      return e => {
+        const unapplied = id(fresh.next());
+        return [
+          defConst(unapplied, send(compile(pattern.object), "unapply", [bind])),
+          t.ifStatement(
+            isntNone(unapplied),
+            t.blockStatement([
+              $assert(
+                isArray(unapplied),
+                "unapply() must return null or an array"
+              ),
+              pattern.patterns.reduceRight((e, newPattern, i) => {
+                const newBind = id(fresh.next());
+                return t.blockStatement([
+                  defConst(newBind, at(unapplied, t.numericLiteral(i))),
+                  ...compilePattern(newBind, newPattern)(e)
+                ]);
+              }, e)
+            ])
+          )
+        ];
+      };
+    }
+
+    case "Bind":
+      return e => [
+        t.variableDeclaration("const", [
+          t.variableDeclarator(id(pattern.name), bind)
+        ]),
+        e
+      ];
+
+    default:
+      throw new Error(`Unknown pattern tag ${pattern.tag}`);
+  }
+}
+
+function compileMatch(match) {
+  const bind = id(fresh.next());
 
   const compileCase = bind => matchCase => {
     switch (matchCase.tag) {

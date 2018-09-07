@@ -1,4 +1,6 @@
 // --- Origami runtime starts here --- \\
+const $$UNBOUND = {};
+
 function $$isPrimitive(a) {
   return (
     a === null ||
