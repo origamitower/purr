@@ -4,9 +4,7 @@ import "foo" as bar;
 import "foo" exposing x, y as z;
 
 function main(args) {
-  match a {
-    case Greet(who, what): who;
-  }
+  a.b()[c] <- d;
 }
 
 class Base() {}

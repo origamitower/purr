@@ -367,6 +367,20 @@ function compile(node) {
         node.params.map(compile)
       );
 
+    case "AtPutExpression":
+      return t.callExpression(id(mangle("[]<-")), [
+        compile(node.object),
+        compile(node.key),
+        compile(node.value)
+      ]);
+
+    case "UpdateExpression":
+      return t.assignmentExpression(
+        "=",
+        compile(node.location),
+        compile(node.value)
+      );
+
     case "AtExpression":
       return t.callExpression(id(mangle("[]")), [
         compile(node.object),

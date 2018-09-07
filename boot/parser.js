@@ -588,7 +588,7 @@ function parse(source) {
     },
 
     SendExpression_send(base, cont) {
-      return cont.toAST(visitor)(base);
+      return cont.toAST(visitor)(base.toAST(visitor));
     },
 
     SendContinuation_call(params) {
@@ -619,7 +619,7 @@ function parse(source) {
           return {
             type: "AtPutExpression",
             object: base,
-            property: prop.key,
+            key: prop.key,
             value: expr.toAST(visitor)
           };
         } else if (prop.type === "GetExpression") {
@@ -650,12 +650,22 @@ function parse(source) {
       });
     },
 
-    AssignExpression_assign(location, _, value) {
-      return {
-        type: "UpdateExpression",
-        location: location.toAST(visitor),
-        value: value.toAST(visitor)
-      };
+    AssignExpression_assign(memberNode, _, value) {
+      const member = memberNode.toAST(visitor);
+      if (member.type === "AtExpression") {
+        return {
+          type: "AtPutExpression",
+          object: member.object,
+          key: member.key,
+          value: value.toAST(visitor)
+        };
+      } else {
+        return {
+          type: "UpdateExpression",
+          location: member,
+          value: value.toAST(visitor)
+        };
+      }
     },
 
     MemberExpression_member(object, prop) {
