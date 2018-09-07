@@ -217,7 +217,7 @@ function compile(node) {
             )
           ])
         ),
-        $$assert(
+        $assert(
           t.binaryExpression("!==", newBind, id("$$UNBOUND")),
           `Pattern matching failed.`
         ),
