@@ -57,7 +57,7 @@ function parse(source) {
     Binding_default(_1, _2, alias) {
       return {
         type: "DefaultBinding",
-        name: name.toAST(visitor)
+        name: alias.toAST(visitor)
       };
     },
 

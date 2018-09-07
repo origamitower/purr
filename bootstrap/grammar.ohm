@@ -17,9 +17,9 @@ Origami {
     | import_ String exposing_ NonemptyListOf<Binding, ","> ";"     -- exposing
 
   Binding
-    = Name as_ Name     -- aliased
-    | default_ as Name  -- default
-    | Name              -- original
+    = Name as_ Name       -- aliased
+    | default_ as_ Name   -- default
+    | Name                -- original
 
 
   // ## Functions
