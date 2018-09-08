@@ -214,6 +214,7 @@ Origami {
     = Name                  -- variable
     | super_                -- super
     | Literal               -- literal
+    | "?"                   -- hole
     | ArrayExpression       -- array
     | ObjectExpression      -- object
     | FunctionExpression    -- function

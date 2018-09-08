@@ -824,6 +824,12 @@ function parse(source) {
       };
     },
 
+    PrimaryExpression_hole(_) {
+      return {
+        type: "HoleExpression"
+      };
+    },
+
     ArrayExpression(_1, items, _2) {
       return {
         type: "ArrayExpression",

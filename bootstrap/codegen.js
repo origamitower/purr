@@ -62,14 +62,34 @@ function send(obj, message, args) {
   return t.callExpression(t.memberExpression(obj, id(message)), args);
 }
 
-function $compileArgs(params) {
+function $compileArgs(params, fn) {
+  let holeId = 0;
+  let holes = [];
+  const compileArg = arg => {
+    switch (arg.type) {
+      case "HoleExpression": {
+        const bind = id(`$${holeId++}`);
+        holes.push(bind);
+        return bind;
+      }
+
+      default:
+        return compile(arg);
+    }
+  };
+
   const spread =
-    params.spread == null ? [] : [t.spreadElement(compile(params.spread))];
-  return [...params.positional.map(compile), ...spread];
+    params.spread == null ? [] : [t.spreadElement(compileArg(params.spread))];
+  const expr = fn([...params.positional.map(compileArg), ...spread]);
+  if (holes.length === 0) {
+    return expr;
+  } else {
+    return t.arrowFunctionExpression(holes, expr);
+  }
 }
 
 function $call(callee, params) {
-  return t.callExpression(callee, $compileArgs(params));
+  return $compileArgs(params, e => t.callExpression(callee, e));
 }
 
 function $member(object, method) {
@@ -81,7 +101,7 @@ function $methodCall(object, method, params) {
 }
 
 function $new(object, params) {
-  return t.newExpression(object, $compileArgs(params));
+  return $compileArgs(params, e => t.newExpression(object, e));
 }
 
 function $compileParams(params) {
@@ -410,15 +430,12 @@ function compile(node) {
       return t.yieldExpression(compile(node.expression), node.generator);
 
     case "BinaryExpression":
-      return t.callExpression(id(mangle(node.operator)), [
-        compile(node.left),
-        compile(node.right)
-      ]);
+      return $call(id(mangle(node.operator)), {
+        positional: [node.left, node.right]
+      });
 
     case "UnaryExpression":
-      return t.callExpression(id(mangle(node.operator)), [
-        compile(node.argument)
-      ]);
+      return $call(id(mangle(node.operator)), { positional: [node.argument] });
 
     case "CallExpression":
       return $call(compile(node.callee), node.params);
@@ -486,6 +503,9 @@ function compile(node) {
 
     case "FunctionExpression":
       return $fnExpr(node.kind, node.params, node.block);
+
+    case "HoleExpression":
+      throw new Error(`Holes can only occurr directly in function calls.`);
 
     default:
       throw new Error(`Unknown node ${node.type}`);

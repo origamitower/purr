@@ -106,6 +106,16 @@ function main() {
   async (a, b) => a;
 
   (a);
+
+  // Holes
+  ? + a;
+  a === ?;
+  f(?);
+  f(a, ...?);
+  new f(?);
+  not ?;
+  a.b(c, ?);
+  a[b](?);
 }
 
 function* gen() {
