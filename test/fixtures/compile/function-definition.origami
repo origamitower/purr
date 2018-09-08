@@ -1,0 +1,39 @@
+% version: 1
+
+function nullary() = 1;
+function nullaryWithBlock() { 1; }
+
+function test_nullary_function_return() {
+  assert nullary() === 1;
+  assert nullaryWithBlock() === 1;
+}
+
+
+function async withPromise() { await 1; }
+function async test_async() {
+  assert (await withPromise()) === 1;
+}
+
+function* withGenerator() { yield 1; 2; }
+function test_generator() {
+  let gen = withGenerator();
+
+  let res1 = gen.next();
+  assert (res1.value === 1) and not res1.done;
+
+  let res2 = gen.next();
+  assert (res2.value === 2) and res2.done;
+}
+
+
+function inc(a) = a + 1;
+function add(a, b) = a + b;
+function addAll(...xs) = xs.reduce((a, b) => a + b, 0);
+function addAll1(a, ...xs) = xs.reduce((a, b) => a + b, a);
+
+function test_function_call() {
+  assert inc(1) === 2;
+  assert add(1, 2) === 3;
+  assert addAll(1, 2, 3, 4) === 10;
+  assert addAll1(1, 2, 3, 4) === 10;
+}
