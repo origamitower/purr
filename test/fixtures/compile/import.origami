@@ -1,0 +1,18 @@
+% version: 1
+import "./_values-js" as V;
+import "./_values-js" exposing value;
+import "./_values-js" exposing value as v;
+
+function test_import_JS() {
+  assert V.value === 1;
+  assert value === 1;
+  assert v === 1;
+}
+
+import "./_values-ori" as VO;
+import "./_values-ori" exposing f;
+
+function test_import_Origami() {
+  assert VO.f() === 1;
+  assert f() === 1;
+}
