@@ -174,6 +174,10 @@ function compileRawBlock(block) {
   return flatten(block.map(compile));
 }
 
+function blockAppend(blockStmt, stmts) {
+  return t.blockStatement([...blockStmt.body, ...stmts]);
+}
+
 function compileModule(module) {
   return t.program(
     flatmap(module.definitions, compileDefinition),
@@ -770,6 +774,12 @@ function compilePattern(bind, pattern) {
 
 function compileMatch(match) {
   const bind = id(fresh.next());
+  const matched = id(fresh.next());
+  const matchSuccess = () => {
+    return t.expressionStatement(
+      t.assignmentExpression("=", matched, t.booleanLiteral(true))
+    );
+  };
 
   const compileCase = bind => matchCase => {
     switch (matchCase.tag) {
@@ -778,18 +788,20 @@ function compileMatch(match) {
           compilePattern(bind, matchCase.pattern)(
             t.ifStatement(
               compile(matchCase.predicate),
-              compileBlock(matchCase.block)
+              blockAppend(compileBlock(matchCase.block), [matchSuccess()])
             )
           )
         );
 
       case "Case":
         return t.blockStatement(
-          compilePattern(bind, matchCase.pattern)(compileBlock(matchCase.block))
+          compilePattern(bind, matchCase.pattern)(
+            blockAppend(compileBlock(matchCase.block), [matchSuccess()])
+          )
         );
 
       case "Default":
-        return compileBlock(matchCase.block);
+        return blockAppend(compileBlock(matchCase.block), [matchSuccess()]);
 
       default:
         throw new Error(`Unknown match case tag ${matchCase.tag}`);
@@ -800,7 +812,11 @@ function compileMatch(match) {
     t.variableDeclaration("const", [
       t.variableDeclarator(bind, compile(match.value))
     ]),
-    ...match.cases.map(compileCase(bind))
+    t.variableDeclaration("let", [
+      t.variableDeclarator(matched, t.booleanLiteral(false))
+    ]),
+    ...match.cases.map(compileCase(bind)),
+    $assert(matched, `Pattern matching failed`)
   ];
 }
 
