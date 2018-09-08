@@ -386,10 +386,9 @@ function parse(source) {
       };
     },
 
-    LetStatement_destructure(_1, mutable, pattern, _2, expr, _3) {
+    LetStatement_destructure(_1, pattern, _2, expr, _3) {
       return {
         type: "LetDestructureStatement",
-        mutable: mutable === "mutable",
         pattern: pattern.toAST(visitor),
         expression: expr.toAST(visitor)
       };

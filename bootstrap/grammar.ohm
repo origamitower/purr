@@ -101,7 +101,7 @@ Origami {
 
   LetStatement
     = let_ mutable_? Name "=" Expression ";"      -- bind
-    | let_ mutable_? Pattern "=" Expression ";"   -- destructure
+    | let_ Pattern "=" Expression ";"             -- destructure
 
   AssertStatement
     = assert_ Expression ";"

@@ -221,25 +221,24 @@ function compile(node) {
       const freshNames = names.map(_ => id(fresh.next()));
       return [
         t.variableDeclaration("let", [
-          t.variableDeclarator(newBind, id("$$UNBOUND")),
+          t.variableDeclarator(newBind, t.booleanLiteral(false)),
           t.variableDeclarator(value, compile(node.expression)),
           ...freshNames.map(x => t.variableDeclarator(x))
         ]),
         compilePattern(value, node.pattern)(
           t.blockStatement([
-            t.expressionStatement(t.assignmentExpression("=", newBind, value)),
+            t.expressionStatement(
+              t.assignmentExpression("=", newBind, t.booleanLiteral(true))
+            ),
             ...names.map((x, i) =>
               t.expressionStatement(
-                t.assignmentExpression("=", id(x), freshNames[i])
+                t.assignmentExpression("=", freshNames[i], id(x))
               )
             )
           ])
         ),
-        $assert(
-          t.binaryExpression("!==", newBind, id("$$UNBOUND")),
-          `Pattern matching failed.`
-        ),
-        t.variableDeclaration(node.mutable ? "let" : "const", [
+        $assert(newBind, `Pattern matching failed.`),
+        t.variableDeclaration("const", [
           ...names.map((x, i) => t.variableDeclarator(id(x), freshNames[i]))
         ])
       ];
