@@ -7,6 +7,15 @@ const $$GLOBAL =
       ? window
       : this;
 
+function $$isIterable(a) {
+  return a != null && typeof a[Symbol.iterator] === "function";
+}
+
+function $$assertIterable(a) {
+  $$assert($$isIterable(a), `${a} is not an iterable.`);
+  return a;
+}
+
 function $$isPrimitive(a) {
   return (
     a === null ||

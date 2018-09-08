@@ -62,6 +62,10 @@ function send(obj, message, args) {
   return t.callExpression(t.memberExpression(obj, id(message)), args);
 }
 
+function $rt(name, args) {
+  return t.callExpression(id(name), args);
+}
+
 function $compileArgs(params, fn) {
   let holeId = 0;
   let holes = [];
@@ -79,7 +83,9 @@ function $compileArgs(params, fn) {
   };
 
   const spread =
-    params.spread == null ? [] : [t.spreadElement(compileArg(params.spread))];
+    params.spread == null
+      ? []
+      : [t.spreadElement($rt("$$assertIterable", [compileArg(params.spread)]))];
   const expr = fn([...params.positional.map(compileArg), ...spread]);
   if (holes.length === 0) {
     return expr;
@@ -482,7 +488,9 @@ function compile(node) {
       const compileItem = item => {
         switch (item.type) {
           case "Spread":
-            return t.spreadElement(compile(item.expression));
+            return t.spreadElement(
+              $rt("$$assertIterable", [compile(item.expression)])
+            );
 
           case "Item":
             return compile(item.expression);
