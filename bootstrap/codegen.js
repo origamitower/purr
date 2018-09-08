@@ -312,7 +312,7 @@ function compile(node) {
     }
 
     case "MatchStatement":
-      return compileBlock(node.block);
+      return t.blockStatement(compileMatch(node.match));
 
     // Note: this node doesn't exist in the grammar, it's added by the ReturnLast pass
     case "ReturnStatement":
