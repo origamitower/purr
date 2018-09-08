@@ -823,6 +823,20 @@ function parse(source) {
       };
     },
 
+    ArrayItem_spread(_, expr) {
+      return {
+        type: "Spread",
+        expression: expr.toAST(visitor)
+      };
+    },
+
+    ArrayItem_item(expr) {
+      return {
+        type: "Item",
+        expression: expr.toAST(visitor)
+      };
+    },
+
     ObjectExpression(_1, pairs, _2) {
       return {
         type: "ObjectExpression",

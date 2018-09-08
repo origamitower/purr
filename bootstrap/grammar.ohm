@@ -216,7 +216,11 @@ Origami {
     | "(" Expression ")"    -- group
 
   ArrayExpression
-    = "[" ListOf<Expression, ","> "]"
+    = "[" ListOf<ArrayItem, ","> "]"
+
+  ArrayItem
+    = "..." Expression    -- spread
+    | Expression          -- item
 
   ObjectExpression
     = "{" ListOf<Pair, ","> "}"

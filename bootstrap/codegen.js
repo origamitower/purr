@@ -461,8 +461,21 @@ function compile(node) {
     case "LiteralExpression":
       return compileLiteral(node.literal);
 
-    case "ArrayExpression":
-      return t.arrayExpression(node.items.map(compile));
+    case "ArrayExpression": {
+      const compileItem = item => {
+        switch (item.type) {
+          case "Spread":
+            return t.spreadElement(compile(item.expression));
+
+          case "Item":
+            return compile(item.expression);
+
+          default:
+            throw new Error(`Invalid array item type ${item.type}`);
+        }
+      };
+      return t.arrayExpression(node.items.map(compileItem));
+    }
 
     case "ObjectExpression":
       return t.objectExpression(

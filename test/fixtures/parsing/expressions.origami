@@ -86,6 +86,7 @@ function main() {
      newlines""";
 
   [1, "foo", a];
+  [a, ...b];
   { a: b, c: d };
 
   () => { };
