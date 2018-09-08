@@ -25,12 +25,14 @@ There are many languages that compile to JavaScript, and for most of these langu
 ## Roadmap
 
 - [ ] Foundation library (a standard library for Origami)
-- [ ] Partial application
-- [ ] Rest and named parameters
-- [ ] Array and object spread
+- [x] Partial application
+- [x] Rest parameters
+- [ ] Named parameters
+- [x] Array spread
+- [ ] Object spread
 - [ ] Modules (lazy top-level objects)
-- [ ] Class expressions
-- [ ] Destructuring (simplified pattern-matching)
+- [x] Class expressions
+- [x] Destructuring (simplified pattern-matching)
 - [ ] Decorators (compile-time macros)
 - [ ] Pluggable literals (compile-time macros)
 - [ ] Inline DSLs (compile-time)
