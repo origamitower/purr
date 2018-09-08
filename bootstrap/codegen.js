@@ -101,7 +101,7 @@ function $fnExpr(kind, params, block) {
   if (kind === "generator") {
     return t.functionExpression(null, fnParams, fnBlock, true);
   } else {
-    return t.arrowFunctionExpression(fnParams, fnBlock, node.kind === "async");
+    return t.arrowFunctionExpression(fnParams, fnBlock, kind === "async");
   }
 }
 

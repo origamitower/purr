@@ -857,7 +857,9 @@ function parse(source) {
         type: "FunctionExpression",
         kind: kind.toAST(visitor),
         params: params.toAST(visitor),
-        expr: expr.toAST(visitor)
+        block: [
+          { type: "ExpressionStatement", expression: expr.toAST(visitor) }
+        ]
       };
     },
 
