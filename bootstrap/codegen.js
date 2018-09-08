@@ -3,6 +3,7 @@ const generateJs = require("@babel/generator").default;
 const template = require("@babel/template").default;
 const t = require("@babel/types");
 const { mangle } = require("./utils");
+const coreModules = require("./core-modules");
 
 const id = x => t.identifier(x);
 
@@ -442,6 +443,26 @@ function compileImport(node) {
       return [
         t.importDeclaration(node.bindings.map(compile), compileLiteral(node.id))
       ];
+
+    case "Core": {
+      const mod = coreModules[node.id];
+      if (!mod) {
+        throw new Error(`Invalid core module ${node.id}`);
+      }
+      for (const { name } of node.bindings) {
+        if (!mod.has(name)) {
+          throw new Error(`No binding ${name} in core module ${node.id}`);
+        }
+      }
+      return node.bindings.filter(x => x.alias).map(x => {
+        return t.variableDeclaration("const", [
+          t.variableDeclarator(
+            id(x.alias),
+            t.memberExpression(id("$$GLOBAL"), id(x.name))
+          )
+        ]);
+      });
+    }
 
     default:
       throw new Error(`Unknown import type ${node.tag}`);

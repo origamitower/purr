@@ -46,6 +46,15 @@ function parse(source) {
       };
     },
 
+    Import_core(_1, id, _2, bindings, _3) {
+      return {
+        type: "Import",
+        tag: "Core",
+        id: id.toAST(visitor),
+        bindings: bindings.toAST(visitor)
+      };
+    },
+
     Binding_aliased(name, _, alias) {
       return {
         type: "Binding",

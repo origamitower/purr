@@ -15,6 +15,7 @@ Origami {
   Import
     = import_ String as_ Name ";"                                   -- as
     | import_ String exposing_ NonemptyListOf<Binding, ","> ";"     -- exposing
+    | import_ Name exposing_ NonemptyListOf<Binding, ","> ";"       -- core
 
   Binding
     = Name as_ Name       -- aliased

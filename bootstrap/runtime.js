@@ -1,5 +1,11 @@
 // --- Origami runtime starts here --- \\
 const $$UNBOUND = {};
+const $$GLOBAL =
+  typeof global !== "undefined"
+    ? global
+    : typeof window !== "undefined"
+      ? window
+      : this;
 
 function $$isPrimitive(a) {
   return (
