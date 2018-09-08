@@ -297,7 +297,7 @@ function compile(node) {
         return t.ifStatement(
           compile(node.test),
           compileBlock(node.block),
-          alternate ? compileAlternate(alternate) : null
+          node.alternate ? compileAlternate(node.alternate) : null
         );
       };
       const compileAlternate = node => {
@@ -390,6 +390,9 @@ function compile(node) {
 
     case "SuperExpression":
       return id("super");
+
+    case "NullExpression":
+      return t.nullLiteral();
 
     case "VariableExpression":
       return t.identifier(node.name);
