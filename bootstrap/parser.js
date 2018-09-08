@@ -133,25 +133,16 @@ function parse(source) {
       return "async";
     },
 
-    Class_data(meta, _, declarations) {
+    Class(meta, declarations) {
       return {
         type: "Class",
-        tag: "Data",
-        meta: meta.toAST(visitor),
-        declaration: declarations.toAST(visitor)
-      };
-    },
-
-    Class_regular(meta, declarations) {
-      return {
-        type: "Class",
-        tag: "Regular",
         meta: meta.toAST(visitor),
         declaration: declarations.toAST(visitor)
       };
     },
 
     ClassDeclaration(
+      type,
       _1,
       name,
       params,
@@ -163,6 +154,7 @@ function parse(source) {
       _3
     ) {
       return {
+        type: type.toAST(visitor) || "regular",
         name: name.toAST(visitor),
         params: params.toAST(visitor) || [],
         superclass: superClass.toAST(visitor),
@@ -223,7 +215,7 @@ function parse(source) {
         type: "MemberSetter",
         self: self.toAST(visitor),
         name: name.toAST(visitor),
-        params: [param.toAST(visitor)],
+        params: { positional: [param.toAST(visitor)], spread: null },
         block: block.toAST(visitor)
       };
     },
@@ -233,7 +225,7 @@ function parse(source) {
         type: "MemberGetter",
         self: self.toAST(visitor),
         name: name.toAST(visitor),
-        params: [],
+        params: { positional: [], spread: null },
         block: block.toAST(visitor)
       };
     },
@@ -243,7 +235,10 @@ function parse(source) {
         type: "MemberMethod",
         self: self.toAST(visitor),
         name: mangle("[]<-"),
-        params: [key.toAST(visitor), value.toAST(visitor)],
+        params: {
+          positional: [key.toAST(visitor), value.toAST(visitor)],
+          spread: null
+        },
         block: block.toAST(visitor)
       };
     },
@@ -253,7 +248,7 @@ function parse(source) {
         type: "MemberMethod",
         self: self.toAST(visitor),
         name: mangle("[]"),
-        params: [key.toAST(visitor)],
+        params: { positional: [key.toAST(visitor)], spread: null },
         block: block.toAST(visitor)
       };
     },
@@ -263,7 +258,7 @@ function parse(source) {
         type: "MemberMethod",
         self: self.toAST(visitor),
         name: mangle(op.toAST(visitor)),
-        params: [arg.toAST(visitor)],
+        params: { positional: [arg.toAST(visitor)], spread: null },
         block: block.toAST(visitor)
       };
     },
@@ -273,7 +268,7 @@ function parse(source) {
         type: "MemberMethod",
         self: self.toAST(visitor),
         name: mangle("not"),
-        params: [],
+        params: { positional: [], spread: null },
         block: block.toAST(visitor)
       };
     },
@@ -801,6 +796,13 @@ function parse(source) {
     PrimaryExpression_super(_) {
       return {
         type: "SuperExpression"
+      };
+    },
+
+    PrimaryExpression_class(klass) {
+      return {
+        type: "ClassExpression",
+        class: klass.toAST(visitor)
       };
     },
 

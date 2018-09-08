@@ -126,3 +126,65 @@ function* gen() {
 function async prom() {
   await a;
 }
+
+function class_expression() {
+  let c = class A() {
+    constructor;
+
+    /* Documentation */
+    static _.f() { }
+    static _.f(a, b) { }
+    static async _.f() { }
+    static* _.f() { }
+    static _.f <- g { }
+    static _.f { }
+    static _[a] { }
+    static _[a] <- b { }
+    static a === b { }
+    static a =/= b { }
+    static a ==> b { }
+    static a >= b { }
+    static a >= b { }
+    static a >> b { }
+    static a > b { }
+    static a << b { }
+    static a < b { } 
+    static a ++ b { }
+    static a + b { }
+    static a - b { }
+    static a ** b { }
+    static a * b { }
+    static a / b { }
+    static a and b { }
+    static a or b { }
+    static not a { }
+
+    /* Documentation */
+    member _.f() { }
+    member _.f(a, b) { }
+    member async _.f() { }
+    member* _.f() { }
+    member _.f <- g { }
+    member _.f { }
+    member _[a] { }
+    member _[a] <- b { }
+    member a === b { }
+    member a =/= b { }
+    member a ==> b { }
+    member a >= b { }
+    member a >= b { }
+    member a >> b { }
+    member a > b { }
+    member a << b { }
+    member a < b { } 
+    member a ++ b { }
+    member a + b { }
+    member a - b { }
+    member a ** b { }
+    member a * b { }
+    member a / b { }
+    member a and b { }
+    member a or b { }
+    member not a { }  
+  };
+}

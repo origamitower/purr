@@ -1,6 +1,5 @@
 const { inspect } = require("util");
 const generateJs = require("@babel/generator").default;
-const template = require("@babel/template").default;
 const t = require("@babel/types");
 const { mangle, fresh } = require("./utils");
 const coreModules = require("./core-modules");
@@ -180,8 +179,8 @@ function $classMethod(
     name === "constructor"
       ? `new ${className}`
       : static
-        ? `${className}.${name}`
-        : `${className}.prototype.${name}`;
+        ? `${className}.${name.name}`
+        : `${className}.prototype.${name.name}`;
 
   return {
     type: "ClassMethod",
@@ -335,10 +334,10 @@ function compileDefinition(node) {
       return compileImport(node);
 
     case "Function":
-      return compileFunction(node);
+      return [t.exportNamedDeclaration(compileFunction(node), [])];
 
     case "Class":
-      return compileClass(node);
+      return [t.exportNamedDeclaration(compileClass(node), [])];
 
     default:
       throw new Error(`Unknown node ${node.type}`);
@@ -558,6 +557,11 @@ function compile(node) {
     case "FunctionExpression":
       return $fnExpr(node.kind, node.params, node.block);
 
+    case "ClassExpression": {
+      const decl = compileClass(node.class);
+      return t.classExpression(decl.id, decl.superClass, decl.body);
+    }
+
     case "HoleExpression":
       throw new Error(`Holes can only occurr directly in function calls.`);
 
@@ -607,8 +611,8 @@ function compileImport(node) {
 }
 
 function compileClass(node) {
-  const isData = node.tag === "Data";
   const {
+    type: classType,
     name,
     params,
     superclass,
@@ -617,14 +621,16 @@ function compileClass(node) {
     members
   } = node.declaration;
   const paramNames = $paramNames(params);
+  const isData = classType === "data";
+  const className = name;
 
   const field = x => t.memberExpression(t.thisExpression(), id(`__${x}`));
 
   function compileMember(member) {
-    const className = name;
     const { type, self, name, block } = member.definition;
     const methodParams = member.definition.params;
     const functionKind = member.definition.kind;
+    console.log("==>", name, functionKind, methodParams);
     const methodKind =
       type === "MemberMethod"
         ? "method"
@@ -707,38 +713,31 @@ function compileClass(node) {
       ]
     : [];
 
-  return [
-    t.exportNamedDeclaration(
-      t.classDeclaration(
-        id(name),
-        superclass ? compile(superclass.constructor) : null,
-        t.classBody([
-          $classMethod(name, {
-            static: false,
-            methodType: "constructor",
-            name: id("constructor"),
-            params: params,
-            body: t.blockStatement([
-              ...superPrelude,
-              ...constructorPrelude,
-              ...constructor.map(compile)
-            ])
-          }),
-          ...genGetters,
-          ...genMethods,
-          ...compiledMembers
+  return t.classDeclaration(
+    id(name),
+    superclass ? compile(superclass.constructor) : null,
+    t.classBody([
+      $classMethod(name, {
+        static: false,
+        methodType: "constructor",
+        name: id("constructor"),
+        params: params,
+        body: t.blockStatement([
+          ...superPrelude,
+          ...constructorPrelude,
+          ...constructor.map(compile)
         ])
-      ),
-      []
-    )
-  ];
+      }),
+      ...genGetters,
+      ...genMethods,
+      ...compiledMembers
+    ])
+  );
 }
 
 function compileFunction(node) {
   const { name, params, kind } = node.signature;
-  return [
-    t.exportNamedDeclaration($fnDecl(name, kind, params, node.block), [])
-  ];
+  return $fnDecl(name, kind, params, node.block);
 }
 
 function compileLiteral(node) {

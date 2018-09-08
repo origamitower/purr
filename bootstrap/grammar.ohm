@@ -46,11 +46,10 @@ Origami {
 
   // ## Classes
   Class
-    = Metadata? data_ ClassDeclaration      -- data
-    | Metadata? ClassDeclaration            -- regular
+    = Metadata? ClassDeclaration
 
   ClassDeclaration
-    = class_ Name ParamList SuperClass? "{" ClassField* Statement* ClassMember* "}"
+    = data_? class_ Name ParamList SuperClass? "{" ClassField* Statement* ClassMember* "}"
 
   SuperClass
     = extends_ MemberExpression ArgList
@@ -218,6 +217,7 @@ Origami {
     | ArrayExpression       -- array
     | ObjectExpression      -- object
     | FunctionExpression    -- function
+    | Class                 -- class
     | "(" Expression ")"    -- group
 
   ArrayExpression
