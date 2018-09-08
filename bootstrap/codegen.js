@@ -630,7 +630,6 @@ function compileClass(node) {
     const { type, self, name, block } = member.definition;
     const methodParams = member.definition.params;
     const functionKind = member.definition.kind;
-    console.log("==>", name, functionKind, methodParams);
     const methodKind =
       type === "MemberMethod"
         ? "method"

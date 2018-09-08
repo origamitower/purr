@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { parse, generate } = require("../bootstrap/parser");
+const { parse, compile } = require("../bootstrap");
 
 const root = path.join(__dirname, "fixtures/parsing");
 const files = fs.readdirSync(root).map(name => ({
@@ -15,7 +15,7 @@ describe("Compiler pipeline validation", () => {
     });
 
     it(`Compiling ${file.name}`, () => {
-      generate(parse(file.contents));
+      compile(file.contents);
     });
   }
 });
