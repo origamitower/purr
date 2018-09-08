@@ -17,3 +17,7 @@ function f(a, b, c) { }
 
 // Short syntax
 function f() = a;
+
+// Spread
+function f(a, ...b) {}
+function f(...b) {}

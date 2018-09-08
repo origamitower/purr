@@ -80,3 +80,13 @@ class A() {
   let a = b;
   x <- y;
 }
+
+// Spread
+class A(a, ...b) extends B(a, ...b) {}
+class A(...b) extends B(...b) {}
+class A() {
+  member _.f(...a) = a;
+  member _.f(a, ...b) = a;
+  static _.f(...a) = a;
+  static _.f(a, ...b) = a;
+}

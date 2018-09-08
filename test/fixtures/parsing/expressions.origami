@@ -33,12 +33,16 @@ function main() {
   // Call
   a();
   a(b, c, d);
+  a(a, ...b);
+  a(...b);
 
   // Send
   a.a();
   a.a(b, c, d);
   a.a.a.a.a(b, c, d);
   a[a].a[a](b, c, d);
+  a.a(a, ...b);
+  a.a(...b);
 
   // Update
   a.a().b <- c;
@@ -56,6 +60,8 @@ function main() {
   // New
   new a.b.c.d(a, b, c);
   new a.b();
+  new a(a, ...b);
+  new a(...b);
 
   // Variables
   foo;
