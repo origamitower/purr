@@ -156,6 +156,24 @@ function fixReturns(block) {
   }
 }
 
+function flatten(xss) {
+  return xss.reduce((a, b) => {
+    if (Array.isArray(b)) {
+      return a.concat(flatten(b));
+    } else {
+      return a.concat([b]);
+    }
+  }, []);
+}
+
+function compileBlock(block) {
+  return t.blockStatement(compileRawBlock(block));
+}
+
+function compileRawBlock(block) {
+  return flatten(block.map(compile));
+}
+
 function compileModule(module) {
   return t.program(
     flatmap(module.definitions, compileDefinition),
@@ -243,19 +261,19 @@ function compile(node) {
       return t.forOfStatement(
         id(node.name),
         compile(node.iterator),
-        t.blockStatement(node.block.map(compile))
+        compileBlock(node.block)
       );
 
     case "WhileStatement":
       return t.whileStatement(
         compile(node.predicate),
-        t.blockStatement(node.block.map(compile))
+        compileBlock(node.block)
       );
 
     case "UntilStatement":
       return t.doWhileStatement(
         compile(node.predicate),
-        t.blockStatement(node.block.map(compile))
+        compileBlock(node.block)
       );
 
     case "ForStatement":
@@ -268,16 +286,13 @@ function compile(node) {
       );
 
     case "RepeatStatement":
-      return t.whileStatement(
-        t.booleanLiteral(true),
-        t.blockStatement(node.block.map(compile))
-      );
+      return t.whileStatement(t.booleanLiteral(true), compileBlock(node.block));
 
     case "IfStatement": {
       const compileIf = node => {
         return t.ifStatement(
           compile(node.test),
-          t.blockStatement(node.block.map(compile)),
+          compileBlock(node.block),
           alternate ? compileAlternate(alternate) : null
         );
       };
@@ -287,7 +302,7 @@ function compile(node) {
             return compileIf(node.if);
 
           case "Else":
-            return t.blockStatement(node.block.map(compile));
+            return compileBlock(node.block);
 
           default:
             throw new Error(`Unknown node ${node.type}`);
@@ -298,7 +313,7 @@ function compile(node) {
     }
 
     case "MatchStatement":
-      return t.blockStatement(compileMatch(node.match));
+      return compileBlock(node.block);
 
     // Note: this node doesn't exist in the grammar, it's added by the ReturnLast pass
     case "ReturnStatement":
@@ -393,13 +408,13 @@ function compile(node) {
         return t.functionExpression(
           null,
           node.params.map(id),
-          t.blockStatement(fixReturns(node.block).map(compile)),
+          compileBlock(fixReturns(node.block)),
           true
         );
       } else {
         return t.arrowFunctionExpression(
           node.params.map(id),
-          t.blockStatement(fixReturns(node.block).map(compile)),
+          compileBlock(fixReturns(node.block)),
           node.kind === "async"
         );
       }
@@ -471,7 +486,7 @@ function compileClass(node) {
         t.variableDeclaration("const", [
           t.variableDeclarator(id(self), t.thisExpression())
         ]),
-        ...realBlock.map(compile)
+        ...compileRawBlock(realBlock)
       ])
     };
   }
@@ -571,7 +586,7 @@ function compileFunction(node) {
       t.functionDeclaration(
         id(name),
         params.map(x => id(x)),
-        t.blockStatement(fixReturns(node.block).map(compile)),
+        compileBlock(fixReturns(node.block)),
         kind === "generator",
         kind === "async"
       ),
@@ -764,20 +779,18 @@ function compileMatch(match) {
           compilePattern(bind, matchCase.pattern)(
             t.ifStatement(
               compile(matchCase.predicate),
-              t.blockStatement(matchCase.block.map(compile))
+              compileBlock(matchCase.block)
             )
           )
         );
 
       case "Case":
         return t.blockStatement(
-          compilePattern(bind, matchCase.pattern)(
-            t.blockStatement(matchCase.block.map(compile))
-          )
+          compilePattern(bind, matchCase.pattern)(compileBlock(matchCase.block))
         );
 
       case "Default":
-        return t.blockStatement(matchCase.block.map(compile));
+        return compileBlock(matchCase.block);
 
       default:
         throw new Error(`Unknown match case tag ${matchCase.tag}`);
