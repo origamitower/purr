@@ -779,9 +779,9 @@ function parse(source) {
       };
     },
 
-    PrimaryExpression_null(_) {
+    Literal_null(_) {
       return {
-        type: "NullExpression"
+        type: "Null"
       };
     },
 

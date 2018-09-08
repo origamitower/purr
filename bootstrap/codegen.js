@@ -391,9 +391,6 @@ function compile(node) {
     case "SuperExpression":
       return id("super");
 
-    case "NullExpression":
-      return t.nullLiteral();
-
     case "VariableExpression":
       return t.identifier(node.name);
 
@@ -637,6 +634,9 @@ function compileLiteral(node) {
 
     case "Boolean":
       return t.booleanLiteral(node.value);
+
+    case "Null":
+      return t.nullLiteral();
 
     default:
       throw new Error(`Unknown node type ${node.type}`);

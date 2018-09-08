@@ -207,7 +207,6 @@ Origami {
   PrimaryExpression
     = Name                  -- variable
     | super_                -- super
-    | null_                 -- null
     | Literal               -- literal
     | ArrayExpression       -- array
     | ObjectExpression      -- object
@@ -229,6 +228,7 @@ Origami {
     | Boolean
     | Decimal
     | Integer
+    | null_                 -- null
 
   ArgList
     = "(" ListOf<Expression, ","> ")"
