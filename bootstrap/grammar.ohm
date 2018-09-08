@@ -87,7 +87,7 @@ Origami {
   Decimal
     = #"-" #decimal_digit+ #"." #decimal_digit+   -- negative
     | #"+" #decimal_digit+ #"." #decimal_digit+   -- positive
-    | #decimal_digit+ #"." #decimal_digit+        -- unsigned
+    | ~ "_" #decimal_digit+ #"." #decimal_digit+  -- unsigned
   
   Boolean
     = true_    -- true
@@ -211,7 +211,7 @@ Origami {
     | PrimaryExpression
   
   PrimaryExpression
-    = Name                  -- variable
+    = ~reserved_var Name    -- variable
     | super_                -- super
     | Literal               -- literal
     | "?"                   -- hole
@@ -264,6 +264,7 @@ Origami {
   id = id_start id_rest*
 
   kw<word> = word ~id_rest
+  reserved_var = "_" ~id_rest
 
   operator 
     = "===" | "=/=" | "==>"
@@ -277,7 +278,8 @@ Origami {
 
 
   octal_digit = "0" .. "7" | "_"
-  hex_digit = "0" .. "9" | "a" .. "f" | "A" .. "F" | "_"
+  hex_digit = raw_hex_digit | "_"
+  raw_hex_digit = "0" .. "9" | "a" .. "f" | "A" .. "F"
   bin_digit = "0" | "1" | "_"
   decimal_digit = "0" .. "9" | "_"
 
@@ -285,7 +287,7 @@ Origami {
     = "0o" octal_digit+       -- octal
     | "0x" hex_digit+         -- hex
     | "0b" bin_digit+         -- binary
-    | decimal_digit+          -- decimal
+    | ~"_" decimal_digit+     -- decimal
 
 
   raw_character 
@@ -304,7 +306,7 @@ Origami {
     | "\\" escape_sequence   -- escaped
 
   unicode_escape 
-    = hex_digit hex_digit hex_digit hex_digit
+    = raw_hex_digit raw_hex_digit raw_hex_digit raw_hex_digit
 
 
 

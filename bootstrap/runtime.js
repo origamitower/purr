@@ -1,3 +1,4 @@
+"use strict";
 // --- Origami runtime starts here --- \\
 const $$UNBOUND = {};
 const $$GLOBAL =

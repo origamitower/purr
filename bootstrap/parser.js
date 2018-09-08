@@ -2,7 +2,7 @@ const ohm = require("ohm-js");
 const { toAST } = require("ohm-js/extras");
 const fs = require("fs");
 const path = require("path");
-const { mangle } = require("./utils");
+const { mangle, fresh } = require("./utils");
 
 const grammarSource = fs.readFileSync(
   path.join(__dirname, "./grammar.ohm"),
@@ -904,6 +904,15 @@ function parse(source) {
         name: name.toAST(visitor),
         expression: expr.toAST(visitor)
       };
+    },
+
+    Name(nameNode) {
+      const name = nameNode.toAST(visitor);
+      if (name === "_") {
+        return fresh.next("ignore");
+      } else {
+        return name;
+      }
     },
 
     Expression_group: 1

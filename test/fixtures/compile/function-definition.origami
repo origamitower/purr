@@ -28,8 +28,8 @@ function test_generator() {
 
 function inc(a) = a + 1;
 function add(a, b) = a + b;
-function addAll(...xs) = xs.reduce((a, b) => a + b, 0);
-function addAll1(a, ...xs) = xs.reduce((a, b) => a + b, a);
+function addAll(...xs) = xs.reduce((a, b, _, _) => a + b, 0);
+function addAll1(a, ...xs) = xs.reduce((a, b, _, _) => a + b, a);
 
 function test_function_call() {
   assert inc(1) === 2;

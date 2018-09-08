@@ -2,17 +2,10 @@ const { inspect } = require("util");
 const generateJs = require("@babel/generator").default;
 const template = require("@babel/template").default;
 const t = require("@babel/types");
-const { mangle } = require("./utils");
+const { mangle, fresh } = require("./utils");
 const coreModules = require("./core-modules");
 
 const id = x => t.identifier(x);
-
-const fresh = {
-  current: 1,
-  next(name = "ref") {
-    return `$$${name}_${this.current++}`;
-  }
-};
 
 function isArray(a) {
   return t.callExpression(t.memberExpression(id("Array"), id("isArray")), [a]);
@@ -90,8 +83,33 @@ function $compileArgs(params, fn) {
   if (holes.length === 0) {
     return expr;
   } else {
-    return t.arrowFunctionExpression(holes, expr);
+    return t.functionExpression(
+      null,
+      holes,
+      t.blockStatement([t.returnStatement(expr)])
+    );
   }
+}
+
+function $checkArity(name, arity, spread) {
+  const mod = spread ? " at least" : "";
+  const op = spread ? ">=" : "===";
+  const message = `${
+    name ? name : "This function"
+  } takes${mod} ${arity} arguments, but got `;
+
+  return $assertRaw(
+    t.binaryExpression(
+      op,
+      t.memberExpression(id("arguments"), id("length")),
+      t.numericLiteral(arity)
+    ),
+    t.binaryExpression(
+      "+",
+      t.stringLiteral(message),
+      t.memberExpression(id("arguments"), id("length"))
+    )
+  );
 }
 
 function $call(callee, params) {
@@ -120,19 +138,29 @@ function $paramNames(params) {
   return [...params.positional, ...[params.spread].filter(x => x != null)];
 }
 
+function $countParams(params) {
+  return [params.positional.length, !!params.spread];
+}
+
 function $fnExpr(kind, params, block) {
-  const fnBlock = compileBlock(fixReturns(block));
+  const fnBlock = blockPrepend(compileBlock(fixReturns(block)), [
+    $checkArity(null, ...$countParams(params))
+  ]);
   const fnParams = $compileParams(params);
 
-  if (kind === "generator") {
-    return t.functionExpression(null, fnParams, fnBlock, true);
-  } else {
-    return t.arrowFunctionExpression(fnParams, fnBlock, kind === "async");
-  }
+  return t.functionExpression(
+    null,
+    fnParams,
+    fnBlock,
+    kind === "generator",
+    kind === "async"
+  );
 }
 
 function $fnDecl(name, kind, params, block) {
-  const fnBlock = compileBlock(fixReturns(block));
+  const fnBlock = blockPrepend(compileBlock(fixReturns(block)), [
+    $checkArity(name, ...$countParams(params))
+  ]);
   const fnParams = $compileParams(params);
 
   return t.functionDeclaration(
@@ -144,7 +172,17 @@ function $fnDecl(name, kind, params, block) {
   );
 }
 
-function $classMethod({ static, methodType, name, kind, params, body }) {
+function $classMethod(
+  className,
+  { static, methodType, name, kind, params, body }
+) {
+  const checkName =
+    name === "constructor"
+      ? `new ${className}`
+      : static
+        ? `${className}.${name}`
+        : `${className}.prototype.${name}`;
+
   return {
     type: "ClassMethod",
     static: static,
@@ -154,8 +192,15 @@ function $classMethod({ static, methodType, name, kind, params, body }) {
     generator: kind === "generator",
     async: kind === "async",
     params: $compileParams(params),
-    body: body
+    body: blockPrepend(body, [$checkArity(checkName, ...$countParams(params))])
   };
+}
+
+function $assertRaw(expr, message) {
+  return t.ifStatement(
+    t.unaryExpression("!", expr),
+    t.throwStatement(t.callExpression(id("Error"), [message]))
+  );
 }
 
 function $assert(expr, message) {
@@ -273,6 +318,10 @@ function compileRawBlock(block) {
 
 function blockAppend(blockStmt, stmts) {
   return t.blockStatement([...blockStmt.body, ...stmts]);
+}
+
+function blockPrepend(blockStmt, stmts) {
+  return t.blockStatement([...stmts, ...blockStmt.body]);
 }
 
 function compileModule(module) {
@@ -575,6 +624,7 @@ function compileClass(node) {
   const field = x => t.memberExpression(t.thisExpression(), id(`__${x}`));
 
   function compileMember(member) {
+    const className = name;
     const { type, self, name, block } = member.definition;
     const methodParams = member.definition.params;
     const functionKind = member.definition.kind;
@@ -588,7 +638,7 @@ function compileClass(node) {
             : null;
     const realBlock = type === "MemberSetter" ? block : fixReturns(block);
 
-    return $classMethod({
+    return $classMethod(className, {
       static: member.tag === "Static",
       methodType: methodKind,
       name: id(name),
@@ -647,6 +697,7 @@ function compileClass(node) {
           id("unapply"),
           [id("object")],
           t.blockStatement([
+            $checkArity(`${name}.prototype.unapply`, 1, false),
             t.ifStatement(
               t.binaryExpression("instanceof", id("object"), id(name)),
               t.blockStatement([
@@ -665,7 +716,7 @@ function compileClass(node) {
         id(name),
         superclass ? compile(superclass.constructor) : null,
         t.classBody([
-          $classMethod({
+          $classMethod(name, {
             static: false,
             methodType: "constructor",
             name: id("constructor"),

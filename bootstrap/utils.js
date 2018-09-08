@@ -61,4 +61,11 @@ function mangle(name) {
   }
 }
 
-module.exports = { mangle };
+const fresh = {
+  current: 1,
+  next(name = "ref") {
+    return `$$${name}_${this.current++}`;
+  }
+};
+
+module.exports = { mangle, fresh };
