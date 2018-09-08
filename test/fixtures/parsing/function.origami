@@ -14,3 +14,6 @@ function* f() { }
 
 // Multiple parameter functions
 function f(a, b, c) { }
+
+// Short syntax
+function f() = a;

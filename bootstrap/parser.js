@@ -87,6 +87,14 @@ function parse(source) {
       };
     },
 
+    FunctionBody_expr(_1, expr, _2) {
+      return [{ type: "ExpressionStatement", expression: expr.toAST(visitor) }];
+    },
+
+    FunctionBody_block(block) {
+      return block.toAST(visitor);
+    },
+
     FunctionSignature(type, name, params) {
       return {
         type: "FunctionSignature",

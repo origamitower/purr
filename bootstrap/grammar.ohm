@@ -25,7 +25,11 @@ Origami {
 
   // ## Functions
   Function
-    = Metadata? function_ FunctionSignature Block
+    = Metadata? function_ FunctionSignature FunctionBody
+
+  FunctionBody
+    = "=" Expression ";"    -- expr
+    | Block                 -- block
 
   FunctionSignature
     = FunctionType? Name ParamList
