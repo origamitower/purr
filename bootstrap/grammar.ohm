@@ -57,13 +57,17 @@ Origami {
     | Metadata? member_ MemberDeclaration    -- instance
 
   MemberDeclaration
-    = FunctionType? Name "." Name ParamList Block     -- method
-    | Name "." Name "<-" Name Block                   -- setter
-    | Name "." Name Block                             -- getter
-    | Name "[" Name "]" "<-" Name Block               -- atput
-    | Name "[" Name "]" Block                         -- at
-    | Name operator Name Block                        -- operator
-    | not_ Name Block                                 -- not
+    = FunctionType? Name "." Name ParamList MemberBlock     -- method
+    | Name "." Name "<-" Name MemberBlock                   -- setter
+    | Name "." Name MemberBlock                             -- getter
+    | Name "[" Name "]" "<-" Name MemberBlock               -- atput
+    | Name "[" Name "]" MemberBlock                         -- at
+    | Name operator Name MemberBlock                        -- operator
+    | not_ Name MemberBlock                                 -- not
+  
+  MemberBlock
+    = "=" Expression ";"    -- expr
+    | Block                 -- block
 
   String
     = #"\"\"\"" #raw_character* #"\"\"\""       -- raw

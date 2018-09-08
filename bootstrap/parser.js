@@ -253,6 +253,14 @@ function parse(source) {
       };
     },
 
+    MemberBlock_expr(_1, expr, _2) {
+      return [{ type: "ExpressionStatement", expression: expr.toAST(visitor) }];
+    },
+
+    MemberBlock_block(block) {
+      return block.toAST(visitor);
+    },
+
     String_raw(_1, characters, _2) {
       return {
         type: "String",
