@@ -5,10 +5,10 @@ function main() {
   // Let
   let x = 1;
   let mutable y = x;
-
+ 
   // Assert
   assert x === 1;
-
+ 
   // Loop
   foreach x of y { }
   repeat while x { }
@@ -16,7 +16,7 @@ function main() {
   repeat with x from 1 to 2 { }
   repeat with x from 1 to 2 by 3 { }
   repeat { }
-
+ 
   // If
   if a { }
   if a { } else if b { }

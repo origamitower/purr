@@ -427,7 +427,8 @@ function compile(node) {
           t.variableDeclarator(id(node.name), compile(node.start))
         ]),
         t.binaryExpression("<=", id(node.name), compile(node.end)),
-        t.assignmentExpression("+=", id(name), compile(node.by))
+        t.assignmentExpression("+=", id(node.name), compile(node.by)),
+        compileBlock(node.block)
       );
 
     case "RepeatStatement":
