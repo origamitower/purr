@@ -771,6 +771,12 @@ function parse(source) {
       };
     },
 
+    PrimaryExpression_null(_) {
+      return {
+        type: "NullExpression"
+      };
+    },
+
     PrimaryExpression_variable(name) {
       return {
         type: "VariableExpression",

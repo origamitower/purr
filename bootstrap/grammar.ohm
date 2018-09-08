@@ -203,6 +203,7 @@ Origami {
   PrimaryExpression
     = Name                  -- variable
     | super_                -- super
+    | null_                 -- null
     | Literal               -- literal
     | ArrayExpression       -- array
     | ObjectExpression      -- object
@@ -346,6 +347,8 @@ Origami {
   when_ = kw<"when">
   default_ = kw<"default">
 
+  null_ = kw<"null">
+
 
   reserved
     = abstract_ | and_ | assert_ | async_ | as_ | await_
@@ -357,7 +360,7 @@ Origami {
     | if_ | import_
     | let_
     | match_ | member_ | mutable_
-    | new_ | not_
+    | new_ | not_ | null_
     | of_ | or_
     | repeat_
     | static_ | super_
