@@ -199,15 +199,12 @@ function $classMethod(
 function $assertRaw(expr, message) {
   return t.ifStatement(
     t.unaryExpression("!", expr),
-    t.throwStatement(t.callExpression(id("Error"), [message]))
+    t.throwStatement(t.newExpression(id("Error"), [message]))
   );
 }
 
 function $assert(expr, message) {
-  return t.ifStatement(
-    t.unaryExpression("!", expr),
-    t.throwStatement(t.callExpression(id("Error"), [t.stringLiteral(message)]))
-  );
+  return $assertRaw(expr, t.stringLiteral(message));
 }
 
 function flatmap(xs, f) {
