@@ -383,8 +383,8 @@ function compile(node) {
 
     case "ObjectExpression":
       return t.objectExpression(
-        node.pairs.map(({ key, expression }) => {
-          return t.objectProperty(id(key), compile(expression));
+        node.pairs.map(({ name, expression }) => {
+          return t.objectProperty(id(name), compile(expression));
         })
       );
 
