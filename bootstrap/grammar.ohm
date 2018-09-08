@@ -31,7 +31,9 @@ Origami {
     = FunctionType? Name ParamList
 
   ParamList
-    = "(" ListOf<Name, ","> ")"
+    = "(" "..." Name ")"                                -- only_spread
+    | "(" NonemptyListOf<Name, ","> "," "..." Name ")"  -- pos_spread
+    | "(" ListOf<Name, ","> ")"                         -- only_pos
 
   FunctionType
     = "*"     -- generator
@@ -47,7 +49,7 @@ Origami {
     = class_ Name ParamList SuperClass? "{" ClassField* Statement* ClassMember* "}"
 
   SuperClass
-    = extends_ MemberExpression ParamList
+    = extends_ MemberExpression ArgList
 
   ClassField
     = Metadata? field_ Name "=" Expression ";"
@@ -231,7 +233,9 @@ Origami {
     | null_                 -- null
 
   ArgList
-    = "(" ListOf<Expression, ","> ")"
+    = "(" "..." Expression ")"                                        -- only_spread
+    | "(" NonemptyListOf<Expression, ","> "," "..." Expression ")"    -- pos_spread
+    | "(" ListOf<Expression, ","> ")"                                 -- only_pos
 
   Pair
     = Name ":" Expression

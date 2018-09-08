@@ -96,8 +96,25 @@ function parse(source) {
       };
     },
 
-    ParamList(_1, names, _2) {
-      return names.toAST(visitor);
+    ParamList_only_spread(_1, _2, spread, _3) {
+      return {
+        spread: spread.toAST(visitor),
+        positional: []
+      };
+    },
+
+    ParamList_pos_spread(_1, names, _2, _3, spread, _4) {
+      return {
+        spread: spread.toAST(visitor),
+        positional: names.toAST(visitor)
+      };
+    },
+
+    ParamList_only_pos(_1, names, _2) {
+      return {
+        spread: null,
+        positional: names.toAST(visitor)
+      };
     },
 
     FunctionType_generator(_) {
@@ -831,7 +848,26 @@ function parse(source) {
       };
     },
 
-    ArgList: 1,
+    ArgList_only_spread(_1, _2, spread, _3) {
+      return {
+        spread: spread.toAST(visitor),
+        positional: []
+      };
+    },
+
+    ArgList_pos_spread(_1, pos, _2, _3, spread, _4) {
+      return {
+        spread: spread.toAST(visitor),
+        positional: pos.toAST(visitor)
+      };
+    },
+
+    ArgList_only_pos(_1, pos, _2) {
+      return {
+        spread: null,
+        positional: pos.toAST(visitor)
+      };
+    },
 
     Pair(name, _, expr) {
       return {

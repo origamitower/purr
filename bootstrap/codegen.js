@@ -62,6 +62,76 @@ function send(obj, message, args) {
   return t.callExpression(t.memberExpression(obj, id(message)), args);
 }
 
+function $compileArgs(params) {
+  const spread =
+    params.spread == null ? [] : [t.spreadElement(compile(params.spread))];
+  return [...params.positional.map(compile), ...spread];
+}
+
+function $call(callee, params) {
+  return t.callExpression(callee, $compileArgs(params));
+}
+
+function $member(object, method) {
+  return t.memberExpression(object, method);
+}
+
+function $methodCall(object, method, params) {
+  return $call($member(object, method), params);
+}
+
+function $new(object, params) {
+  return t.newExpression(object, $compileArgs(params));
+}
+
+function $compileParams(params) {
+  const spread =
+    params.spread == null ? [] : [t.restElement(id(params.spread))];
+  return [...params.positional.map(id), ...spread];
+}
+
+function $paramNames(params) {
+  return [...params.positional, ...[params.spread].filter(x => x != null)];
+}
+
+function $fnExpr(kind, params, block) {
+  const fnBlock = compileBlock(fixReturns(block));
+  const fnParams = $compileParams(params);
+
+  if (kind === "generator") {
+    return t.functionExpression(null, fnParams, fnBlock, true);
+  } else {
+    return t.arrowFunctionExpression(fnParams, fnBlock, node.kind === "async");
+  }
+}
+
+function $fnDecl(name, kind, params, block) {
+  const fnBlock = compileBlock(fixReturns(block));
+  const fnParams = $compileParams(params);
+
+  return t.functionDeclaration(
+    id(name),
+    fnParams,
+    fnBlock,
+    kind === "generator",
+    kind === "async"
+  );
+}
+
+function $classMethod({ static, methodType, name, kind, params, body }) {
+  return {
+    type: "ClassMethod",
+    static: static,
+    key: name,
+    computed: false,
+    kind: methodType,
+    generator: kind === "generator",
+    async: kind === "async",
+    params: $compileParams(params),
+    body: body
+  };
+}
+
 function $assert(expr, message) {
   return t.ifStatement(
     t.unaryExpression("!", expr),
@@ -351,13 +421,10 @@ function compile(node) {
       ]);
 
     case "CallExpression":
-      return t.callExpression(compile(node.callee), node.params.map(compile));
+      return $call(compile(node.callee), node.params);
 
     case "MethodCallExpression":
-      return t.callExpression(
-        t.memberExpression(compile(node.object), id(node.method)),
-        node.params.map(compile)
-      );
+      return $methodCall(compile(node.object), id(node.method), node.params);
 
     case "AtPutExpression":
       return t.callExpression(id(mangle("[]<-")), [
@@ -383,10 +450,7 @@ function compile(node) {
       return t.memberExpression(compile(node.object), id(node.name));
 
     case "NewExpression":
-      return t.newExpression(
-        compile(node.constructor),
-        node.params.map(compile)
-      );
+      return $new(compile(node.constructor), node.params);
 
     case "SuperExpression":
       return id("super");
@@ -407,22 +471,8 @@ function compile(node) {
         })
       );
 
-    case "FunctionExpression": {
-      if (node.kind === "generator") {
-        return t.functionExpression(
-          null,
-          node.params.map(id),
-          compileBlock(fixReturns(node.block)),
-          true
-        );
-      } else {
-        return t.arrowFunctionExpression(
-          node.params.map(id),
-          compileBlock(fixReturns(node.block)),
-          node.kind === "async"
-        );
-      }
-    }
+    case "FunctionExpression":
+      return $fnExpr(node.kind, node.params, node.block);
 
     default:
       throw new Error(`Unknown node ${node.type}`);
@@ -479,6 +529,7 @@ function compileClass(node) {
     constructor,
     members
   } = node.declaration;
+  const paramNames = $paramNames(params);
 
   const field = x => t.memberExpression(t.thisExpression(), id(`__${x}`));
 
@@ -496,15 +547,12 @@ function compileClass(node) {
             : null;
     const realBlock = type === "MemberSetter" ? block : fixReturns(block);
 
-    return {
-      type: "ClassMethod",
+    return $classMethod({
       static: member.tag === "Static",
-      key: id(name),
-      computed: false,
-      kind: methodKind,
-      generator: functionKind === "generator",
-      async: functionKind === "async",
-      params: methodParams.map(id),
+      methodType: methodKind,
+      name: id(name),
+      kind: functionKind,
+      params: methodParams,
       body: t.blockStatement([
         ...unpackPrelude,
         t.variableDeclaration("const", [
@@ -512,12 +560,12 @@ function compileClass(node) {
         ]),
         ...compileRawBlock(realBlock)
       ])
-    };
+    });
   }
 
   // We always set all properties in the class
   const constructorPrelude = [
-    ...params.map(x => {
+    ...paramNames.map(x => {
       return t.expressionStatement(
         t.assignmentExpression("=", field(x), id(x))
       );
@@ -530,25 +578,18 @@ function compileClass(node) {
   ];
 
   const superPrelude = superclass
-    ? [
-        t.expressionStatement(
-          t.callExpression(
-            t.identifier("super"),
-            superclass.params.map(compile)
-          )
-        )
-      ]
+    ? [t.expressionStatement($call(id("super"), superclass.params))]
     : [];
 
   const unpackPrelude = [
-    ...params.map(x => defConst(id(x), field(x))),
+    ...paramNames.map(x => defConst(id(x), field(x))),
     ...fields.map(x => defConst(id(x.name), field(x.name)))
   ];
 
   const compiledMembers = members.map(compileMember);
 
   const genGetters = isData
-    ? params.map(x => {
+    ? paramNames.map(x => {
         return t.classMethod(
           "get",
           id(x),
@@ -568,7 +609,7 @@ function compileClass(node) {
             t.ifStatement(
               t.binaryExpression("instanceof", id("object"), id(name)),
               t.blockStatement([
-                t.returnStatement(t.arrayExpression(params.map(field)))
+                t.returnStatement(t.arrayExpression(paramNames.map(field)))
               ]),
               t.blockStatement([t.returnStatement(t.nullLiteral())])
             )
@@ -583,16 +624,17 @@ function compileClass(node) {
         id(name),
         superclass ? compile(superclass.constructor) : null,
         t.classBody([
-          t.classMethod(
-            "constructor",
-            id("constructor"),
-            params.map(x => id(x)),
-            t.blockStatement([
+          $classMethod({
+            static: false,
+            methodType: "constructor",
+            name: id("constructor"),
+            params: params,
+            body: t.blockStatement([
               ...superPrelude,
               ...constructorPrelude,
               ...constructor.map(compile)
             ])
-          ),
+          }),
           ...genGetters,
           ...genMethods,
           ...compiledMembers
@@ -606,16 +648,7 @@ function compileClass(node) {
 function compileFunction(node) {
   const { name, params, kind } = node.signature;
   return [
-    t.exportNamedDeclaration(
-      t.functionDeclaration(
-        id(name),
-        params.map(x => id(x)),
-        compileBlock(fixReturns(node.block)),
-        kind === "generator",
-        kind === "async"
-      ),
-      []
-    )
+    t.exportNamedDeclaration($fnDecl(name, kind, params, node.block), [])
   ];
 }
 
