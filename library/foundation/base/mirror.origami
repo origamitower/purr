@@ -1,0 +1,206 @@
+% version: 1
+% stability: unstable
+import es2015 exposing Reflect, Object;
+import "./_primitive" exposing typeOf, isDefined, isObject, isFunction;
+
+
+class PropertyMirror(object, property) {
+  assert isObject(object);
+
+  member _.object   = object;
+  member _.property = property;
+
+  member _.isGetter = isDefined(Reflect.get(property, "get"));
+  member _.isSetter = isDefined(Reflect.get(property, "set"));
+  member _.isValue  = isDefined(Reflect.get(property, "value"));
+  
+  member _.isWritable     = property.writable;
+  member _.isConfigurable = property.configurable;
+  member _.isEnumerable   = property.enumerable;
+
+  member self.getter {
+    assert self.isGetter;
+    new MethodMirror(object, property.get);
+  }
+
+  member self.setter {
+    assert self.isSetter;
+    new MethodMirror(object, property.set);
+  }
+
+  member self.value {
+    assert not self.isGetter and not self.isSetter;
+    property.value;
+  }
+}
+
+
+class MethodMirror(object, method) {
+  assert isObject(object);
+  assert isFunction(method);
+
+  member _.arity = method.length;
+  member _.name  = method.name;
+
+  member _.apply(args) {
+    Reflect.apply(method, object, args);
+  }
+
+  member _.applyWithThis(thisValue, args) {
+    Reflect.apply(method, thisValue, args);
+  }
+}
+
+
+class ClassMirror(klass) {
+  assert isFunction(klass);
+
+  member _.name = klass.name;
+  member _.arity = klass.arity;
+
+  member _.ownStaticProperties {
+    
+  }
+  member _.ownPrototypeProperties {}
+  member _.isAbstract {}
+  member _.isPrivate {}
+  member _.isDataClass {}
+  member _.superclass {}
+  member _.location {}
+  member _.metadata {}
+
+  member _.isSubclassOf(anotherClass) {}
+  member _.new(args) {}
+}
+
+
+
+
+
+class ObjectMirror(reflectee) {
+  assert isObject(reflectee);
+
+  member self.reflectee { 
+    reflectee;
+  }
+
+  member self.has(key) {
+    Reflect.has(reflectee, key);
+  }
+
+  member self.hasOwnProperty(key) {
+    Object.prototype.hasOwnProperty.call(reflectee, key);
+  }
+
+  member self.getOwnPropertyDescriptor(key) {
+    assert self.hasOwnProperty(key);
+    Reflect.getOwnPropertyDescriptor(reflectee, key);
+  }
+
+  member self.deleteProperty(key) {
+    assert self.has(key);
+    Reflect.deleteProperty(key);
+    self;
+  }
+
+  member self.defineProperty(key, descriptor) {
+    assert Reflect.defineProperty(reflectee, key, descriptor);
+    self;
+  }
+
+  member self[key] {
+    assert self.has(key);
+    Reflect.get(reflectee, key);
+  }
+
+  member self[key] <- value {
+    Reflect.set(reflectee, key, value);
+  }
+
+  member self.prototype {
+    let parent = Reflect.getPrototypeOf(reflectee);
+    if parent =/= null {
+      new ObjectMirror(parent);
+    } else {
+      null;
+    }
+  }
+
+  member self.prototype <- parent {
+    Reflect.setPrototypeOf(reflectee, parent);
+  }
+
+  member self.isPrototypeOf(object) {
+    Object.prototype.isPrototypeOf.call(reflectee, object);
+  }
+
+  member self.ownKeys() {
+    Reflect.ownKeys(reflectee);
+  }
+
+  member self.keys() {
+    let parent = self.prototype;
+    if parent === null {
+      self.ownKeys();
+    } else {
+      self.ownKeys() ++ parent.keys();
+    }
+  }
+
+  member self.isExtensible() {
+    Reflect.isExtensible(reflectee);
+  }
+
+  member self.preventExtensions() {
+    Reflect.preventExtensions(reflectee);
+    self;
+  }
+
+  member self.freeze() {
+    Object.freeze(reflectee);
+    self;
+  }
+
+  member self.isFrozen() {
+    Object.isFrozen(self);
+  }
+
+  member self.seal() {
+    Object.seal(reflectee);
+    self;
+  }
+
+  member self.isSealed() {
+    Object.isSealed(reflectee);
+  }
+}
+
+class PropertyMirror(property) {
+
+}
+
+class ClassMirror(klass) {
+  assert isFunction(klass);
+
+  member self.reflectee {
+    klass;
+  }
+
+  member self.arity {
+    klass.length;
+  }
+
+  member self.new(args) {
+    Reflect.construct(klass, args);
+  }
+
+  member self.name {
+    klass.name;
+  }
+
+  member self.prototype {
+    klass.prototype;
+  }
+
+
+}

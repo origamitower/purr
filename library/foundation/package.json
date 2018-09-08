@@ -1,0 +1,11 @@
+{
+  "name": "@origamitower/foundation",
+  "version": "0.1.0",
+  "description": "A safe standard library for Origami and JavaScript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Quil",
+  "license": "MIT"
+}

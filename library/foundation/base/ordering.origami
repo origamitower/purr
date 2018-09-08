@@ -1,0 +1,38 @@
+% version: 1
+
+/**
+ * More precisely models the possibilities in an ordering of values.
+ */
+class Ordering() {
+  /**
+   * Converts to a number representing the ordering.
+   */
+  member self.toNumber() {
+    match self {
+      case Less(): -1;
+      case Equal(): 0;
+      case Greater(): 1;
+    }
+  }
+}
+
+data class Less() extends Ordering {}
+data class Equal() extends Ordering {}
+data class Greater() extends Ordering {}
+
+
+/**
+ * Converts a number that represents the ordering of values
+ * (e.g.: returned by a.compare(b)) to an [[Ordering]].
+ */
+function fromNumber(n) {
+  if n < 0 { 
+    new Less();
+  } else if n > 0 { 
+    new Greater();
+  }
+  else { 
+    new Equal();
+  }
+}
+

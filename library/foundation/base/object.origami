@@ -1,0 +1,25 @@
+% version: 1
+import es2015 exposing Reflect;
+
+function fromPairs(pairs) {
+  let mutable result = {};
+  
+  foreach pair of pairs {
+    let [key, value] = pair;
+    Reflect.set(result, key, value);
+  }
+
+  result;
+}
+
+function mapValues(object, fn) {
+  let mutable result = {};
+
+  foreach key of Reflect.ownKeys(object) {
+    let value = Reflect.get(object, key);
+    Reflect.set(result, key, fn(value));
+  }
+
+  result;
+}
+

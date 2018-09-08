@@ -71,6 +71,67 @@ class A() {
   member not a { }  
 }
 
+// Short classes
+// Classes with members + constructor
+class A() {
+  constructor;
+
+  /* Documentation */
+  static _.f() = a;
+  static _.f(a, b) = a;
+  static async _.f() = a;
+  static* _.f() = a;
+  static _.f <- g = a;
+  static _.f = a;
+  static _[a] = a;
+  static _[a] <- b = a;
+  static a === b = a;
+  static a =/= b = a;
+  static a ==> b = a;
+  static a >= b = a;
+  static a >= b = a;
+  static a >> b = a;
+  static a > b = a;
+  static a << b = a;
+  static a < b = a;
+  static a ++ b = a;
+  static a + b = a;
+  static a - b = a;
+  static a ** b = a;
+  static a * b = a;
+  static a / b = a;
+  static a and b = a;
+  static a or b = a;
+  static not a = a;
+
+  /* Documentation */
+  member _.f() = a;
+  member _.f(a, b) = a;
+  member async _.f() = a;
+  member* _.f() = a;
+  member _.f <- g = a;
+  member _.f = a;
+  member _[a] = a;
+  member _[a] <- b = a;
+  member a === b = a;
+  member a =/= b = a;
+  member a ==> b = a;
+  member a >= b = a;
+  member a >= b = a;
+  member a >> b = a;
+  member a > b = a;
+  member a << b = a;
+  member a < b = a;
+  member a ++ b = a;
+  member a + b = a;
+  member a - b = a;
+  member a ** b = a;
+  member a * b = a;
+  member a / b = a;
+  member a and b = a;
+  member a or b = a;
+  member not a = a;
+}
 
 // Classes + fields + constructor
 class A() {
