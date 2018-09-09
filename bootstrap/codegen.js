@@ -791,6 +791,56 @@ function compileClass(node) {
           ]),
           false,
           !!"static"
+        ),
+        t.classMethod(
+          "method",
+          id("$equals"),
+          [id("that")],
+          t.blockStatement([
+            t.returnStatement(
+              $rt("$$checkClassEquals", [
+                t.arrayExpression(
+                  paramNames.map(k => t.stringLiteral(`__${k}`))
+                )
+              ])
+            )
+          ])
+        ),
+        t.classMethod(
+          "method",
+          id("debugRepresentation"),
+          [
+            t.assignmentPattern(
+              t.objectPattern([
+                t.objectProperty(
+                  id("depth"),
+                  t.assignmentExpression("=", id("depth"), t.numericLiteral(0))
+                ),
+                t.objectProperty(
+                  id("visited"),
+                  t.assignmentExpression(
+                    "=",
+                    id("visited"),
+                    t.newExpression(id("Set"), [])
+                  )
+                )
+              ]),
+              t.objectExpression([])
+            )
+          ],
+          t.blockStatement([
+            t.returnStatement(
+              $rt("$$showObject", [
+                t.stringLiteral(className),
+                t.thisExpression(),
+                t.arrayExpression(
+                  paramNames.map(k => t.stringLiteral(`__${k}`))
+                ),
+                id("depth"),
+                id("visited")
+              ])
+            )
+          ])
         )
       ]
     : [];

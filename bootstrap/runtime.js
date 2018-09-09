@@ -99,6 +99,87 @@ function $$assert(test, message) {
   }
 }
 
+exports.$$checkClassEquals = $$checkClassEquals;
+function $$checkClassEquals(fields, self, that) {
+  return (
+    !$$isPrimitive(that) &&
+    self.constructor === that.constructor &&
+    fields.every(k => $equals(self[k], that[k]))
+  );
+}
+
+const pad = n => " ".repeat(n * 2);
+
+exports.$$showObject = $$showObject;
+function $$showObject(name, obj, fields, depth, visited) {
+  const fix = n => n.replace(/^__/, "");
+  return [
+    `${name} {`,
+    fields
+      .map(
+        x => `${pad(depth + 1)}${fix(x)}: ${$mshow(obj[x], depth + 2, visited)}`
+      )
+      .join(",\n"),
+    `${pad(depth)}}`
+  ].join("\n");
+}
+
+function $mshow(value, depth, visited) {
+  if (visited.has(value)) {
+    return "[Circular]";
+  } else {
+    return $show(value, depth, visited);
+  }
+}
+
+exports.$show = $show;
+function $show(value, depth = 0, visited = new Set()) {
+  visited.add(value);
+
+  if (value === null) {
+    return "null";
+  }
+  if (value === undefined) {
+    return "undefined";
+  }
+  if (
+    typeof value === "number" ||
+    typeof value === "boolean" ||
+    typeof value === "bigint" ||
+    typeof value === "symbol"
+  ) {
+    return String(value);
+  }
+  if (typeof value === "string") {
+    return JSON.stringify(value);
+  }
+  if (typeof value === "function") {
+    return `[Function: ${value.name || "(anonymous)"}]`;
+  }
+  if (Array.isArray(value)) {
+    return [
+      "[",
+      value
+        .map(x => `${pad(depth + 1)}${$mshow(x, depth + 2, visited)}`)
+        .join(",\n"),
+      `${pad(depth)}]`
+    ].join("\n");
+  }
+  if (value.debugRepresentation) {
+    return value.debugRepresentation({ depth: depth + 2, visited: visited });
+  }
+  const name = value.constructor ? `${value.constructor.name} ` : "";
+  return [
+    `${name}{`,
+    Reflect.ownKeys(value)
+      .map(
+        k => `${pad(depth + 1)}${k}: ${$mshow(value[k], depth + 2, visited)}`
+      )
+      .join(",\n"),
+    `${pad(depth)}}`
+  ];
+}
+
 exports.$equals = $equals;
 function $equals(a, b) {
   if ($$isPrimitive(a)) {
