@@ -16,7 +16,7 @@ module.exports = ast => {
         = Name "{" PegRule* "}"
   
       PegRule
-        = Name PegParams? PegDescription? "=" PegAlternative ";"
+        = Name PegParams? PegDescription? op PegAlternative ";"
   
       PegDescription
         = "(" (~")" any)* ")"
@@ -34,6 +34,10 @@ module.exports = ast => {
       PegSequence
         = PegBinding+
 
+      PegChoice
+        = NonemptyListOf<PegSequence, "/">  -- choice
+        | PegSequence
+
       PegBinding
         = Name ":" PegExpr    -- named
         | PegExpr             -- unnamed
@@ -50,9 +54,12 @@ module.exports = ast => {
       PegTerm
         = Name "<" ListOf<PegExpr, ","> ">"   -- apply
         | Name                                -- name
-        | String                              -- literal
         | String ".." String                  -- range
-        | "(" PegExpr+ ")"                    -- group
+        | String                              -- literal
+        | "(" PegChoice ")"                   -- group
+
+      op
+        = "+=" | ":=" | "="
     }
   `,
     { Origami: origamiGrammar }
@@ -67,11 +74,12 @@ module.exports = ast => {
         rules: rules.toAST(visitor)
       };
     },
-    PegRule(nameNode, params, desc, _1, alts, _2) {
+    PegRule(nameNode, params, desc, op, alts, _2) {
       const name = nameNode.toAST(visitor);
       return {
         type: "Rule",
         name: name,
+        operator: op.toAST(visitor),
         params: params.toAST(visitor),
         description: desc.toAST(visitor),
         alternatives: alts
@@ -154,6 +162,12 @@ module.exports = ast => {
         args: args.toAST(visitor)
       };
     },
+    PegChoice_choice(items) {
+      return {
+        type: "Choice",
+        items: items.toAST(visitor)
+      };
+    },
     PegTerm_name(name) {
       return {
         type: "Name",
@@ -220,9 +234,12 @@ module.exports = ast => {
       case "Rule":
         const params = node.params ? `<${node.params.join(", ")}>` : "";
         const desc = node.description ? `(${node.description})` : "";
-        return `${node.name}${params} ${desc} = \n   ${node.alternatives
-          .map(compile)
-          .join("\n  | ")}`;
+        return `${node.name}${params} ${desc} ${
+          node.operator
+        } \n   ${node.alternatives.map(compile).join("\n  | ")}`;
+
+      case "Choice":
+        return node.items.map(xs => xs.map(compile).join(" ")).join(" | ");
 
       case "Binding":
         return compile(node.expr);
@@ -249,7 +266,7 @@ module.exports = ast => {
         return `#(${compile(node.term)})`;
 
       case `Apply`:
-        return `${node.name}<${node.args.join(", ")}>`;
+        return `${node.name}<${node.args.map(compile).join(", ")}>`;
 
       case "Name":
         return node.name;
@@ -258,7 +275,9 @@ module.exports = ast => {
         return JSON.stringify(node.value.value);
 
       case "Range":
-        return `${node.start.value}..${node.end.value}`;
+        return `${JSON.stringify(node.start.value)}..${JSON.stringify(
+          node.end.value
+        )}`;
 
       default:
         throw new Error(`Unknown node ${node.type}`);

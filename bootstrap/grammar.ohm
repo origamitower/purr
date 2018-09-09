@@ -333,6 +333,8 @@ Origami {
     | "r"                 -- return
     | "t"                 -- tab
     | "u" unicode_escape  -- unicode
+    | "\""                -- quote
+    | "\\"                -- backslash
 
   string_character
     = ~("\"" | "\\") any    -- non_escaped

@@ -373,6 +373,12 @@ const visitor = {
                 return String.fromCodePoint(
                   parseInt(x.slice(2).replace(/_/g, ""), 16)
                 );
+              case "\\":
+                return "\\";
+              case '"':
+                return '"';
+              default:
+                throw new Error(`Invalid escape sequence ${x}`);
             }
           } else {
             return x;
