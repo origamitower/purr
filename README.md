@@ -30,7 +30,8 @@ There are many languages that compile to JavaScript, and for most of these langu
 - [x] Named parameters
 - [x] Array spread
 - [ ] Object spread
-- [ ] Modules (lazy top-level objects)
+- [x] Modules (top-level objects)
+- [ ] Opt-in lazy evaluation
 - [x] Class expressions
 - [x] Destructuring (simplified pattern-matching)
 - [ ] Decorators (compile-time macros)
