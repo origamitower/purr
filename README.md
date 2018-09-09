@@ -27,7 +27,7 @@ There are many languages that compile to JavaScript, and for most of these langu
 - [ ] Foundation library (a standard library for Origami)
 - [x] Partial application
 - [x] Rest parameters
-- [ ] Named parameters
+- [x] Named parameters
 - [x] Array spread
 - [ ] Object spread
 - [ ] Modules (lazy top-level objects)
