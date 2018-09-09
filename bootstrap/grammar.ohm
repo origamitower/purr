@@ -35,9 +35,18 @@ Origami {
     = FunctionType? Name ParamList
 
   ParamList
-    = "(" "..." Name ")"                                -- only_spread
-    | "(" NonemptyListOf<Name, ","> "," "..." Name ")"  -- pos_spread
-    | "(" ListOf<Name, ","> ")"                         -- only_pos
+    = "(" "..." Name ")"                                                            -- only_spread
+    | "(" NonemptyListOf<ParamName, ","> "," "..." Name ")"                         -- pos_spread
+    | "(" NonemptyListOf<NamedParam, ","> ")"                                       -- only_named
+    | "(" NonemptyListOf<ParamName, ","> "," NonemptyListOf<NamedParam, ","> ")"    -- pos_named
+    | "(" ListOf<ParamName, ","> ")"                                                -- only_pos
+
+  ParamName
+    = Name ~":"
+
+  NamedParam
+    = Name ":" Name "=" Expression    -- with_default
+    | Name ":" Name                   -- no_default
 
   FunctionType
     = "*"     -- generator
@@ -210,7 +219,7 @@ Origami {
     | PrimaryExpression
   
   PrimaryExpression
-    = ~reserved_var Name                -- variable
+    = ~reserved_var Name ~":"           -- variable
     | super_                            -- super
     | "<" QualifiedName ">" Literal     -- plug_literal
     | Literal                           -- literal
@@ -243,9 +252,11 @@ Origami {
     | null_                 -- null
 
   ArgList
-    = "(" "..." Expression ")"                                        -- only_spread
-    | "(" NonemptyListOf<Expression, ","> "," "..." Expression ")"    -- pos_spread
-    | "(" ListOf<Expression, ","> ")"                                 -- only_pos
+    = "(" "..." Expression ")"                                              -- only_spread
+    | "(" NonemptyListOf<Expression, ","> "," "..." Expression ")"          -- pos_spread
+    | "(" NonemptyListOf<Pair, ","> ")"                                     -- only_named
+    | "(" NonemptyListOf<Expression, ","> "," NonemptyListOf<Pair, ","> ")" -- pos_named
+    | "(" ListOf<Expression, ","> ")"                                       -- only_pos
 
   Pair
     = Name ":" Expression

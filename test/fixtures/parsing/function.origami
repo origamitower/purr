@@ -21,3 +21,7 @@ function f() = a;
 // Spread
 function f(a, ...b) {}
 function f(...b) {}
+
+// Named
+function f(a, b: c, c: d = 1) {}
+function f(b: c) {}

@@ -90,3 +90,13 @@ class A() {
   static _.f(...a) = a;
   static _.f(a, ...b) = a;
 }
+
+// Named parameters
+class A(a, b: c, c: d = 1) extends B(a, b: c) {}
+class A(b: c) extends B(b: c) {}
+class A() {
+  member _.f(a, b: c, c: d = 1) = a;
+  member _.f(b: c) = c;
+  static _.f(a, b: c, c: d = 1) = a;
+  static _.f(b: c) = c;
+}

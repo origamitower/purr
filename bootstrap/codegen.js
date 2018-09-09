@@ -82,7 +82,17 @@ function $compileArgs(params, fn) {
     params.spread == null
       ? []
       : [t.spreadElement($rt("$$assertIterable", [compileArg(params.spread)]))];
-  const expr = fn([...params.positional.map(compileArg), ...spread]);
+  const named =
+    params.named.length > 0
+      ? [
+          t.objectExpression(
+            params.named.map(({ name, expression }) =>
+              t.objectProperty(id(name), compile(expression))
+            )
+          )
+        ]
+      : [];
+  const expr = fn([...params.positional.map(compileArg), ...spread, ...named]);
   if (holes.length === 0) {
     return expr;
   } else {
@@ -134,7 +144,23 @@ function $new(object, params) {
 function $compileParams(params) {
   const spread =
     params.spread == null ? [] : [t.restElement(id(params.spread))];
-  return [...params.positional.map(id), ...spread];
+  const named =
+    params.named.length > 0
+      ? [
+          t.assignmentPattern(
+            t.objectPattern(
+              params.named.map(({ key, name, default: expr }) =>
+                t.objectProperty(
+                  id(key),
+                  t.assignmentExpression("=", id(name), compile(expr))
+                )
+              )
+            ),
+            t.objectExpression([])
+          )
+        ]
+      : [];
+  return [...params.positional.map(id), ...spread, ...named];
 }
 
 function $paramNames(params) {
@@ -483,12 +509,14 @@ function compile(node) {
 
     case "BinaryExpression":
       return $call($rtMember(mangle(node.operator)), {
-        positional: [node.left, node.right]
+        positional: [node.left, node.right],
+        named: []
       });
 
     case "UnaryExpression":
       return $call($rtMember(mangle(node.operator)), {
-        positional: [node.argument]
+        positional: [node.argument],
+        named: []
       });
 
     case "CallExpression":
@@ -499,7 +527,8 @@ function compile(node) {
 
     case "AtPutExpression":
       return $call($rtMember(mangle("[]<-")), {
-        positional: [node.object, node.key, node.value]
+        positional: [node.object, node.key, node.value],
+        named: []
       });
 
     case "UpdateExpression":
@@ -511,7 +540,8 @@ function compile(node) {
 
     case "AtExpression":
       return $call($rtMember(mangle("[]")), {
-        positional: [node.object, node.key]
+        positional: [node.object, node.key],
+        named: []
       });
 
     case "GetExpression":

@@ -188,3 +188,13 @@ function class_expression() {
     member not a { }  
   };
 }
+
+// Named
+function test_named() {
+  f(a, b: 1, c: 2);
+  f(b: 1, c: 2);
+  new f(a, b: 1, c: 2);
+  new f(b: 1, c: 2);
+  a.f(a, b: 1, c: 2);
+  a.f(b: 1, c: 2);
+}

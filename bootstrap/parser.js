@@ -102,21 +102,54 @@ const visitor = {
   ParamList_only_spread(_1, _2, spread, _3) {
     return {
       spread: spread.toAST(visitor),
-      positional: []
+      positional: [],
+      named: []
     };
   },
 
   ParamList_pos_spread(_1, names, _2, _3, spread, _4) {
     return {
       spread: spread.toAST(visitor),
-      positional: names.toAST(visitor)
+      positional: names.toAST(visitor),
+      named: []
+    };
+  },
+
+  ParamList_only_named(_1, pairs, _2) {
+    return {
+      positional: [],
+      named: pairs.toAST(visitor)
+    };
+  },
+
+  ParamList_pos_named(_1, names, _2, pairs, _3) {
+    return {
+      positional: names.toAST(visitor),
+      named: pairs.toAST(visitor)
     };
   },
 
   ParamList_only_pos(_1, names, _2) {
     return {
       spread: null,
-      positional: names.toAST(visitor)
+      positional: names.toAST(visitor),
+      named: []
+    };
+  },
+
+  NamedParam_with_default(key, _1, name, _2, expr) {
+    return {
+      key: key.toAST(visitor),
+      name: name.toAST(visitor),
+      default: expr.toAST(visitor)
+    };
+  },
+
+  NamedParam_no_default(key, _, name) {
+    return {
+      key: key.toAST(visitor),
+      name: name.toAST(visitor),
+      default: { type: "LiteralExpression", literal: { type: "Null" } }
     };
   },
 
@@ -210,7 +243,7 @@ const visitor = {
       type: "MemberSetter",
       self: self.toAST(visitor),
       name: name.toAST(visitor),
-      params: { positional: [param.toAST(visitor)], spread: null },
+      params: { positional: [param.toAST(visitor)], spread: null, named: [] },
       block: block.toAST(visitor)
     };
   },
@@ -220,7 +253,7 @@ const visitor = {
       type: "MemberGetter",
       self: self.toAST(visitor),
       name: name.toAST(visitor),
-      params: { positional: [], spread: null },
+      params: { positional: [], spread: null, named: [] },
       block: block.toAST(visitor)
     };
   },
@@ -232,7 +265,8 @@ const visitor = {
       name: mangle("[]<-"),
       params: {
         positional: [key.toAST(visitor), value.toAST(visitor)],
-        spread: null
+        spread: null,
+        named: []
       },
       block: block.toAST(visitor)
     };
@@ -243,7 +277,7 @@ const visitor = {
       type: "MemberMethod",
       self: self.toAST(visitor),
       name: mangle("[]"),
-      params: { positional: [key.toAST(visitor)], spread: null },
+      params: { positional: [key.toAST(visitor)], spread: null, named: [] },
       block: block.toAST(visitor)
     };
   },
@@ -253,7 +287,7 @@ const visitor = {
       type: "MemberMethod",
       self: self.toAST(visitor),
       name: mangle(op.toAST(visitor)),
-      params: { positional: [arg.toAST(visitor)], spread: null },
+      params: { positional: [arg.toAST(visitor)], spread: null, named: [] },
       block: block.toAST(visitor)
     };
   },
@@ -263,7 +297,7 @@ const visitor = {
       type: "MemberMethod",
       self: self.toAST(visitor),
       name: mangle("not"),
-      params: { positional: [], spread: null },
+      params: { positional: [], spread: null, named: [] },
       block: block.toAST(visitor)
     };
   },
@@ -886,21 +920,38 @@ const visitor = {
   ArgList_only_spread(_1, _2, spread, _3) {
     return {
       spread: spread.toAST(visitor),
-      positional: []
+      positional: [],
+      named: []
     };
   },
 
   ArgList_pos_spread(_1, pos, _2, _3, spread, _4) {
     return {
       spread: spread.toAST(visitor),
-      positional: pos.toAST(visitor)
+      positional: pos.toAST(visitor),
+      named: []
+    };
+  },
+
+  ArgList_only_named(_1, pairs, _2) {
+    return {
+      positional: [],
+      named: pairs.toAST(visitor)
+    };
+  },
+
+  ArgList_pos_named(_1, pos, _2, pairs, _3) {
+    return {
+      positional: pos.toAST(visitor),
+      named: pairs.toAST(visitor)
     };
   },
 
   ArgList_only_pos(_1, pos, _2) {
     return {
       spread: null,
-      positional: pos.toAST(visitor)
+      positional: pos.toAST(visitor),
+      named: []
     };
   },
 

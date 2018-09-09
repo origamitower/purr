@@ -195,7 +195,8 @@ module.exports = ast => {
             {
               type: "FunctionExpression",
               params: {
-                positional: ["meta", ...names]
+                positional: ["meta", ...names],
+                named: []
               },
               block: x.block
             }
@@ -280,6 +281,7 @@ module.exports = ast => {
     },
     method: "$$makeParser",
     params: {
+      named: [],
       positional: [
         {
           type: "LiteralExpression",
