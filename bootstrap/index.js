@@ -18,7 +18,12 @@ function compile(program) {
 function compileToNode(program) {
   const jsAst = compileModule(parse(program));
   const js = babel.transformFromAstSync(jsAst, null, {
-    plugins: ["@babel/plugin-transform-modules-commonjs"]
+    plugins: [
+      path.join(
+        __dirname,
+        "node_modules/@babel/plugin-transform-modules-commonjs"
+      )
+    ]
   });
   return `${runtime}\n${js.code}`;
 }
