@@ -495,7 +495,7 @@ function compile(node) {
 
     case "ForeachStatement":
       return t.forOfStatement(
-        id(node.name),
+        t.variableDeclaration("const", [t.variableDeclarator(id(node.name))]),
         compile(node.iterator),
         compileBlock(node.block)
       );

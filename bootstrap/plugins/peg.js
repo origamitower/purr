@@ -202,7 +202,9 @@ module.exports = ast => {
   function compileAction(rule) {
     return flatmap(rule.alternatives, (x, i) => {
       if (x.block) {
-        const names = x.sequence.map((a, i) => (a.name ? a.name : `$${i}`));
+        const names = x.sequence
+          .filter(x => !["Negation", "Lookahead"].includes(x.expr.type))
+          .map((a, i) => (a.name ? a.name : `$${i}`));
         return [
           [
             `${rule.name}_alt${i}`,
