@@ -1,13 +1,16 @@
 "use strict";
-// --- Origami runtime starts here --- \\
 const $$UNBOUND = {};
+exports.$$UNBOUND = $$UNBOUND;
+
 const $$GLOBAL =
   typeof global !== "undefined"
     ? global
     : typeof window !== "undefined"
       ? window
       : this;
+exports.$$GLOBAL = $$GLOBAL;
 
+exports.$$makeParser = $$makeParser;
 function $$makeParser(code, bindings) {
   const $$Ohm = require("ohm-js");
   const $$OhmToAST = require("ohm-js/extras").toAST;
@@ -48,15 +51,18 @@ function $$makeParser(code, bindings) {
   }();
 }
 
+exports.$$isIterable = $$isIterable;
 function $$isIterable(a) {
   return a != null && typeof a[Symbol.iterator] === "function";
 }
 
+exports.$$assertIterable = $$assertIterable;
 function $$assertIterable(a) {
   $$assert($$isIterable(a), `${a} is not an iterable.`);
   return a;
 }
 
+exports.$$isPrimitive = $$isPrimitive;
 function $$isPrimitive(a) {
   return (
     a === null ||
@@ -69,6 +75,7 @@ function $$isPrimitive(a) {
   );
 }
 
+exports.$$isOrdered = $$isOrdered;
 function $$isOrdered(a) {
   return (
     typeof a === "number" ||
@@ -78,12 +85,14 @@ function $$isOrdered(a) {
   );
 }
 
+exports.$$assert = $$assert;
 function $$assert(test, message) {
   if (!test) {
     throw new Error(`Assertion failed: ${message}`);
   }
 }
 
+exports.$equals = $equals;
 function $equals(a, b) {
   if ($$isPrimitive(a)) {
     return a === b;
@@ -98,6 +107,7 @@ function $equals(a, b) {
   }
 }
 
+exports.$notEquals = $notEquals;
 function $notEquals(a, b) {
   if ($$isPrimitive(a)) {
     return a !== b;
@@ -108,6 +118,7 @@ function $notEquals(a, b) {
   }
 }
 
+exports.$gte = $gte;
 function $gte(a, b) {
   if ($$isOrdered(a)) {
     $$assert(typeof a === typeof b, `A value of type ${typeof a}`);
@@ -117,6 +128,7 @@ function $gte(a, b) {
   }
 }
 
+exports.$composeRight = $composeRight;
 function $composeRight(a, b) {
   if (typeof a === "function") {
     $$assert(typeof b === "function", `A function`);
@@ -126,6 +138,7 @@ function $composeRight(a, b) {
   }
 }
 
+exports.$gt = $gt;
 function $gt(a, b) {
   if ($$isOrdered(a)) {
     $$assert(typeof a === typeof b, `A value of type ${typeof a}`);
@@ -135,6 +148,7 @@ function $gt(a, b) {
   }
 }
 
+exports.$lte = $lte;
 function $lte(a, b) {
   if ($$isOrdered(a)) {
     $$assert(typeof a === typeof b, `A value of type ${typeof a}`);
@@ -144,6 +158,7 @@ function $lte(a, b) {
   }
 }
 
+exports.$composeLeft = $composeLeft;
 function $composeLeft(a, b) {
   if (typeof a === "function") {
     $$assert(typeof b === "function", `A function`);
@@ -151,6 +166,7 @@ function $composeLeft(a, b) {
   }
 }
 
+exports.$lt = $lt;
 function $lt(a, b) {
   if ($$isOrdered(a)) {
     $$assert(typeof a === typeof b, `A value of type ${typeof a}`);
@@ -160,6 +176,7 @@ function $lt(a, b) {
   }
 }
 
+exports.$concat = $concat;
 function $concat(a, b) {
   if (typeof a === "string") {
     $$assert(typeof b === "string", `A string`);
@@ -172,6 +189,7 @@ function $concat(a, b) {
   }
 }
 
+exports.$plus = $plus;
 function $plus(a, b) {
   if (typeof a === "number" || typeof a === "bigint") {
     $$assert(typeof a === typeof b, `A value of type ${typeof a}`);
@@ -181,6 +199,7 @@ function $plus(a, b) {
   }
 }
 
+exports.$minus = $minus;
 function $minus(a, b) {
   if (typeof a === "number" || typeof a === "bigint") {
     $$assert(typeof a === typeof b, `A value of type ${typeof a}`);
@@ -190,6 +209,7 @@ function $minus(a, b) {
   }
 }
 
+exports.$power = $power;
 function $power(a, b) {
   if (typeof a === "number" || typeof a === "bigint") {
     $$assert(typeof a === typeof b, `A value of type ${typeof a}`);
@@ -199,6 +219,7 @@ function $power(a, b) {
   }
 }
 
+exports.$multiply = $multiply;
 function $multiply(a, b) {
   if (typeof a === "number" || typeof a === "bigint") {
     $$assert(typeof a === typeof b, `A value of type ${typeof a}`);
@@ -208,6 +229,7 @@ function $multiply(a, b) {
   }
 }
 
+exports.$divide = $divide;
 function $divide(a, b) {
   if (typeof a === "number" || typeof a === "bigint") {
     $$assert(typeof a === typeof b, `A value of type ${typeof a}`);
@@ -217,6 +239,7 @@ function $divide(a, b) {
   }
 }
 
+exports.$and = $and;
 function $and(a, b) {
   if (typeof a === "boolean") {
     $$assert(typeof b === "boolean", `A boolean`);
@@ -226,6 +249,7 @@ function $and(a, b) {
   }
 }
 
+exports.$or = $or;
 function $or(a, b) {
   if (typeof a === "boolean") {
     $$assert(typeof b === "boolean", `A boolean`);
@@ -235,6 +259,7 @@ function $or(a, b) {
   }
 }
 
+exports.$not = $not;
 function $not(a) {
   if (typeof a === "boolean") {
     return !a;
@@ -243,6 +268,7 @@ function $not(a) {
   }
 }
 
+exports.$at = $at;
 function $at(a, k) {
   if (typeof a === "string") {
     $$assert(
@@ -264,6 +290,7 @@ function $at(a, k) {
   }
 }
 
+exports.$atPut = $atPut;
 function $atPut(a, k, v) {
   if (Array.isArray(a)) {
     $$assert(
@@ -276,4 +303,3 @@ function $atPut(a, k, v) {
     a.$atPut(k, v);
   }
 }
-// --- Origami runtime ends here --- \\

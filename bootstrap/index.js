@@ -25,7 +25,9 @@ function compileToNode(program) {
       )
     ]
   });
-  return `${runtime}\n${js.code}`;
+  return `"use strict"; const $rt = require('@origamitower/origami/runtime');\n${
+    js.code
+  }`;
 }
 
 function register() {

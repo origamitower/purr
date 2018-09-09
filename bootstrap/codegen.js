@@ -55,7 +55,11 @@ function send(obj, message, args) {
 }
 
 function $rt(name, args) {
-  return t.callExpression(id(name), args);
+  return t.callExpression($rtMember(name), args);
+}
+
+function $rtMember(name) {
+  return t.memberExpression(id("$rt"), id(name));
 }
 
 function $compileArgs(params, fn) {
@@ -478,12 +482,14 @@ function compile(node) {
       return t.yieldExpression(compile(node.expression), node.generator);
 
     case "BinaryExpression":
-      return $call(id(mangle(node.operator)), {
+      return $call($rtMember(mangle(node.operator)), {
         positional: [node.left, node.right]
       });
 
     case "UnaryExpression":
-      return $call(id(mangle(node.operator)), { positional: [node.argument] });
+      return $call($rtMember(mangle(node.operator)), {
+        positional: [node.argument]
+      });
 
     case "CallExpression":
       return $call(compile(node.callee), node.params);
@@ -492,11 +498,9 @@ function compile(node) {
       return $methodCall(compile(node.object), id(node.method), node.params);
 
     case "AtPutExpression":
-      return t.callExpression(id(mangle("[]<-")), [
-        compile(node.object),
-        compile(node.key),
-        compile(node.value)
-      ]);
+      return $call($rtMember(mangle("[]<-")), {
+        positional: [node.object, node.key, node.value]
+      });
 
     case "UpdateExpression":
       return t.assignmentExpression(
@@ -506,10 +510,9 @@ function compile(node) {
       );
 
     case "AtExpression":
-      return t.callExpression(id(mangle("[]")), [
-        compile(node.object),
-        compile(node.key)
-      ]);
+      return $call($rtMember(mangle("[]")), {
+        positional: [node.object, node.key]
+      });
 
     case "GetExpression":
       return t.memberExpression(compile(node.object), id(node.name));
@@ -596,7 +599,7 @@ function compileImport(node) {
         return t.variableDeclaration("const", [
           t.variableDeclarator(
             id(x.alias),
-            t.memberExpression(id("$$GLOBAL"), id(x.name))
+            t.memberExpression($rtMember("$$GLOBAL"), id(x.name))
           )
         ]);
       });

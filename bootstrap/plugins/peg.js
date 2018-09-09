@@ -241,11 +241,12 @@ module.exports = ast => {
   const { code, actions } = compile(pegAst);
 
   return {
-    type: "CallExpression",
-    callee: {
+    type: "MethodCallExpression",
+    object: {
       type: "VariableExpression",
-      name: "$$makeParser"
+      name: "$rt"
     },
+    method: "$$makeParser",
     params: {
       positional: [
         {
