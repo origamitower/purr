@@ -1,0 +1,152 @@
+% language: origami
+
+data class Program(header, definitions) {}
+
+data class FunctionSignature(kind, name, parameters) {}
+data class ClassField(name, initializer) {}
+data class ClassMember(kind, declaration) {}
+data class Metadata(documentation, decorators) {}
+data class Pair(key, value) {}
+data class Arguments(positional, named) {}
+
+
+//--- MAIN DEFINITIONS ---
+module Definition {
+  data class Import(id, specifier) {}
+  data class ImportCore(name, specifier) {}
+  data class ExportLocal(specifier) {}
+  data class Function(meta, signature, body) {}
+  data class Module(meta, name, declarations) {}
+  data class Class(meta, name, parameters, superclass, fields, constructor, members) {}
+  data class DataClass(classDefinition) {}
+}
+
+module Statement {
+  data class Let(name, initializer) {}
+  data class LetMutable(name, initializer) {}
+  data class Assert(expression) {}
+  data class Foreach(name, expression, body) {}
+  data class While(predicate, body) {}
+  data class Until(predicate, body) {}
+  data class For(name, start, end, step, body) {}
+  data class Repeat(body) {}
+  data class IfElse(test, consequent, alternate) {}
+  data class If(test, consequent) {}
+  data class Match(expression, cases) {}
+  data class Decorated(decorator, statement) {}
+}
+
+module Expression {
+  data class IfThenElse(test, consequent, alternate) {}
+  data class Pipe(left, right) {}
+  data class Await(expression) {}
+  data class YieldAll(expression) {}
+  data class Yield(expression) {}
+  data class Binary(operator, left, right) {}
+  data class Unary(operator, left, right) {}
+  data class Call(callee, args) {}
+  data class MethodCall(object, message, args) {}
+  data class Set(object, property, value) {}
+  data class Get(object, property) {}
+  data class At(object, key) {}
+  data class AtPut(object, key, value) {}
+  data class New(object, args) {}
+  data class Variable(name) {}
+  data class Super() {}
+  data class Literal(literal) {}
+  data class Hole() {}
+  data class Array(items) {}
+  data class Object(pairs) {}
+  data class Function(kind, parameters, body) {}
+  data class Class(classDefinition) {}
+  data class Decorated(decorator, expression) {}
+}
+
+module Literal {
+  data class String(value) {}
+  data class Boolean(value) {}
+  data class Decimal(sign, integer, decimal) {}
+  data class Integer(sign, digits) {}
+  data class Null() {}
+}
+
+//--- SUPPORTING DEFINITIONS ---
+module Sign {
+  data class Positive() {}
+  data class Negative() {}
+  data class Unsigned() {}
+}
+
+module SequenceItem {
+  data class Spread(expression) {}
+  data class Element(expression) {}
+}
+
+module FunctionBody {
+  data class Expression(expression) {}
+  data class Block(statements) {}
+}
+
+module MatchCase {
+  data class When(pattern, predicate, body) {}
+  data class Case(pattern, body) {}
+  data class Default(body) {}
+}
+
+module Pattern {
+  data class Literal(literal) {}
+  data class Array(items) {}
+  data class Object(pairs) {}
+  data class Extractor(object, patterns) {}   // TODO: how do Extractors interact with named args?
+  data class Bind(name) {}
+}
+
+module ArrayPattern {
+  data class Spread(items, spread) {}
+  data class Fixed(items) {}
+}
+
+module MemberKind {
+  data class Static() {}
+  data class Instance() {}
+}
+
+module MemberDeclaration {
+  data class Method(kind, self, name, parameters, body) {}
+  data class Setter(self, name, parameter, body) {}
+  data class Getter(self, name, body) {}
+  data class AtPut(self, key, value, body) {}
+  data class At(self, key, body) {}
+  data class Binary(self, operator, left, right, body) {}
+  data class Unary(self, operator, parameter, body) {}
+}
+
+module ModuleDeclaration {
+  data class Definition(definition) {}
+  data class Statement(statement) {}
+}
+
+module Parameters {
+  data class Spread(positional, spread) {}
+  data class Regular(positional, named) {}
+}
+
+module FunctionKind {
+  data class Regular() {}
+  data class Generator() {}
+  data class Async() {}
+}
+
+module ExportSpecifier {
+  data class Alias(local, external) {}
+}
+
+module ImportSpecifier {
+  data class As(name) {}
+  data class Exposing(bindings) {}
+}
+
+module ImportBinding {
+  data class Alias(name, local) {}
+  data class Default(local) {}
+}
