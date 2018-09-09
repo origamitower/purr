@@ -1,10 +1,11 @@
 {
   "name": "@origamitower/origami",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "bin": {
     "origami": "origami.js"
   },
   "main": "index.js",
+  "license": "MIT",
   "dependencies": {
     "@babel/core": "^7.0.0",
     "@babel/generator": "^7.0.0",
