@@ -24,16 +24,23 @@ function $$makeParser(code, bindings) {
     const visitor = Object.keys(bindings)
       .map(x => {
         const args = Array.from(
-          { length: bindings[x].length },
+          { length: bindings[x].length - 1 },
           (_, i) => `$${i}`
         );
+        const fn = new Function(
+          "fn",
+          `return function (${args.join(", ")}) { return fn(this, ${args.join(
+            ", "
+          )}) }`
+        )((ctx, ...args) => {
+          const meta = args.map(x => ({
+            source: x.source,
+            rule: x.ctorName
+          }));
+          return bindings[x](meta, ...args.map(x => x.toAST(ctx.args.mapping)));
+        });
         return {
-          [x]: new Function(
-            "fn",
-            `return function (${args.join(", ")}) {
-  return fn(${args.map(v => `${v}.toAST(this.args.mapping)`).join(", ")})
-}`
-          )(bindings[x])
+          [x]: fn
         };
       })
       .reduce((a, b) => Object.assign(a, b), {});

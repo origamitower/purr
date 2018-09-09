@@ -28,11 +28,15 @@ module.exports = ast => {
         = NonemptyListOf<PegAction, "/">
   
       PegAction
-        = PegSequence "{" FunctionExpression "}"    -- action
-        | PegSequence                               -- no_action
+        = PegSequence Block    -- action
+        | PegSequence          -- no_action
   
       PegSequence
-        = PegExpr+
+        = PegBinding+
+
+      PegBinding
+        = Name ":" PegExpr    -- named
+        | PegExpr             -- unnamed
   
       PegExpr
         = PegExpr "*"                           -- repeat0
@@ -48,7 +52,7 @@ module.exports = ast => {
         | Name                                -- name
         | String                              -- literal
         | String ".." String                  -- range
-        | "(" PegSequence ")"                 -- group
+        | "(" PegExpr+ ")"                    -- group
     }
   `,
     { Origami: origamiGrammar }
@@ -81,17 +85,30 @@ module.exports = ast => {
     PegParams(_1, params, _2) {
       return params.toAST(visitor);
     },
-    PegAction_action(seq, _1, fn, _2) {
+    PegAction_action(seq, block) {
       return {
         type: "Action",
         sequence: seq.toAST(visitor),
-        fn: fn.toAST(visitor)
+        block: block.toAST(visitor)
       };
     },
     PegAction_no_action(seq) {
       return {
         type: "Action",
         sequence: seq.toAST(visitor)
+      };
+    },
+    PegBinding_named(name, _, expr) {
+      return {
+        type: "Binding",
+        name: name.toAST(visitor),
+        expr: expr.toAST(visitor)
+      };
+    },
+    PegBinding_unnamed(expr) {
+      return {
+        type: "Binding",
+        expr: expr.toAST(visitor)
       };
     },
     PegExpr_repeat0(term, _) {
@@ -170,8 +187,20 @@ module.exports = ast => {
 
   function compileAction(rule) {
     return flatmap(rule.alternatives, (x, i) => {
-      if (x.fn) {
-        return [[`${rule.name}_alt${i}`, x.fn]];
+      if (x.block) {
+        const names = x.sequence.map((a, i) => (a.name ? a.name : `$${i}`));
+        return [
+          [
+            `${rule.name}_alt${i}`,
+            {
+              type: "FunctionExpression",
+              params: {
+                positional: ["meta", ...names]
+              },
+              block: x.block
+            }
+          ]
+        ];
       } else {
         return [];
       }
@@ -193,6 +222,9 @@ module.exports = ast => {
         return `${node.name}${params} ${desc} = \n   ${node.alternatives
           .map(compile)
           .join("\n  | ")}`;
+
+      case "Binding":
+        return compile(node.expr);
 
       case "Action":
         return `${node.sequence.map(compile).join(" ")} -- alt${node.index}`;

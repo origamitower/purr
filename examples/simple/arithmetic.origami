@@ -10,20 +10,20 @@ data class Num(value) extends Expr() {}
 function grammar() = <origami.grammar.peg>"""
     Arithmetic {
       Expr
-        = Expr "+" Expr   { (a, _, b) => new Add(a, b) }
-        / Expr "-" Expr   { (a, _, b) => new Sub(a, b) }
-        / Expr "*" Expr   { (a, _, b) => new Mul(a, b) }
-        / Expr "/" Expr   { (a, _, b) => new Div(a, b) }
+        = a:Expr "+" b:Expr   { new Add(a, b); }
+        / a:Expr "-" b:Expr   { new Sub(a, b); }
+        / a:Expr "*" b:Expr   { new Mul(a, b); }
+        / a:Expr "/" b:Expr   { new Div(a, b); }
         / Prim
         ;
 
       Prim
         = Number
-        / "(" Expr ")"    { (_, a, _) => a }
+        / "(" a:Expr ")"    { a; }
         ;
 
       Number
-        = digit+    { (x) => new Num(Number(x.join(""))) }
+        = x:digit+    { new Num(Number(x.join(""))); }
         ;
     }
   """;
