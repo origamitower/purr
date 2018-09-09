@@ -161,6 +161,22 @@ const visitor = {
     return "async";
   },
 
+  Module(meta, _1, name, _2, decl, _3) {
+    return {
+      type: "Module",
+      meta: meta.toAST(visitor),
+      name: name.toAST(visitor),
+      declarations: decl.toAST(visitor)
+    };
+  },
+
+  ModuleDecl_stmt(stmt) {
+    return {
+      type: "Statement",
+      statement: stmt.toAST(visitor)
+    };
+  },
+
   Class(meta, declarations) {
     return {
       type: "Class",

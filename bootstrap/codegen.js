@@ -346,7 +346,7 @@ function blockPrepend(blockStmt, stmts) {
   return t.blockStatement([...stmts, ...blockStmt.body]);
 }
 
-function compileModule(module) {
+function compileProgram(module) {
   return t.program(
     flatmap(module.definitions, compileDefinition),
     [],
@@ -364,6 +364,52 @@ function compileDefinition(node) {
 
     case "Class":
       return [t.exportNamedDeclaration(compileClass(node), [])];
+
+    case "Module":
+      return [t.exportNamedDeclaration(compileModule(node), [])];
+
+    default:
+      throw new Error(`Unknown node ${node.type}`);
+  }
+}
+
+function compileModule(node) {
+  return t.variableDeclaration("const", [
+    t.variableDeclarator(
+      id(node.name),
+      t.callExpression(
+        t.arrowFunctionExpression(
+          [],
+          t.blockStatement([
+            defConst(id("$exports"), t.objectExpression([])),
+            ...flatmap(node.declarations, compileModuleDeclaration),
+            t.returnStatement(id("$exports"))
+          ])
+        ),
+        []
+      )
+    )
+  ]);
+}
+
+function compileModuleDeclaration(node) {
+  const exportName = name =>
+    t.expressionStatement(
+      t.assignmentExpression("=", $member(id("$exports"), id(name)), id(name))
+    );
+
+  switch (node.type) {
+    case "Function":
+      return [compileFunction(node), exportName(node.signature.name)];
+
+    case "Class":
+      return [compileClass(node), exportName(node.declaration.name)];
+
+    case "Module":
+      return [compileModule(node), exportName(node.name)];
+
+    case "Statement":
+      return compile(node.statement);
 
     default:
       throw new Error(`Unknown node ${node.type}`);
@@ -1002,16 +1048,17 @@ function compileMatch(match) {
 }
 
 function generate(ast) {
-  return generateJs(compileModule(ast));
+  return generateJs(compileProgram(ast));
 }
 
 module.exports = {
-  compileModule,
+  compileProgram,
   compile,
   compileDefinition,
   compileClass,
   compileFunction,
   compileImport,
   compileLiteral,
+  compileModule,
   generate
 };

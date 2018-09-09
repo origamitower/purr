@@ -1,0 +1,10 @@
+% version: 1
+% pass: true
+
+module Test {
+  let x = 1;
+  someExpression;
+  function foo() {}
+  class A() {}
+  module B {}
+}

@@ -1,5 +1,5 @@
 const { parse } = require("./parser");
-const { compileModule, generate } = require("./codegen");
+const { compileProgram, generate } = require("./codegen");
 const babel = require("@babel/core");
 const fs = require("fs");
 const path = require("path");
@@ -16,7 +16,7 @@ function compile(program) {
 }
 
 function compileToNode(program) {
-  const jsAst = compileModule(parse(program));
+  const jsAst = compileProgram(parse(program));
   const js = babel.transformFromAstSync(jsAst, null, {
     plugins: [
       path.join(
