@@ -34,9 +34,9 @@ There are many languages that compile to JavaScript, and for most of these langu
 - [x] Class expressions
 - [x] Destructuring (simplified pattern-matching)
 - [ ] Decorators (compile-time macros)
-- [ ] Pluggable literals (compile-time macros)
-- [ ] Inline DSLs (compile-time)
-- [ ] Grammar DSL (ohm-based)
+- [x] Pluggable literals (compile-time macros)
+- [x] Inline DSLs (compile-time)
+- [x] Grammar DSL (ohm-based)
 - [ ] Testing DSL and integrated testing (Pyret-style)
 - [ ] Package language
 

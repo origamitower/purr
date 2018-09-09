@@ -8,6 +8,46 @@ const $$GLOBAL =
       ? window
       : this;
 
+function $$makeParser(code, bindings) {
+  const $$Ohm = require("ohm-js");
+  const $$OhmToAST = require("ohm-js/extras").toAST;
+  const grammar = $$Ohm.grammar(code);
+  const parse = (source, rule) => {
+    const match = grammar.match(source, rule);
+    if (match.failed()) {
+      throw new SyntaxError(match.message);
+    }
+
+    const visitor = Object.keys(bindings)
+      .map(x => {
+        const args = Array.from(
+          { length: bindings[x].length },
+          (_, i) => `$${i}`
+        );
+        return {
+          [x]: new Function(
+            "fn",
+            `return function (${args.join(", ")}) {
+  return fn(${args.map(v => `${v}.toAST(this.args.mapping)`).join(", ")})
+}`
+          )(bindings[x])
+        };
+      })
+      .reduce((a, b) => Object.assign(a, b), {});
+
+    return $$OhmToAST(match, visitor);
+  };
+  return new class Grammar {
+    parse(source) {
+      return parse(source);
+    }
+
+    parseFromRule(source, rule) {
+      return parse(source, rule);
+    }
+  }();
+}
+
 function $$isIterable(a) {
   return a != null && typeof a[Symbol.iterator] === "function";
 }

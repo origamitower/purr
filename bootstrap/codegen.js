@@ -1,7 +1,7 @@
 const { inspect } = require("util");
 const generateJs = require("@babel/generator").default;
 const t = require("@babel/types");
-const { mangle, fresh } = require("./utils");
+const { mangle, fresh, flatmap } = require("./utils");
 const coreModules = require("./core-modules");
 
 const id = x => t.identifier(x);
@@ -204,10 +204,6 @@ function $assertRaw(expr, message) {
 
 function $assert(expr, message) {
   return $assertRaw(expr, t.stringLiteral(message));
-}
-
-function flatmap(xs, f) {
-  return xs.map(f).reduce((a, b) => a.concat(b), []);
 }
 
 function fixReturns(block) {
@@ -626,6 +622,7 @@ function compileClass(node) {
   const className = name;
 
   const field = x => t.memberExpression(t.thisExpression(), id(`__${x}`));
+  const objField = (obj, x) => t.memberExpression(obj, id(`__${x}`));
 
   function compileMember(member) {
     const { type, self, name, block } = member.definition;
@@ -704,11 +701,17 @@ function compileClass(node) {
             t.ifStatement(
               t.binaryExpression("instanceof", id("object"), id(name)),
               t.blockStatement([
-                t.returnStatement(t.arrayExpression(paramNames.map(field)))
+                t.returnStatement(
+                  t.arrayExpression(
+                    paramNames.map(k => objField(id("object"), k))
+                  )
+                )
               ]),
               t.blockStatement([t.returnStatement(t.nullLiteral())])
             )
-          ])
+          ]),
+          false,
+          !!"static"
         )
       ]
     : [];

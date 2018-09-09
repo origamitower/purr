@@ -210,15 +210,16 @@ Origami {
     | PrimaryExpression
   
   PrimaryExpression
-    = ~reserved_var Name    -- variable
-    | super_                -- super
-    | Literal               -- literal
-    | "?"                   -- hole
-    | ArrayExpression       -- array
-    | ObjectExpression      -- object
-    | FunctionExpression    -- function
-    | Class                 -- class
-    | "(" Expression ")"    -- group
+    = ~reserved_var Name                -- variable
+    | super_                            -- super
+    | "<" QualifiedName ">" Literal     -- plug_literal
+    | Literal                           -- literal
+    | "?"                               -- hole
+    | ArrayExpression                   -- array
+    | ObjectExpression                  -- object
+    | FunctionExpression                -- function
+    | Class                             -- class
+    | "(" Expression ")"                -- group
 
   ArrayExpression
     = "[" ListOf<ArrayItem, ","> "]"
@@ -251,6 +252,9 @@ Origami {
 
   Name
     = ~reserved id
+
+  QualifiedName
+    = NonemptyListOf<Name, ".">
 
   //-- LEXICAL --------------------------------------------------------
   newline = "\n" | "\r"

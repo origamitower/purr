@@ -2,7 +2,7 @@
 const { inspect } = require("util");
 const fs = require("fs");
 const path = require("path");
-const { parse, compile, register } = require("./index");
+const { parse, compileToNode, register } = require("./index");
 
 function read(f) {
   return fs.readFileSync(f, "utf8");
@@ -16,7 +16,7 @@ require("yargs")
   })
   .command("compile <file>", "compiles <file> to JavaScript", {}, argv => {
     const program = read(argv.file);
-    console.log(compile(program));
+    console.log(compileToNode(program));
   })
   .command("run <file>", "runs the main() declaration in <file>", {}, argv => {
     const params = argv.params || [];

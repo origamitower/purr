@@ -1,0 +1,48 @@
+% version: 1
+
+class Expr() {}
+data class Add(left, right) extends Expr() {}
+data class Mul(left, right) extends Expr() {}
+data class Sub(left, right) extends Expr() {}
+data class Div(left, right) extends Expr() {}
+data class Num(value) extends Expr() {}
+
+function grammar() = <origami.grammar.peg>"""
+    Arithmetic {
+      Expr
+        = Expr "+" Expr   { (a, _, b) => new Add(a, b) }
+        / Expr "-" Expr   { (a, _, b) => new Sub(a, b) }
+        / Expr "*" Expr   { (a, _, b) => new Mul(a, b) }
+        / Expr "/" Expr   { (a, _, b) => new Div(a, b) }
+        / Prim
+        ;
+
+      Prim
+        = Number
+        / "(" Expr ")"    { (_, a, _) => a }
+        ;
+
+      Number
+        = digit+    { (x) => new Num(Number(x.join(""))) }
+        ;
+    }
+  """;
+
+function evaluate(node) {
+  match node {
+    case Num(v): v;
+    case Add(a, b): evaluate(a) + evaluate(b);
+    case Sub(a, b): evaluate(a) - evaluate(b);
+    case Div(a, b): evaluate(a) / evaluate(b);
+    case Mul(a, b): evaluate(a) * evaluate(b);
+  }
+}
+
+function main(_) {
+  let ast = grammar().parse("1 + 2 * 3");
+  console.log("Source: 1 + 2 * 3");
+  console.log("\nAST:");
+  console.log(ast);
+  console.log("\nEvaluated:");
+  console.log(evaluate(ast));
+}

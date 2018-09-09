@@ -68,4 +68,8 @@ const fresh = {
   }
 };
 
-module.exports = { mangle, fresh };
+function flatmap(xs, f) {
+  return xs.map(f).reduce((a, b) => a.concat(b), []);
+}
+
+module.exports = { mangle, fresh, flatmap };
