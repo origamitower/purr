@@ -4,11 +4,11 @@
   "patterns": [
     {
       "name": "keyword.control.origami",
-      "match": "(?<![a-zA-Z0-9_\\.\\^])(abstract|and|assert|async|as|await|by|case|catch|class|data|default|else|exposing|extends|field|finally|foreach|from|function|if|import|let|match|member|module|mutable|new|not|of|or|repeat|static|super|then|to|try|until|with|when|while|yield)(?![a-zA-Z0-9_])"
+      "match": "(?<![a-zA-Z0-9_\\.\\^])(abstract|and|assert|async|as|await|by|case|catch|class|data|default|else|exposing|export|extends|field|finally|foreach|from|function|if|import|let|match|member|module|mutable|new|not|of|or|repeat|static|super|then|to|try|until|with|when|while|yield)(?![a-zA-Z0-9_])"
     },
     {
       "name": "constant.language.origami",
-      "match": "(?<![a-zA-Z0-9_])(true|false)(?![a-zA-Z0-9_])"
+      "match": "(?<![a-zA-Z0-9_])(true|false|null)(?![a-zA-Z0-9_])"
     },
     {
       "name": "comment.line.heading.origami",

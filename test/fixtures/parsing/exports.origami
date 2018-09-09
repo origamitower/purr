@@ -1,0 +1,13 @@
+% version: 1
+% pass: true
+
+function f(){}
+function g(){}
+
+export f;
+export g as alias;
+
+module Hello {
+  export f;
+  export g as alias;
+}

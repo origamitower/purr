@@ -73,6 +73,24 @@ const visitor = {
     };
   },
 
+  Export_aliased(_1, name, _2, alias, _3) {
+    return {
+      type: "Export",
+      tag: "Named",
+      name: name.toAST(visitor),
+      alias: alias.toAST(visitor)
+    };
+  },
+
+  Export_original(_1, name, _2) {
+    return {
+      type: "Export",
+      tag: "Named",
+      name: name.toAST(visitor),
+      alias: name.toAST(visitor)
+    };
+  },
+
   Function(meta, _1, signature, block) {
     return {
       type: "Function",

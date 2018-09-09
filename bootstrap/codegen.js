@@ -365,6 +365,13 @@ function compileDefinition(node) {
     case "Class":
       return [t.exportNamedDeclaration(compileClass(node), [])];
 
+    case "Export":
+      return [
+        t.exportNamedDeclaration(null, [
+          t.exportSpecifier(id(node.name), id(node.alias))
+        ])
+      ];
+
     case "Module":
       return [t.exportNamedDeclaration(compileModule(node), [])];
 
@@ -393,10 +400,12 @@ function compileModule(node) {
 }
 
 function compileModuleDeclaration(node) {
-  const exportName = name =>
+  const exportNameAs = (name, alias) =>
     t.expressionStatement(
-      t.assignmentExpression("=", $member(id("$exports"), id(name)), id(name))
+      t.assignmentExpression("=", $member(id("$exports"), id(alias)), id(name))
     );
+
+  const exportName = name => exportNameAs(name, name);
 
   switch (node.type) {
     case "Function":
@@ -410,6 +419,16 @@ function compileModuleDeclaration(node) {
 
     case "Statement":
       return compile(node.statement);
+
+    case "Export": {
+      switch (node.tag) {
+        case "Named":
+          return [exportNameAs(node.name, node.alias)];
+
+        default:
+          throw new TypeError(`Unknown export type ${node.tag}`);
+      }
+    }
 
     default:
       throw new Error(`Unknown node ${node.type}`);

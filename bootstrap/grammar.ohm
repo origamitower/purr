@@ -7,6 +7,7 @@ Origami {
 
   Definition
     = Import
+    | Export
     | Function
     | Class
     | Module
@@ -23,6 +24,10 @@ Origami {
     | default_ as_ Name   -- default
     | Name                -- original
 
+  // ## Exports
+  Export
+    = export_ Name as_ Name ";"   -- aliased
+    | export_ Name ";"            -- original
 
   // ## Functions
   Function
@@ -62,6 +67,7 @@ Origami {
     = Class
     | Function
     | Module
+    | Export
     | Statement   -- stmt
 
 
