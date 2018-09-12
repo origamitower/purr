@@ -391,3 +391,12 @@ function $atPut(a, k, v) {
     a.$atPut(k, v);
   }
 }
+
+exports.$has = $has;
+function $has(v, obj) {
+  if (Array.isArray(obj)) {
+    return obj.includes(v);
+  } else {
+    return obj.$has(v);
+  }
+}

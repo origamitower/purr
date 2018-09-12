@@ -26,6 +26,7 @@ function main() {
   a / b;
   a and b;
   a or b;
+  b in a;
 
   // Unary
   not a;

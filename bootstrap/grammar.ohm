@@ -94,6 +94,7 @@ Origami {
     | Name "." Name MemberBlock                             -- getter
     | Name "[" Name "]" "<-" Name MemberBlock               -- atput
     | Name "[" Name "]" MemberBlock                         -- at
+    | Name in_ Name MemberBlock                             -- in
     | Name operator Name MemberBlock                        -- operator
     | not_ Name MemberBlock                                 -- not
   
@@ -204,6 +205,7 @@ Origami {
 
   BinaryExpression
     = UnaryExpression operator UnaryExpression  -- binary
+    | UnaryExpression in_ UnaryExpression -- in
     | UnaryExpression
     
   UnaryExpression
@@ -406,6 +408,8 @@ Origami {
   module_ = kw<"module">
   export_ = kw<"export">
 
+  in_ = kw<"in">
+
 
   reserved
     = abstract_ | and_ | assert_ | async_ | as_ | await_
@@ -414,7 +418,7 @@ Origami {
     | data_ | default_
     | else_ | export_ | exposing_ | extends_
     | false_ | field_ | finally_ | foreach_ | from_ | function_
-    | if_ | import_
+    | if_ | import_ | in_
     | let_
     | match_ | member_ | module_ | mutable_
     | new_ | not_ | null_

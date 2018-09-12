@@ -30,3 +30,4 @@ The following table shows the translation for different operator syntaxes:
 | -- | -- | -- |
 | `a[b]` | `a.$at(b)` | Indexed collection (array) |
 | `a[b] <- c` | `a.$atPut(b)` | Indexed collection (array) |
+| `a in b` | `b.$has(a)` | Indexed collection (array) |

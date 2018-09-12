@@ -40,6 +40,7 @@ class A() {
   static a / b { }
   static a and b { }
   static a or b { }
+  static b in a { }
   static not a { }
 
   /* Documentation */
@@ -68,6 +69,7 @@ class A() {
   member a / b { }
   member a and b { }
   member a or b { }
+  member b in a { }
   member not a { }  
 }
 

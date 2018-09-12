@@ -56,6 +56,9 @@ function mangle(name) {
     case "[]<-":
       return `$atPut`;
 
+    case "in":
+      return "$has";
+
     default:
       throw new Error(`Unknown operator ${name}`);
   }

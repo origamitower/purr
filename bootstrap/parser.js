@@ -316,6 +316,16 @@ const visitor = {
     };
   },
 
+  MemberDeclaration_in(param, _1, self, block) {
+    return {
+      type: "MemberMethod",
+      self: self.toAST(visitor),
+      name: mangle("in"),
+      params: { positional: [param.toAST(visitor)], spread: null, named: [] },
+      block: block.toAST(visitor)
+    };
+  },
+
   MemberDeclaration_operator(self, op, arg, block) {
     return {
       type: "MemberMethod",
@@ -757,6 +767,15 @@ const visitor = {
       left: left.toAST(visitor),
       operator: operator.toAST(visitor),
       right: right.toAST(visitor)
+    };
+  },
+
+  BinaryExpression_in(arg, _, self) {
+    return {
+      type: "BinaryExpression",
+      left: arg.toAST(visitor),
+      operator: "in",
+      right: self.toAST(visitor)
     };
   },
 
