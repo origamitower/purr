@@ -145,7 +145,7 @@ Origami {
     = assert_ Expression ";"
 
   LoopStatement
-    = foreach_ Name of_ Expression Block                                        -- foreach
+    = for_ each_ Name of_ Expression Block                                      -- foreach
     | repeat_ while_ Expression Block                                           -- while
     | repeat_ until_ Expression Block                                           -- until
     | repeat_ with_ Name from_ Expression to_ Expression Block                  -- for
@@ -381,7 +381,8 @@ Origami {
   new_ = kw<"new">
   super_ = kw<"super">
 
-  foreach_ = kw<"foreach">
+  for_ = kw<"for">
+  each_ = kw<"each">
   of_ = kw<"of">
   repeat_ = kw<"repeat">
   with_ = kw<"with">
@@ -416,8 +417,8 @@ Origami {
     | by_
     | case_ | catch_ | class_
     | data_ | default_
-    | else_ | export_ | exposing_ | extends_
-    | false_ | field_ | finally_ | foreach_ | from_ | function_
+    | each_ | else_ | export_ | exposing_ | extends_
+    | false_ | field_ | finally_ | for_ | from_ | function_
     | if_ | import_ | in_
     | let_
     | match_ | member_ | module_ | mutable_

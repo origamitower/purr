@@ -3,7 +3,7 @@
 The basic iteration structures are all present, but without the familiar-for-some-confusing-for-many C-style syntax.
 
 ```
-foreach x of y { }
+for each x of y { }
 // => for (const x of y) { }
 
 repeat while p { }

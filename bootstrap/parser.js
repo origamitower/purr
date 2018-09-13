@@ -518,7 +518,7 @@ const visitor = {
     };
   },
 
-  LoopStatement_foreach(_1, name, _2, iterator, block) {
+  LoopStatement_foreach(_1, _2, name, _3, iterator, block) {
     return {
       type: "ForeachStatement",
       name: name.toAST(visitor),

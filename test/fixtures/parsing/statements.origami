@@ -10,7 +10,7 @@ function main() {
   assert x === 1;
  
   // Loop
-  foreach x of y { }
+  for each x of y { }
   repeat while x { }
   repeat until x { }
   repeat with x from 1 to 2 { }
