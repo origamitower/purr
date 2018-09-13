@@ -1,0 +1,221 @@
+% language: origami
+
+import "./ast" as ast;
+
+module Grammar {
+  let grammar = <origami.grammar.peg> """
+  Program
+    = h:Header d:Definition* end    { new ast.Program(h, d); }
+    ;
+
+  Header
+    = "%" n:identifier ":" l:line   { new ast.Header(n, l); }
+    ;
+  
+  Definition
+    = Import
+    / Export
+    / Function
+    / Class
+    / Module
+    ;
+
+  Import
+    = import_ id:String ";"    
+      { new ast.Definition.ImportEffect(id); }
+
+    / import_ id:String as_ n:Name ";"
+      { new ast.Definition.Import(id, n, []); }
+
+    / import_ id:String exposing_ b:NonemptyListOf<Binding, ","> ";"
+      { new ast.Definition.Import(id, null, b); }
+
+    / import_ id:Name as_ n:Name ";"
+      { new ast.Definition.ImportCore(id, n, []); }
+
+    / import_ id:Name exposing_ b:NonemptyListOf<Binding, ","> ";"
+      { new ast.Definition.ImportCore(id, null, b); }
+    ;
+
+  Binding
+    = e:Name as_ l:Name       { new ast.ImportBinding.Alias(e, l); }
+    / default_ as_ l:Name     { new ast.ImportBinding.Default(l); }
+    / n:Name                  { new ast.ImportBinding.Alias(n, n); }
+    ;
+
+  Export
+    = export_ l:Name as_ e:Name ";"   { new ast.Definition.ExportLocal(l, e); }
+    / export_ n:Name ";"              { new ast.Definition.ExportLocal(n, n); }
+    ;
+
+  Function
+    = m:Meta function_ s:FunctionSignature b:FunctionBody
+      { new ast.Definition.Function(m, s, b); }
+    ;
+
+  FunctionBody
+    = "=" e:Expression ";"    { [new ast.FunctionBody.Expression(e)]; }
+    / b:Block                 { new ast.FunctionBody.Block(b); }
+    ;
+
+  FunctionSignature
+    = t:FunctionType n:Name p:ParamList   { new ast.FunctionSignature(t, n, p); }
+    ;
+
+  ParamList
+    = "(" "..." n:Name ")"
+      { new ast.Parameters.Spread([], n); }
+
+    / "(" p:NonemptyListOf<ParamName, ","> "," "..." n:Name ")"
+      { new ast.Parameters.Spread(p, n); }
+
+    / "(" np:NonemptyListOf<NamedParam, ","> ")"
+      { new ast.Parameters.Regular([], np); }
+
+    / "(" p:NonemptyListOf<ParamName, ","> "," np:NonemptyListOf<NamedParam, ","> ")"
+      { new ast.Parameters.Regular(p, np); }
+
+    / "(" p:ListOf<ParamName, "," ")"
+      { new ast.Parameters.Regular(p, []); }
+    ;
+
+  ParamName
+    = n:Name ~":"   { n; }
+
+  NamedParam
+    = k:Name ":" v:Name "=" e:Expression  { new ast.NamedParameter(k, v, e); }
+    / k:Name ":" v:Name                   { new ast.NamedParameter(k, v, new ast.Literal.Null()); }
+    ;
+
+  FunctionType
+    = t:FunctionType1?  { if t === null then new ast.FunctionKind.Regular() else t; }
+
+  FunctionType1
+    = "*"     { new ast.FunctionKind.Regular(); }
+    / async_  { new ast.FunctionKind.Async(); }
+    ;
+
+  Module
+    = m:Meta module_ n:Name "{" d:ModuleDeclaration* "}"   { new ast.Definition.Module(m, n, d); }
+    ;
+
+  ModuleDeclaration
+    = c:Class         { new ast.ModuleDeclaration.Definition(c); }
+    / f:Function      { new ast.ModuleDeclaration.Definition(f); }
+    / m:Module        { new ast.ModuleDeclaration.Definition(m); }
+    / e:Export        { new ast.ModuleDeclaration.Definition(e); }
+    / l:Statement     { new ast.ModuleDeclaration.Statement(l); }
+    ;
+
+  Class
+    = m:Meta data_ c:ClassDeclaration   { new ast.Definition.DataClass(m, c); }
+    / m:meta c:ClassDeclaration         { new ast.Definition.Class(m, c); }
+    ;
+
+  ClassDeclaration
+    = class_ n:Name p:ParamList s:SuperClass? "{" f:ClassField* s:Statement* m:ClassMember* "}"
+      { new ast.Class(n, p, s, f, s, m); }
+    ;
+
+  SuperClass
+    = extends_ o:MemberExpression a:ArgList   { new ast.Superclass(o, a); }
+    ;
+
+  ClassField
+    = m:Meta field_ n:Name "=" e:Expression ";"   { new ast.ClassField(m, n, e); }
+    ;
+
+  ClassMember
+    = m:Meta static_ d:MemberDeclaration    { new ast.ClassMember(m, new ast.MemberKind.Static(), d); }
+    / m:Meta member_ d:MemberDeclaration    { new ast.ClassMember(m, new ast.MemberKind.Instance(), d); }
+    ;
+
+  MemberDeclaration
+    = t:FunctionType s:Name "." m:Name p:ParamList b:MemberBlock
+      { new ast.MemberDeclaration.Method(t, s, m, p, b); }
+
+    / s:Name "." n:Name "<-" p:Name b:MemberBlock
+      { new ast.MemberDeclaration.Setter(s, n, p, b); }
+    
+    / s:Name "." n:Name b:MemberBlock
+      { new ast.MemberDeclaration.Getter(s, n, b); }
+
+    / s:Name "[" k:Name "]" "<-" p:Name b:MemberBlock
+      { new ast.MemberDeclaration.AtPut(s, k, p, b); }
+
+    / s:Name "[" k:Name "]" b:MemberBlock
+      { new ast.MemberDeclaration.At(s, k, b); }
+
+    / p:Name in_ s:Name b:MemberBlock
+      { new ast.MemberDeclaration.In(s, p, b); }
+
+    / s:Name o:operator p:Name b:MemberBlock
+      { new ast.MemberDeclaration.Binary(s, o, p, b); }
+
+    / not_ s:Name b:MemberBlock
+      { new ast.MemberDeclaration.Unary(s, "not", b); }
+    ;
+
+  MemberBlock = FunctionBody;
+
+  Meta
+    = c:doc_comment? d:Decorator*   { new ast.Metadata(c, d); }
+    ;
+
+  Decorator
+    = "@" q:QualifiedName a:CompileTimeArgList  { new ast.Decorator(q, a); }
+    ;
+
+  Block
+    = "{" s:Statement* "}"    { s; }
+    ;
+
+  Statement
+    = LetStatement
+    / AssertStatement
+    / LoopStatement
+    / IfStatement
+    / MatchStatement
+    / e:Expression ";"    { new ast.Statement.Expression(e); }
+    ;
+
+  LetStatement
+    = let_ mutable_ n:Name "=" e:Expression ";"   { new ast.Statement.LetMutable(n, e); }
+    / let_ n:Name "=" e:Expression ";"            { new ast.Statement.Let(n, e); }
+    / let_ p:Pattern "=" e:Expression ";"         { new ast.Statement.LetMatch(p, e); }
+    ;
+
+  AssertStatement
+    = assert_ e:Expression ";"    { new ast.Statement.Assert(e); }
+    ;
+
+  LoopStatement
+    = for_ each_ n:Name of_ e:Expression b:Block    { new ast.Statement.Foreach(n, e, b); }
+    / repeat_ while_ e:Expression b:Block           { new ast.Statement.While(e, b); }
+    / repeat_ until_ e:Expression b:Block           { new ast.Statement.Until(e, b); }
+
+    / repeat_ with_ n:Name from_ s:Expression to_ e:Expression b:Block
+      { 
+        let one = new ast.Expression.Literal(new ast.Literal.Integer(new ast.Sign.Unsigned(), "1"));
+        new ast.Statement.For(n, s, e, one, b); 
+      }
+
+    / repeat_ with_ n:Name from_ s:Expression to_ e:Expression by_ st:Expression b:Block
+      { new ast.Statement.For(n, s, e, st, b); }
+    
+    / repeat_ b:Block   { new ast.Statement.Repeat(b); }
+    ;
+
+  IfStatement
+    = if_ t:Expression b:Block a:AlternateStatement   { new ast.Statement.IfElse(t, b, a); }
+    / if_ t:Expression b:Block                        { new ast.Statement.If(t, b); }
+    ;
+
+  AlternateStatement
+    = else_ i:IfStatement   { new ast.Alternate.If(i); }
+    / else_ b:Block         { new ast.Alternate.Block(b); }
+    ;
+
+  
+  """
+}
