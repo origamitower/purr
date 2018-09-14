@@ -11,6 +11,7 @@ data class Superclass(object, args) {}
 data class Metadata(documentation, decorators) {}
 data class Decorator(name, args) {}
 data class Pair(key, value) {}
+data class PairPattern(name, pattern) {}
 data class NamedParameter(name, local, initializer) {}
 data class Arguments(positional, named) {}
 
@@ -50,6 +51,7 @@ module Expression {
   data class YieldAll(expression) {}
   data class Yield(expression) {}
   data class Binary(operator, left, right) {}
+  data class In(object, value) {}
   data class Unary(operator, left, right) {}
   data class Call(callee, args) {}
   data class MethodCall(object, message, args) {}

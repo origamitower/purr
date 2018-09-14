@@ -3,6 +3,19 @@
 import "./ast" as ast;
 
 module Grammar {
+  let assocLeft = (initial, xs, f) => {
+    let [first, ...rest] = xs;
+    rest.reduce(f, f(initial, first));
+  };
+
+  let binaryL = (l, ops) => 
+    assocLeft(l, ops, (l, x) => new ast.Expression.Binary(l, x.operator, x.expression));
+
+  let sameOperator = (xs) => {
+    let [[op, _], ...rest] = xs;
+    rest.every(pair => pair[0] === op);
+  };
+
   let grammar = <origami.grammar.peg> """
   Program
     = h:Header d:Definition* end    { new ast.Program(h, d); }
@@ -214,6 +227,83 @@ module Grammar {
   AlternateStatement
     = else_ i:IfStatement   { new ast.Alternate.If(i); }
     / else_ b:Block         { new ast.Alternate.Block(b); }
+    ;
+
+  MatchStatement
+    = match_ e:Expression "{" c:MatchCase* "}"    { new ast.Statement.Match(e, c); }
+    ;
+
+  MatchCase
+    = case_ p:Pattern when_ t:Expression ":" b:Statement*   { new ast.MatchCase.When(p, t, b); }
+    / case_ p:Pattern ":" b:Statement*                      { new ast.MatchCase.Case(p, b); }
+    / default_ ":" b:Statement*                             { new ast.MatchCase.Default(b); }
+    ;
+
+  Pattern
+    = l:Literal                                             { new ast.Pattern.Literal(l); }
+    / "[" a:ArrayPattern "]"                                { new ast.Pattern.Array(a); }
+    / "{" p:ListOf<PairPattern, ","> "}"                    { new ast.Pattern.Object(p); }
+    / o:MemberExpression "(" p:ListOf<Pattern, ","> ")"     { new ast.Pattern.Extractor(o, p); }
+    / n:Name                                                { new ast.Pattern.Bind(n); }
+    ;
+
+  ArrayPattern
+    = h:NonemptyListOf<Pattern, ","> "," "..." t:Pattern    { new ast.ArrayPattern.Spread(h, t); }
+    / "..." p:Pattern                                       { new ast.ArrayPattern.Spread([], p); }
+    / p:ListOf<Pattern, ",">                                { new ast.ArrayPattern.Fixed(p); }
+    ;
+
+  PairPattern
+    = n:Name ":" p:Pattern                                  { new ast.PairPattern(n, p); }
+    ;
+
+  Expression
+    = IfExpression
+    / PipeExpression
+    ;
+
+  IfExpression
+    = if_ t:Expression then_ c:Expression else_ a:Expression    { new ast.Expression.IfThenElse(t, c, a); }
+    ;
+
+  PipeExpression
+    = l:PipeExpression "|>" r:BinaryExpression                  { new ast.Expression.Pipe(l, r); }
+    / YieldAwait
+    ;
+
+  YieldAwait
+    = await_ e:BinaryExpression                                 { new ast.Expression.Await(e); }
+    / yield_ "*" e:BinaryExpression                             { new ast.Expression.YieldAll(e); }
+    / yield_ e:BinaryExpression                                 { new ast.Expression.Yield(e); }
+    / BinaryExpression
+    ;
+
+  BinaryExpression
+    = l:UnaryExpression t:BinaryExpressionTrail<and_>+    { binaryL(l, t); }
+    / l:UnaryExpression t:BinaryExpressionTrail<or_>+     { binaryL(l, t); }
+    / not_ e:UnaryExpression                              { new ast.Expression.Unary("not", e); }
+
+    / l:UnaryExpression t:BinaryExpressionTrail<"++">+    { binaryL(l, t); }
+    
+    / l:UnaryExpression t:BinaryExpressionTrail<">>">+    { binaryL(l, t); }
+    / l:UnaryExpression t:BinaryExpressionTrail<"<<">+    { binaryL(l, t); }
+
+    / l:UnaryExpression t:BinaryExpressionTrail<"+">+     { binaryL(l, t); }
+    / l:UnaryExpression "**" r:UnaryExpression            { new ast.Expression.Binary("**", l, r); }
+    / l:UnaryExpression t:BinaryExpressionTrail<"*">+     { binaryL(l, t); }
+    / l:UnaryExpression "-" r:UnaryExpression             { new ast.Expression.Binary("-", l, r); }
+    / l:UnaryExpression "/" r:UnaryExpression             { new ast.Expression.Binary("/", l, r); }
+    
+    / l:UnaryExpression "===" r:UnaryExpression           { new ast.Expression.Binary("===", l, r); }
+    / l:UnaryExpression "=/=" r:UnaryExpression           { new ast.Expression.Binary("=/=", l, r); }
+    / l:UnaryExpression ">=" r:UnaryExpression            { new ast.Expression.Binary(">=", l, r); }
+    / l:UnaryExpression "<=" r:UnaryExpression            { new ast.Expression.Binary("<=", l, r); }
+    / l:UnaryExpression ">" r:UnaryExpression             { new ast.Expression.Binary(">", l, r); }
+    / l:UnaryExpression "<" r:UnaryExpression             { new ast.Expression.Binary("<", l, r); }
+    ;
+
+  BinaryExpressionTrail<operator>
+    = op:operator e:UnaryExpression   { { operator: op, expression: e }; }
     ;
 
   
