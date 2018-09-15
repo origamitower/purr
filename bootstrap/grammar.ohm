@@ -309,7 +309,7 @@ Origami {
     | "-"
     | "**"  | "*"
     | "/"
-    | and_  | or_
+    | and_  | or_   | is_
 
 
   octal_digit = "0" .. "7" | "_"
@@ -410,6 +410,7 @@ Origami {
   export_ = kw<"export">
 
   in_ = kw<"in">
+  is_ = kw<"is">
 
 
   reserved
@@ -419,7 +420,7 @@ Origami {
     | data_ | default_
     | each_ | else_ | export_ | exposing_ | extends_
     | false_ | field_ | finally_ | for_ | from_ | function_
-    | if_ | import_ | in_
+    | if_ | import_ | in_ | is_
     | let_
     | match_ | member_ | module_ | mutable_
     | new_ | not_ | null_

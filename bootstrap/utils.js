@@ -59,6 +59,9 @@ function mangle(name) {
     case "in":
       return "$has";
 
+    case "is":
+      return "$is";
+
     default:
       throw new Error(`Unknown operator ${name}`);
   }

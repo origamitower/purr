@@ -400,3 +400,8 @@ function $has(v, obj) {
     return obj.$has(v);
   }
 }
+
+exports.$is = $is;
+function $is(a, type) {
+  return a instanceof type;
+}
