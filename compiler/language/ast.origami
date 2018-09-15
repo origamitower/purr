@@ -26,6 +26,8 @@ module Definition {
   data class Function(meta, kind, name, parameters, body) {}
   /* A definition of a class */
   data class Class(meta, kind, name, classDeclaration) {}
+  /* A definition of an inner module */
+  data class Module(meta, name, definitions) {}
 
   // FIXME: this should probably be way more restricted
   /* A top-level statement */
