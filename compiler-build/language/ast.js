@@ -1446,6 +1446,41 @@ const Statement = (() => {
 
   $exports.Match = Match;
 
+  class Expression {
+    constructor(expression) {
+      if (!(arguments.length === 1)) throw new Error("Expression.prototype.constructor takes 1 arguments, but got " + arguments.length);
+      this.__expression = expression;
+    }
+
+    get expression() {
+      return this.__expression;
+    }
+
+    static unapply(object) {
+      if (!(arguments.length === 1)) throw new Error("Expression.prototype.unapply takes 1 arguments, but got " + arguments.length);
+
+      if (object instanceof Expression) {
+        return [object.__expression];
+      } else {
+        return null;
+      }
+    }
+
+    $equals(that) {
+      return $rt.$$checkClassEquals(["__expression"]);
+    }
+
+    debugRepresentation({
+      depth: depth = 0,
+      visited: visited = new Set()
+    } = {}) {
+      return $rt.$$showObject("Expression", this, ["__expression"], depth, visited);
+    }
+
+  }
+
+  $exports.Expression = Expression;
+
   class Decorated {
     constructor(decorator, statement) {
       if (!(arguments.length === 2)) throw new Error("Decorated.prototype.constructor takes 2 arguments, but got " + arguments.length);

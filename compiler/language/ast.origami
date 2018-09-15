@@ -42,6 +42,7 @@ module Statement {
   data class IfElse(test, consequent, alternate) {}
   data class If(test, consequent) {}
   data class Match(expression, cases) {}
+  data class Expression(expression) {}
   data class Decorated(decorator, statement) {}
 }
 

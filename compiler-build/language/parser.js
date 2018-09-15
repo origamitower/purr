@@ -15,28 +15,28 @@ const Grammar = (() => {
 
   const assocLeft = function (initial, xs, f) {
     if (!(arguments.length === 3)) throw new Error("This function takes 3 arguments, but got " + arguments.length);
-    let $$ref_2 = false,
-        $$ref_3 = xs,
-        $$ref_4,
-        $$ref_5;
+    let $$ref_6 = false,
+        $$ref_7 = xs,
+        $$ref_8,
+        $$ref_9;
 
-    if (Array.isArray($$ref_3) && $$ref_3.length >= 1) {
-      const $$ref_7 = $$ref_3[0];
-      const first = $$ref_7;
+    if (Array.isArray($$ref_7) && $$ref_7.length >= 1) {
+      const $$ref_11 = $$ref_7[0];
+      const first = $$ref_11;
       {
-        const $$ref_6 = $$ref_3.slice(1);
-        const rest = $$ref_6;
+        const $$ref_10 = $$ref_7.slice(1);
+        const rest = $$ref_10;
         {
-          $$ref_2 = true;
-          $$ref_4 = first;
-          $$ref_5 = rest;
+          $$ref_6 = true;
+          $$ref_8 = first;
+          $$ref_9 = rest;
         }
       }
     }
 
-    if (!$$ref_2) throw new Error("Pattern matching failed.");
-    const first = $$ref_4,
-          rest = $$ref_5;
+    if (!$$ref_6) throw new Error("Pattern matching failed.");
+    const first = $$ref_8,
+          rest = $$ref_9;
     return rest.reduce(f, f(initial, first));
   };
 
@@ -50,39 +50,39 @@ const Grammar = (() => {
 
   const sameOperator = function (xs) {
     if (!(arguments.length === 1)) throw new Error("This function takes 1 arguments, but got " + arguments.length);
-    let $$ref_8 = false,
-        $$ref_9 = xs,
-        $$ref_10,
-        $$ref_11,
-        $$ref_12;
+    let $$ref_12 = false,
+        $$ref_13 = xs,
+        $$ref_14,
+        $$ref_15,
+        $$ref_16;
 
-    if (Array.isArray($$ref_9) && $$ref_9.length >= 1) {
-      const $$ref_14 = $$ref_9[0];
+    if (Array.isArray($$ref_13) && $$ref_13.length >= 1) {
+      const $$ref_18 = $$ref_13[0];
 
-      if (Array.isArray($$ref_14) && $$ref_14.length === 2) {
-        const $$ref_16 = $$ref_14[0];
-        const op = $$ref_16;
+      if (Array.isArray($$ref_18) && $$ref_18.length === 2) {
+        const $$ref_20 = $$ref_18[0];
+        const op = $$ref_20;
         {
-          const $$ref_15 = $$ref_14[1];
-          const $$ignore_1 = $$ref_15;
+          const $$ref_19 = $$ref_18[1];
+          const $$ignore_1 = $$ref_19;
           {
-            const $$ref_13 = $$ref_9.slice(1);
-            const rest = $$ref_13;
+            const $$ref_17 = $$ref_13.slice(1);
+            const rest = $$ref_17;
             {
-              $$ref_8 = true;
-              $$ref_10 = op;
-              $$ref_11 = $$ignore_1;
-              $$ref_12 = rest;
+              $$ref_12 = true;
+              $$ref_14 = op;
+              $$ref_15 = $$ignore_1;
+              $$ref_16 = rest;
             }
           }
         }
       }
     }
 
-    if (!$$ref_8) throw new Error("Pattern matching failed.");
-    const op = $$ref_10,
-          $$ignore_1 = $$ref_11,
-          rest = $$ref_12;
+    if (!$$ref_12) throw new Error("Pattern matching failed.");
+    const op = $$ref_14,
+          $$ignore_1 = $$ref_15,
+          rest = $$ref_16;
     return rest.every(function (pair) {
       if (!(arguments.length === 1)) throw new Error("This function takes 1 arguments, but got " + arguments.length);
       return $rt.$equals($rt.$at(pair, 0), op);
@@ -96,7 +96,7 @@ const Grammar = (() => {
     return digits;
   };
 
-  const grammar = $rt.$$makeParser("Origami {\nProgram  = \n   (Header)* (Definition)* end -- alt0\n\nHeader  = \n   \"%\" id \":\" line -- alt0\n\nDefinition  = \n   Import -- alt0\n  | Export -- alt1\n  | Function -- alt2\n  | Class -- alt3\n  | Module -- alt4\n\nImport  = \n   import_ String \";\" -- alt0\n  | import_ String as_ Name \";\" -- alt1\n  | import_ String exposing_ NonemptyListOf<Binding, \",\"> \";\" -- alt2\n  | import_ Name as_ Name \";\" -- alt3\n  | import_ Name exposing_ NonemptyListOf<Binding, \",\"> \";\" -- alt4\n\nBinding  = \n   Name as_ Name -- alt0\n  | default_ as_ Name -- alt1\n  | Name -- alt2\n\nExport  = \n   export_ Name as_ Name \";\" -- alt0\n  | export_ Name \";\" -- alt1\n\nFunction  = \n   Meta function_ FunctionSignature FunctionBody -- alt0\n\nFunctionBody  = \n   \"=\" Expression \";\" -- alt0\n  | Block -- alt1\n\nFunctionSignature  = \n   FunctionType Name ParamList -- alt0\n\nParamList  = \n   \"(\" \"...\" Name \")\" -- alt0\n  | \"(\" NonemptyListOf<ParamName, \",\"> \",\" \"...\" Name \")\" -- alt1\n  | \"(\" NonemptyListOf<NamedParam, \",\"> \")\" -- alt2\n  | \"(\" NonemptyListOf<ParamName, \",\"> \",\" NonemptyListOf<NamedParam, \",\"> \")\" -- alt3\n  | \"(\" ListOf<ParamName, \",\"> \")\" -- alt4\n\nParamName  = \n   Name ~(\":\") -- alt0\n\nNamedParam  = \n   Name \":\" Name \"=\" Expression -- alt0\n  | Name \":\" Name -- alt1\n\nFunctionType  = \n   (FunctionType1)? -- alt0\n\nFunctionType1  = \n   \"*\" -- alt0\n  | async_ -- alt1\n\nModule  = \n   Meta module_ Name \"{\" (ModuleDeclaration)* \"}\" -- alt0\n\nModuleDeclaration  = \n   Class -- alt0\n  | Function -- alt1\n  | Module -- alt2\n  | Export -- alt3\n  | Statement -- alt4\n\nClass  = \n   Meta data_ ClassDeclaration -- alt0\n  | Meta ClassDeclaration -- alt1\n\nClassDeclaration  = \n   class_ Name ParamList (SuperClass)? \"{\" (ClassField)* (Statement)* (ClassMember)* \"}\" -- alt0\n\nSuperClass  = \n   extends_ MemberExpression ArgList -- alt0\n\nClassField  = \n   Meta field_ Name \"=\" Expression \";\" -- alt0\n\nClassMember  = \n   Meta static_ MemberDeclaration -- alt0\n  | Meta member_ MemberDeclaration -- alt1\n\nMemberDeclaration  = \n   FunctionType Name \".\" Name ParamList MemberBlock -- alt0\n  | Name \".\" Name \"<-\" Name MemberBlock -- alt1\n  | Name \".\" Name MemberBlock -- alt2\n  | Name \"[\" Name \"]\" \"<-\" Name MemberBlock -- alt3\n  | Name \"[\" Name \"]\" MemberBlock -- alt4\n  | Name in_ Name MemberBlock -- alt5\n  | Name operator Name MemberBlock -- alt6\n  | not_ Name MemberBlock -- alt7\n\nMemberBlock  = \n   FunctionBody -- alt0\n\nMeta  = \n   (doc_comment)? (Decorator)* -- alt0\n\nDecorator  = \n   \"@\" QualifiedName CompileTimeArgList -- alt0\n\nBlock  = \n   \"{\" (Statement)* \"}\" -- alt0\n\nStatement  = \n   LetStatement -- alt0\n  | AssertStatement -- alt1\n  | LoopStatement -- alt2\n  | IfStatement -- alt3\n  | MatchStatement -- alt4\n  | Expression \";\" -- alt5\n\nLetStatement  = \n   let_ mutable_ Name \"=\" Expression \";\" -- alt0\n  | let_ Name \"=\" Expression \";\" -- alt1\n  | let_ Pattern \"=\" Expression \";\" -- alt2\n\nAssertStatement  = \n   assert_ Expression \";\" -- alt0\n\nLoopStatement  = \n   for_ each_ Name of_ Expression Block -- alt0\n  | repeat_ while_ Expression Block -- alt1\n  | repeat_ until_ Expression Block -- alt2\n  | repeat_ with_ Name from_ Expression to_ Expression Block -- alt3\n  | repeat_ with_ Name from_ Expression to_ Expression by_ Expression Block -- alt4\n  | repeat_ Block -- alt5\n\nIfStatement  = \n   if_ Expression Block AlternateStatement -- alt0\n  | if_ Expression Block -- alt1\n\nAlternateStatement  = \n   else_ IfStatement -- alt0\n  | else_ Block -- alt1\n\nMatchStatement  = \n   match_ Expression \"{\" (MatchCase)* \"}\" -- alt0\n\nMatchCase  = \n   case_ Pattern when_ Expression \":\" (Statement)* -- alt0\n  | case_ Pattern \":\" (Statement)* -- alt1\n  | default_ \":\" (Statement)* -- alt2\n\nPattern  = \n   Literal -- alt0\n  | \"[\" ArrayPattern \"]\" -- alt1\n  | \"{\" ListOf<PairPattern, \",\"> \"}\" -- alt2\n  | MemberExpression \"(\" ListOf<Pattern, \",\"> \")\" -- alt3\n  | Name -- alt4\n\nArrayPattern  = \n   NonemptyListOf<Pattern, \",\"> \",\" \"...\" Pattern -- alt0\n  | \"...\" Pattern -- alt1\n  | ListOf<Pattern, \",\"> -- alt2\n\nPairPattern  = \n   Name \":\" Pattern -- alt0\n\nExpression  = \n   IfExpression -- alt0\n  | PipeExpression -- alt1\n\nIfExpression  = \n   if_ Expression then_ Expression else_ Expression -- alt0\n\nPipeExpression  = \n   PipeExpression \"|>\" BinaryExpression -- alt0\n  | YieldAwait -- alt1\n\nYieldAwait  = \n   await_ SendExpression -- alt0\n  | yield_ \"*\" SendExpression -- alt1\n  | yield_ SendExpression -- alt2\n  | BinaryExpression -- alt3\n\nBinaryExpression  = \n   UnaryExpression (BinaryExpressionTrail<and_>)+ -- alt0\n  | UnaryExpression (BinaryExpressionTrail<or_>)+ -- alt1\n  | not_ UnaryExpression -- alt2\n  | UnaryExpression (BinaryExpressionTrail<\"++\">)+ -- alt3\n  | UnaryExpression (BinaryExpressionTrail<\">>\">)+ -- alt4\n  | UnaryExpression (BinaryExpressionTrail<\"<<\">)+ -- alt5\n  | UnaryExpression \"->\" UnaryExpression -- alt6\n  | UnaryExpression (BinaryExpressionTrail<\"+\">)+ -- alt7\n  | UnaryExpression \"**\" UnaryExpression -- alt8\n  | UnaryExpression (BinaryExpressionTrail<\"*\">)+ -- alt9\n  | UnaryExpression \"-\" UnaryExpression -- alt10\n  | UnaryExpression \"/\" UnaryExpression -- alt11\n  | UnaryExpression \"===\" UnaryExpression -- alt12\n  | UnaryExpression \"=/=\" UnaryExpression -- alt13\n  | UnaryExpression \">=\" UnaryExpression -- alt14\n  | UnaryExpression \"<=\" UnaryExpression -- alt15\n  | UnaryExpression \">\" UnaryExpression -- alt16\n  | UnaryExpression \"<\" UnaryExpression -- alt17\n  | UnaryExpression -- alt18\n\nBinaryExpressionTrail<operator>  = \n   operator UnaryExpression -- alt0\n\nUnaryExpression  = \n   SendExpression -- alt0\n\nSendExpression  = \n   SendExpression SendContinuation -- alt0\n  | AssignExpression -- alt1\n\nSendContinuation  = \n   ArgList -- alt0\n  | \".\" Name ArgList -- alt1\n  | \"[\" Expression \"]\" \"<-\" Expression -- alt2\n  | \"[\" Expression \"]\" -- alt3\n  | \".\" Name \"<-\" Expression -- alt4\n  | \".\" Name -- alt5\n\nAssignExpression  = \n   MemberExpression \"<-\" Expression -- alt0\n  | MemberExpression -- alt1\n\nMemberExpression  = \n   MemberExpression \"[\" Expression \"]\" -- alt0\n  | MemberExpression \".\" Name -- alt1\n  | NewExpression -- alt2\n\nNewExpression  = \n   new_ MemberExpression ArgList -- alt0\n  | PrimaryExpression -- alt1\n\nPrimaryExpression  = \n   ~(reserved_var) Name ~(\":\") -- alt0\n  | super_ -- alt1\n  | \"_\" -- alt2\n  | Literal -- alt3\n  | ArrayExpression -- alt4\n  | ObjectExpression -- alt5\n  | FunctionExpression -- alt6\n  | ClassExpression -- alt7\n  | \"(\" Expression \")\" -- alt8\n\nClassExpression  = \n   Class -- alt0\n\nArrayExpression  = \n   \"[\" ListOf<ArrayItem, \",\"> \"]\" -- alt0\n\nArrayItem  = \n   \"...\" Expression -- alt0\n  | Expression -- alt1\n\nObjectExpression  = \n   \"{\" ListOf<Pair, \",\"> \"}\" -- alt0\n\nFunctionExpression  = \n   FunctionType ParamList \"=>\" Block -- alt0\n  | FunctionType ParamList \"=>\" Expression -- alt1\n\nLiteral  = \n   String -- alt0\n  | Boolean -- alt1\n  | Decimal -- alt2\n  | Integer -- alt3\n  | null_ -- alt4\n\nString  = \n   string -- alt0\n\nBoolean  = \n   boolean -- alt0\n\nDecimal  = \n   decimal -- alt0\n\nInteger  = \n   integer -- alt0\n\nArgList  = \n   \"(\" ListOf<Argument, \",\"> \")\" -- alt0\n\nArgument  = \n   \"...\" Expression -- alt0\n  | Name \":\" Expression -- alt1\n  | Expression -- alt2\n\nCompileTimeArgList  = \n   \"(\" ListOf<CompileTimeArg, \",\"> \")\" -- alt0\n\nCompileTimeArg  = \n   \"[\" ListOf<CompileTimeArg, \",\"> \"]\" -- alt0\n  | \"{\" ListOf<CompileTimePair, \",\"> \"}\" -- alt1\n  | Literal -- alt2\n\nCompileTimePair  = \n   Name \":\" CompileTimeArg -- alt0\n\nPair  = \n   Name \":\" Expression -- alt0\n\nName  = \n   ~(reserved) id -- alt0\n\nQualifiedName  = \n   NonemptyListOf<Name, \".\"> -- alt0\n\nnewline  = \n   \"\\n\" -- alt0\n  | \"\\r\" -- alt1\n\nline  = \n   (~(newline) any)* -- alt0\n\ncomment  = \n   \"//\" line -- alt0\n\ndoc_comment  = \n   \"/*\" (~(\"*/\") any)* \"*/\" -- alt0\n\nspace  += \n   comment -- alt0\n\nid_start  = \n   letter -- alt0\n  | \"_\" -- alt1\n\nid_rest  = \n   id_start -- alt0\n  | digit -- alt1\n\nid  = \n   id_start (id_rest)* -- alt0\n\nkw<word>  = \n   word ~(id_rest) -- alt0\n\nreserved_var  = \n   \"_\" ~(id_rest) -- alt0\n\noperator  = \n   \"===\" -- alt0\n  | \"=/=\" -- alt1\n  | \">=\" -- alt2\n  | \">>\" -- alt3\n  | \">\" -- alt4\n  | \"<=\" -- alt5\n  | \"<<\" -- alt6\n  | \"<\" -- alt7\n  | \"++\" -- alt8\n  | \"+\" -- alt9\n  | \"->\" -- alt10\n  | \"-\" -- alt11\n  | \"**\" -- alt12\n  | \"*\" -- alt13\n  | \"/\" -- alt14\n  | and_ -- alt15\n  | or_ -- alt16\n\noctal_digit  = \n   \"0\"..\"7\" -- alt0\n  | \"_\" -- alt1\n\nhex_digit  = \n   raw_hex_digit -- alt0\n  | \"_\" -- alt1\n\nraw_hex_digit  = \n   \"0\"..\"9\" -- alt0\n  | \"a\"..\"f\" -- alt1\n  | \"A\"..\"F\" -- alt2\n\nbin_digit  = \n   \"0\" -- alt0\n  | \"1\" -- alt1\n  | \"_\" -- alt2\n\ndecimal_digit  = \n   \"0\"..\"9\" -- alt0\n  | \"_\" -- alt1\n\nintegral_number  = \n   \"0o\" (octal_digit)+ -- alt0\n  | \"0x\" (hex_digit)+ -- alt1\n  | \"0b\" (bin_digit)+ -- alt2\n  | ~(\"_\") (decimal_digit)+ -- alt3\n\nraw_character  = \n   ~(\"\\\"\\\"\\\"\") any -- alt0\n\nescape_sequence  = \n   \"b\" -- alt0\n  | \"f\" -- alt1\n  | \"n\" -- alt2\n  | \"r\" -- alt3\n  | \"t\" -- alt4\n  | \"u\" unicode_escape -- alt5\n  | \"\\\"\" -- alt6\n  | \"\\\\\" -- alt7\n\nstring_character  = \n   ~(\"\\\"\" | \"\\\\\") any -- alt0\n  | \"\\\\\" escape_sequence -- alt1\n\nunicode_escape  = \n   raw_hex_digit raw_hex_digit raw_hex_digit raw_hex_digit -- alt0\n\nstring  = \n   \"\\\"\\\"\\\"\" (raw_character)* \"\\\"\\\"\\\"\" -- alt0\n  | \"\\\"\" (string_character)* \"\\\"\" -- alt1\n\ninteger  = \n   \"-\" integral_number -- alt0\n  | \"+\" integral_number -- alt1\n  | integral_number -- alt2\n\ndecimal  = \n   \"-\" (decimal_digit)+ \".\" (decimal_digit)+ -- alt0\n  | \"+\" (decimal_digit)+ \".\" (decimal_digit)+ -- alt1\n  | ~(\"_\") (decimal_digit)+ \".\" (decimal_digit)+ -- alt2\n\nboolean  = \n   true_ -- alt0\n  | false_ -- alt1\n\nimport_  = \n   kw<\"import\"> -- alt0\n\nexposing_  = \n   kw<\"exposing\"> -- alt0\n\nas_  = \n   kw<\"as\"> -- alt0\n\nfunction_  = \n   kw<\"function\"> -- alt0\n\nasync_  = \n   kw<\"async\"> -- alt0\n\ndata_  = \n   kw<\"data\"> -- alt0\n\nclass_  = \n   kw<\"class\"> -- alt0\n\nabstract_  = \n   kw<\"abstract\"> -- alt0\n\nextends_  = \n   kw<\"extends\"> -- alt0\n\nstatic_  = \n   kw<\"static\"> -- alt0\n\nmember_  = \n   kw<\"member\"> -- alt0\n\nfield_  = \n   kw<\"field\"> -- alt0\n\nlet_  = \n   kw<\"let\"> -- alt0\n\nmutable_  = \n   kw<\"mutable\"> -- alt0\n\nassert_  = \n   kw<\"assert\"> -- alt0\n\nif_  = \n   kw<\"if\"> -- alt0\n\nthen_  = \n   kw<\"then\"> -- alt0\n\nelse_  = \n   kw<\"else\"> -- alt0\n\nand_  = \n   kw<\"and\"> -- alt0\n\nor_  = \n   kw<\"or\"> -- alt0\n\nnot_  = \n   kw<\"not\"> -- alt0\n\nawait_  = \n   kw<\"await\"> -- alt0\n\nyield_  = \n   kw<\"yield\"> -- alt0\n\nnew_  = \n   kw<\"new\"> -- alt0\n\nsuper_  = \n   kw<\"super\"> -- alt0\n\nfor_  = \n   kw<\"for\"> -- alt0\n\neach_  = \n   kw<\"each\"> -- alt0\n\nof_  = \n   kw<\"of\"> -- alt0\n\nrepeat_  = \n   kw<\"repeat\"> -- alt0\n\nwith_  = \n   kw<\"with\"> -- alt0\n\nwhile_  = \n   kw<\"while\"> -- alt0\n\nuntil_  = \n   kw<\"until\"> -- alt0\n\nfrom_  = \n   kw<\"from\"> -- alt0\n\nto_  = \n   kw<\"to\"> -- alt0\n\nby_  = \n   kw<\"by\"> -- alt0\n\ntrue_  = \n   kw<\"true\"> -- alt0\n\nfalse_  = \n   kw<\"false\"> -- alt0\n\ntry_  = \n   kw<\"try\"> -- alt0\n\nfinally_  = \n   kw<\"finally\"> -- alt0\n\ncatch_  = \n   kw<\"catch\"> -- alt0\n\nmatch_  = \n   kw<\"match\"> -- alt0\n\ncase_  = \n   kw<\"case\"> -- alt0\n\nwhen_  = \n   kw<\"when\"> -- alt0\n\ndefault_  = \n   kw<\"default\"> -- alt0\n\nnull_  = \n   kw<\"null\"> -- alt0\n\nmodule_  = \n   kw<\"module\"> -- alt0\n\nexport_  = \n   kw<\"export\"> -- alt0\n\nin_  = \n   kw<\"in\"> -- alt0\n\nreserved  = \n   abstract_ -- alt0\n  | and_ -- alt1\n  | assert_ -- alt2\n  | async_ -- alt3\n  | as_ -- alt4\n  | await_ -- alt5\n  | by_ -- alt6\n  | case_ -- alt7\n  | catch_ -- alt8\n  | class_ -- alt9\n  | data_ -- alt10\n  | default_ -- alt11\n  | each_ -- alt12\n  | else_ -- alt13\n  | export_ -- alt14\n  | exposing_ -- alt15\n  | extends_ -- alt16\n  | false_ -- alt17\n  | field_ -- alt18\n  | finally_ -- alt19\n  | for_ -- alt20\n  | from_ -- alt21\n  | function_ -- alt22\n  | if_ -- alt23\n  | import_ -- alt24\n  | in_ -- alt25\n  | let_ -- alt26\n  | match_ -- alt27\n  | member_ -- alt28\n  | module_ -- alt29\n  | mutable_ -- alt30\n  | new_ -- alt31\n  | not_ -- alt32\n  | null_ -- alt33\n  | of_ -- alt34\n  | or_ -- alt35\n  | repeat_ -- alt36\n  | static_ -- alt37\n  | super_ -- alt38\n  | then_ -- alt39\n  | to_ -- alt40\n  | true_ -- alt41\n  | try_ -- alt42\n  | until_ -- alt43\n  | with_ -- alt44\n  | when_ -- alt45\n  | while_ -- alt46\n  | yield_ -- alt47\n}", {
+  const grammar = $rt.$$makeParser("Origami {\nProgram  = \n   (Header)* (Definition)* end -- alt0\n\nHeader  = \n   \"%\" id \":\" line -- alt0\n\nDefinition  = \n   Import -- alt0\n  | Export -- alt1\n  | Function -- alt2\n  | Class -- alt3\n  | Module -- alt4\n\nImport  = \n   import_ String \";\" -- alt0\n  | import_ String as_ Name \";\" -- alt1\n  | import_ String exposing_ NonemptyListOf<Binding, \",\"> \";\" -- alt2\n  | import_ Name as_ Name \";\" -- alt3\n  | import_ Name exposing_ NonemptyListOf<Binding, \",\"> \";\" -- alt4\n\nBinding  = \n   Name as_ Name -- alt0\n  | default_ as_ Name -- alt1\n  | Name -- alt2\n\nExport  = \n   export_ Name as_ Name \";\" -- alt0\n  | export_ Name \";\" -- alt1\n\nFunction  = \n   Meta function_ FunctionSignature FunctionBody -- alt0\n\nFunctionBody  = \n   \"=\" Expression \";\" -- alt0\n  | Block -- alt1\n\nFunctionSignature  = \n   FunctionType Name ParamList -- alt0\n\nParamList  = \n   \"(\" \"...\" Name \")\" -- alt0\n  | \"(\" NonemptyListOf<ParamName, \",\"> \",\" \"...\" Name \")\" -- alt1\n  | \"(\" NonemptyListOf<NamedParam, \",\"> \")\" -- alt2\n  | \"(\" NonemptyListOf<ParamName, \",\"> \",\" NonemptyListOf<NamedParam, \",\"> \")\" -- alt3\n  | \"(\" ListOf<ParamName, \",\"> \")\" -- alt4\n\nParamName  = \n   Name ~(\":\") -- alt0\n\nNamedParam  = \n   Name \":\" Name \"=\" Expression -- alt0\n  | Name \":\" Name -- alt1\n\nFunctionType  = \n   (FunctionType1)? -- alt0\n\nFunctionType1  = \n   \"*\" -- alt0\n  | async_ -- alt1\n\nModule  = \n   Meta module_ Name \"{\" (ModuleDeclaration)* \"}\" -- alt0\n\nModuleDeclaration  = \n   Class -- alt0\n  | Function -- alt1\n  | Module -- alt2\n  | Export -- alt3\n  | Statement -- alt4\n\nClass  = \n   Meta data_ ClassDeclaration -- alt0\n  | Meta ClassDeclaration -- alt1\n\nClassDeclaration  = \n   class_ Name ParamList (SuperClass)? \"{\" (ClassField)* (Statement)* (ClassMember)* \"}\" -- alt0\n\nSuperClass  = \n   extends_ MemberExpression ArgList -- alt0\n\nClassField  = \n   Meta field_ Name \"=\" Expression \";\" -- alt0\n\nClassMember  = \n   Meta static_ MemberDeclaration -- alt0\n  | Meta member_ MemberDeclaration -- alt1\n\nMemberDeclaration  = \n   FunctionType Name \".\" Name ParamList MemberBlock -- alt0\n  | Name \".\" Name \"<-\" Name MemberBlock -- alt1\n  | Name \".\" Name MemberBlock -- alt2\n  | Name \"[\" Name \"]\" \"<-\" Name MemberBlock -- alt3\n  | Name \"[\" Name \"]\" MemberBlock -- alt4\n  | Name in_ Name MemberBlock -- alt5\n  | Name operator Name MemberBlock -- alt6\n  | not_ Name MemberBlock -- alt7\n\nMemberBlock  = \n   FunctionBody -- alt0\n\nMeta  = \n   (doc_comment)? (Decorator)* -- alt0\n\nDecorator  = \n   \"@\" QualifiedName CompileTimeArgList -- alt0\n\nBlock  = \n   \"{\" (Statement)* \"}\" -- alt0\n\nStatement  = \n   LetStatement -- alt0\n  | AssertStatement -- alt1\n  | LoopStatement -- alt2\n  | IfStatement -- alt3\n  | MatchStatement -- alt4\n  | Expression \";\" -- alt5\n\nLetStatement  = \n   let_ mutable_ Name \"=\" Expression \";\" -- alt0\n  | let_ Name \"=\" Expression \";\" -- alt1\n  | let_ Pattern \"=\" Expression \";\" -- alt2\n\nAssertStatement  = \n   assert_ Expression \";\" -- alt0\n\nLoopStatement  = \n   for_ each_ Name of_ Expression Block -- alt0\n  | repeat_ while_ Expression Block -- alt1\n  | repeat_ until_ Expression Block -- alt2\n  | repeat_ with_ Name from_ Expression to_ Expression Block -- alt3\n  | repeat_ with_ Name from_ Expression to_ Expression by_ Expression Block -- alt4\n  | repeat_ Block -- alt5\n\nIfStatement  = \n   if_ Expression Block AlternateStatement -- alt0\n  | if_ Expression Block -- alt1\n\nAlternateStatement  = \n   else_ IfStatement -- alt0\n  | else_ Block -- alt1\n\nMatchStatement  = \n   match_ Expression \"{\" (MatchCase)* \"}\" -- alt0\n\nMatchCase  = \n   case_ Pattern when_ Expression \":\" (Statement)* -- alt0\n  | case_ Pattern \":\" (Statement)* -- alt1\n  | default_ \":\" (Statement)* -- alt2\n\nPattern  = \n   Literal -- alt0\n  | \"[\" ArrayPattern \"]\" -- alt1\n  | \"{\" ListOf<PairPattern, \",\"> \"}\" -- alt2\n  | MemberExpression \"(\" ListOf<Pattern, \",\"> \")\" -- alt3\n  | Name -- alt4\n\nArrayPattern  = \n   NonemptyListOf<Pattern, \",\"> \",\" \"...\" Pattern -- alt0\n  | \"...\" Pattern -- alt1\n  | ListOf<Pattern, \",\"> -- alt2\n\nPairPattern  = \n   Name \":\" Pattern -- alt0\n\nExpression  = \n   IfExpression -- alt0\n  | PipeExpression -- alt1\n\nIfExpression  = \n   if_ Expression then_ Expression else_ Expression -- alt0\n\nPipeExpression  = \n   PipeExpression \"|>\" BinaryExpression -- alt0\n  | YieldAwait -- alt1\n\nYieldAwait  = \n   await_ SendExpression -- alt0\n  | yield_ \"*\" SendExpression -- alt1\n  | yield_ SendExpression -- alt2\n  | BinaryExpression -- alt3\n\nBinaryExpression  = \n   UnaryExpression (BinaryExpressionTrail<and_>)+ -- alt0\n  | UnaryExpression (BinaryExpressionTrail<or_>)+ -- alt1\n  | not_ UnaryExpression -- alt2\n  | UnaryExpression (BinaryExpressionTrail<\"++\">)+ -- alt3\n  | UnaryExpression (BinaryExpressionTrail<\">>\">)+ -- alt4\n  | UnaryExpression (BinaryExpressionTrail<\"<<\">)+ -- alt5\n  | UnaryExpression in_ UnaryExpression -- alt6\n  | UnaryExpression \"->\" UnaryExpression -- alt7\n  | UnaryExpression (BinaryExpressionTrail<\"+\">)+ -- alt8\n  | UnaryExpression \"**\" UnaryExpression -- alt9\n  | UnaryExpression (BinaryExpressionTrail<\"*\">)+ -- alt10\n  | UnaryExpression \"-\" UnaryExpression -- alt11\n  | UnaryExpression \"/\" UnaryExpression -- alt12\n  | UnaryExpression \"===\" UnaryExpression -- alt13\n  | UnaryExpression \"=/=\" UnaryExpression -- alt14\n  | UnaryExpression \">=\" UnaryExpression -- alt15\n  | UnaryExpression \"<=\" UnaryExpression -- alt16\n  | UnaryExpression \">\" UnaryExpression -- alt17\n  | UnaryExpression \"<\" UnaryExpression -- alt18\n  | UnaryExpression -- alt19\n\nBinaryExpressionTrail<operator>  = \n   operator UnaryExpression -- alt0\n\nUnaryExpression  = \n   SendExpression -- alt0\n\nSendExpression  = \n   SendExpression SendContinuation -- alt0\n  | AssignExpression -- alt1\n\nSendContinuation  = \n   ArgList -- alt0\n  | \".\" Name ArgList -- alt1\n  | \"[\" Expression \"]\" \"<-\" Expression -- alt2\n  | \"[\" Expression \"]\" -- alt3\n  | \".\" Name \"<-\" Expression -- alt4\n  | \".\" Name -- alt5\n\nAssignExpression  = \n   MemberExpression \"<-\" Expression -- alt0\n  | MemberExpression -- alt1\n\nMemberExpression  = \n   MemberExpression \"[\" Expression \"]\" -- alt0\n  | MemberExpression \".\" Name -- alt1\n  | NewExpression -- alt2\n\nNewExpression  = \n   new_ MemberExpression ArgList -- alt0\n  | PrimaryExpression -- alt1\n\nPrimaryExpression  = \n   ~(reserved_var) Name ~(\":\") -- alt0\n  | super_ -- alt1\n  | \"_\" -- alt2\n  | Literal -- alt3\n  | ArrayExpression -- alt4\n  | ObjectExpression -- alt5\n  | FunctionExpression -- alt6\n  | ClassExpression -- alt7\n  | \"(\" Expression \")\" -- alt8\n\nClassExpression  = \n   Class -- alt0\n\nArrayExpression  = \n   \"[\" ListOf<ArrayItem, \",\"> \"]\" -- alt0\n\nArrayItem  = \n   \"...\" Expression -- alt0\n  | Expression -- alt1\n\nObjectExpression  = \n   \"{\" ListOf<Pair, \",\"> \"}\" -- alt0\n\nFunctionExpression  = \n   FunctionType ParamList \"=>\" Block -- alt0\n  | FunctionType ParamList \"=>\" Expression -- alt1\n\nLiteral  = \n   String -- alt0\n  | Boolean -- alt1\n  | Decimal -- alt2\n  | Integer -- alt3\n  | null_ -- alt4\n\nString  = \n   string -- alt0\n\nBoolean  = \n   boolean -- alt0\n\nDecimal  = \n   decimal -- alt0\n\nInteger  = \n   integer -- alt0\n\nArgList  = \n   \"(\" ListOf<Argument, \",\"> \")\" -- alt0\n\nArgument  = \n   \"...\" Expression -- alt0\n  | Name \":\" Expression -- alt1\n  | Expression -- alt2\n\nCompileTimeArgList  = \n   \"(\" ListOf<CompileTimeArg, \",\"> \")\" -- alt0\n\nCompileTimeArg  = \n   \"[\" ListOf<CompileTimeArg, \",\"> \"]\" -- alt0\n  | \"{\" ListOf<CompileTimePair, \",\"> \"}\" -- alt1\n  | Literal -- alt2\n\nCompileTimePair  = \n   Name \":\" CompileTimeArg -- alt0\n\nPair  = \n   Name \":\" Expression -- alt0\n\nName  = \n   ~(reserved) id -- alt0\n\nQualifiedName  = \n   NonemptyListOf<Name, \".\"> -- alt0\n\nnewline  = \n   \"\\n\" -- alt0\n  | \"\\r\" -- alt1\n\nline  = \n   (~(newline) any)* -- alt0\n\ncomment  = \n   \"//\" line -- alt0\n\ndoc_comment  = \n   \"/*\" (~(\"*/\") any)* \"*/\" -- alt0\n\nspace  += \n   comment -- alt0\n\nid_start  = \n   letter -- alt0\n  | \"_\" -- alt1\n\nid_rest  = \n   id_start -- alt0\n  | digit -- alt1\n\nid  = \n   id_start (id_rest)* -- alt0\n\nkw<word>  = \n   word ~(id_rest) -- alt0\n\nreserved_var  = \n   \"_\" ~(id_rest) -- alt0\n\noperator  = \n   \"===\" -- alt0\n  | \"=/=\" -- alt1\n  | \">=\" -- alt2\n  | \">>\" -- alt3\n  | \">\" -- alt4\n  | \"<=\" -- alt5\n  | \"<<\" -- alt6\n  | \"<\" -- alt7\n  | \"++\" -- alt8\n  | \"+\" -- alt9\n  | \"->\" -- alt10\n  | \"-\" -- alt11\n  | \"**\" -- alt12\n  | \"*\" -- alt13\n  | \"/\" -- alt14\n  | and_ -- alt15\n  | or_ -- alt16\n\noctal_digit  = \n   \"0\"..\"7\" -- alt0\n  | \"_\" -- alt1\n\nhex_digit  = \n   raw_hex_digit -- alt0\n  | \"_\" -- alt1\n\nraw_hex_digit  = \n   \"0\"..\"9\" -- alt0\n  | \"a\"..\"f\" -- alt1\n  | \"A\"..\"F\" -- alt2\n\nbin_digit  = \n   \"0\" -- alt0\n  | \"1\" -- alt1\n  | \"_\" -- alt2\n\ndecimal_digit  = \n   \"0\"..\"9\" -- alt0\n  | \"_\" -- alt1\n\nintegral_number  = \n   \"0o\" (octal_digit)+ -- alt0\n  | \"0x\" (hex_digit)+ -- alt1\n  | \"0b\" (bin_digit)+ -- alt2\n  | ~(\"_\") (decimal_digit)+ -- alt3\n\nraw_character  = \n   ~(\"\\\"\\\"\\\"\") any -- alt0\n\nescape_sequence  = \n   \"b\" -- alt0\n  | \"f\" -- alt1\n  | \"n\" -- alt2\n  | \"r\" -- alt3\n  | \"t\" -- alt4\n  | \"u\" unicode_escape -- alt5\n  | \"\\\"\" -- alt6\n  | \"\\\\\" -- alt7\n\nstring_character  = \n   ~(\"\\\"\" | \"\\\\\") any -- alt0\n  | \"\\\\\" escape_sequence -- alt1\n\nunicode_escape  = \n   raw_hex_digit raw_hex_digit raw_hex_digit raw_hex_digit -- alt0\n\nstring  = \n   \"\\\"\\\"\\\"\" (raw_character)* \"\\\"\\\"\\\"\" -- alt0\n  | \"\\\"\" (string_character)* \"\\\"\" -- alt1\n\ninteger  = \n   \"-\" integral_number -- alt0\n  | \"+\" integral_number -- alt1\n  | integral_number -- alt2\n\ndecimal  = \n   \"-\" (decimal_digit)+ \".\" (decimal_digit)+ -- alt0\n  | \"+\" (decimal_digit)+ \".\" (decimal_digit)+ -- alt1\n  | ~(\"_\") (decimal_digit)+ \".\" (decimal_digit)+ -- alt2\n\nboolean  = \n   true_ -- alt0\n  | false_ -- alt1\n\nimport_  = \n   kw<\"import\"> -- alt0\n\nexposing_  = \n   kw<\"exposing\"> -- alt0\n\nas_  = \n   kw<\"as\"> -- alt0\n\nfunction_  = \n   kw<\"function\"> -- alt0\n\nasync_  = \n   kw<\"async\"> -- alt0\n\ndata_  = \n   kw<\"data\"> -- alt0\n\nclass_  = \n   kw<\"class\"> -- alt0\n\nabstract_  = \n   kw<\"abstract\"> -- alt0\n\nextends_  = \n   kw<\"extends\"> -- alt0\n\nstatic_  = \n   kw<\"static\"> -- alt0\n\nmember_  = \n   kw<\"member\"> -- alt0\n\nfield_  = \n   kw<\"field\"> -- alt0\n\nlet_  = \n   kw<\"let\"> -- alt0\n\nmutable_  = \n   kw<\"mutable\"> -- alt0\n\nassert_  = \n   kw<\"assert\"> -- alt0\n\nif_  = \n   kw<\"if\"> -- alt0\n\nthen_  = \n   kw<\"then\"> -- alt0\n\nelse_  = \n   kw<\"else\"> -- alt0\n\nand_  = \n   kw<\"and\"> -- alt0\n\nor_  = \n   kw<\"or\"> -- alt0\n\nnot_  = \n   kw<\"not\"> -- alt0\n\nawait_  = \n   kw<\"await\"> -- alt0\n\nyield_  = \n   kw<\"yield\"> -- alt0\n\nnew_  = \n   kw<\"new\"> -- alt0\n\nsuper_  = \n   kw<\"super\"> -- alt0\n\nfor_  = \n   kw<\"for\"> -- alt0\n\neach_  = \n   kw<\"each\"> -- alt0\n\nof_  = \n   kw<\"of\"> -- alt0\n\nrepeat_  = \n   kw<\"repeat\"> -- alt0\n\nwith_  = \n   kw<\"with\"> -- alt0\n\nwhile_  = \n   kw<\"while\"> -- alt0\n\nuntil_  = \n   kw<\"until\"> -- alt0\n\nfrom_  = \n   kw<\"from\"> -- alt0\n\nto_  = \n   kw<\"to\"> -- alt0\n\nby_  = \n   kw<\"by\"> -- alt0\n\ntrue_  = \n   kw<\"true\"> -- alt0\n\nfalse_  = \n   kw<\"false\"> -- alt0\n\ntry_  = \n   kw<\"try\"> -- alt0\n\nfinally_  = \n   kw<\"finally\"> -- alt0\n\ncatch_  = \n   kw<\"catch\"> -- alt0\n\nmatch_  = \n   kw<\"match\"> -- alt0\n\ncase_  = \n   kw<\"case\"> -- alt0\n\nwhen_  = \n   kw<\"when\"> -- alt0\n\ndefault_  = \n   kw<\"default\"> -- alt0\n\nnull_  = \n   kw<\"null\"> -- alt0\n\nmodule_  = \n   kw<\"module\"> -- alt0\n\nexport_  = \n   kw<\"export\"> -- alt0\n\nin_  = \n   kw<\"in\"> -- alt0\n\nreserved  = \n   abstract_ -- alt0\n  | and_ -- alt1\n  | assert_ -- alt2\n  | async_ -- alt3\n  | as_ -- alt4\n  | await_ -- alt5\n  | by_ -- alt6\n  | case_ -- alt7\n  | catch_ -- alt8\n  | class_ -- alt9\n  | data_ -- alt10\n  | default_ -- alt11\n  | each_ -- alt12\n  | else_ -- alt13\n  | export_ -- alt14\n  | exposing_ -- alt15\n  | extends_ -- alt16\n  | false_ -- alt17\n  | field_ -- alt18\n  | finally_ -- alt19\n  | for_ -- alt20\n  | from_ -- alt21\n  | function_ -- alt22\n  | if_ -- alt23\n  | import_ -- alt24\n  | in_ -- alt25\n  | let_ -- alt26\n  | match_ -- alt27\n  | member_ -- alt28\n  | module_ -- alt29\n  | mutable_ -- alt30\n  | new_ -- alt31\n  | not_ -- alt32\n  | null_ -- alt33\n  | of_ -- alt34\n  | or_ -- alt35\n  | repeat_ -- alt36\n  | static_ -- alt37\n  | super_ -- alt38\n  | then_ -- alt39\n  | to_ -- alt40\n  | true_ -- alt41\n  | try_ -- alt42\n  | until_ -- alt43\n  | with_ -- alt44\n  | when_ -- alt45\n  | while_ -- alt46\n  | yield_ -- alt47\n}", {
     Program_alt0: function (meta, h, d, $2) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
       return new ast.Program(h, d);
@@ -360,7 +360,7 @@ const Grammar = (() => {
     },
     AlternateStatement_alt1: function (meta, $0, b) {
       if (!(arguments.length === 3)) throw new Error("This function takes 3 arguments, but got " + arguments.length);
-      return new ast.Alternate.Block(b);
+      return new ast.Alternate.Else(b);
     },
     MatchStatement_alt0: function (meta, $0, e, $2, c, $4) {
       if (!(arguments.length === 6)) throw new Error("This function takes 6 arguments, but got " + arguments.length);
@@ -458,51 +458,55 @@ const Grammar = (() => {
       if (!(arguments.length === 3)) throw new Error("This function takes 3 arguments, but got " + arguments.length);
       return binaryL(l, t);
     },
-    BinaryExpression_alt6: function (meta, l, $1, r) {
+    BinaryExpression_alt6: function (meta, v, $1, o) {
+      if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
+      return new ast.Expression.In(o, v);
+    },
+    BinaryExpression_alt7: function (meta, l, $1, r) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
       return new ast.Expression.Binary("->", l, r);
     },
-    BinaryExpression_alt7: function (meta, l, t) {
+    BinaryExpression_alt8: function (meta, l, t) {
       if (!(arguments.length === 3)) throw new Error("This function takes 3 arguments, but got " + arguments.length);
       return binaryL(l, t);
     },
-    BinaryExpression_alt8: function (meta, l, $1, r) {
+    BinaryExpression_alt9: function (meta, l, $1, r) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
       return new ast.Expression.Binary("**", l, r);
     },
-    BinaryExpression_alt9: function (meta, l, t) {
+    BinaryExpression_alt10: function (meta, l, t) {
       if (!(arguments.length === 3)) throw new Error("This function takes 3 arguments, but got " + arguments.length);
       return binaryL(l, t);
     },
-    BinaryExpression_alt10: function (meta, l, $1, r) {
+    BinaryExpression_alt11: function (meta, l, $1, r) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
       return new ast.Expression.Binary("-", l, r);
     },
-    BinaryExpression_alt11: function (meta, l, $1, r) {
+    BinaryExpression_alt12: function (meta, l, $1, r) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
       return new ast.Expression.Binary("/", l, r);
     },
-    BinaryExpression_alt12: function (meta, l, $1, r) {
+    BinaryExpression_alt13: function (meta, l, $1, r) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
       return new ast.Expression.Binary("===", l, r);
     },
-    BinaryExpression_alt13: function (meta, l, $1, r) {
+    BinaryExpression_alt14: function (meta, l, $1, r) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
       return new ast.Expression.Binary("=/=", l, r);
     },
-    BinaryExpression_alt14: function (meta, l, $1, r) {
+    BinaryExpression_alt15: function (meta, l, $1, r) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
       return new ast.Expression.Binary(">=", l, r);
     },
-    BinaryExpression_alt15: function (meta, l, $1, r) {
+    BinaryExpression_alt16: function (meta, l, $1, r) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
       return new ast.Expression.Binary("<=", l, r);
     },
-    BinaryExpression_alt16: function (meta, l, $1, r) {
+    BinaryExpression_alt17: function (meta, l, $1, r) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
       return new ast.Expression.Binary(">", l, r);
     },
-    BinaryExpression_alt17: function (meta, l, $1, r) {
+    BinaryExpression_alt18: function (meta, l, $1, r) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
       return new ast.Expression.Binary("<", l, r);
     },
@@ -562,62 +566,62 @@ const Grammar = (() => {
     AssignExpression_alt0: function (meta, m, $1, e) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
       {
-        const $$ref_17 = m;
-        let $$ref_18 = false;
+        const $$ref_21 = m;
+        let $$ref_22 = false;
         {
-          const $$ref_19 = ast.Expression.Get.unapply($$ref_17);
+          const $$ref_23 = ast.Expression.Get.unapply($$ref_21);
 
-          if ($$ref_19 != null) {
-            if (!Array.isArray($$ref_19)) throw new Error("unapply() must return null or an array");
+          if ($$ref_23 != null) {
+            if (!Array.isArray($$ref_23)) throw new Error("unapply() must return null or an array");
             {
-              const $$ref_21 = $$ref_19[0];
-              const o = $$ref_21;
+              const $$ref_25 = $$ref_23[0];
+              const o = $$ref_25;
               {
-                const $$ref_20 = $$ref_19[1];
-                const p = $$ref_20;
+                const $$ref_24 = $$ref_23[1];
+                const p = $$ref_24;
                 {
                   return new ast.Expression.Set(o, p, e);
-                  $$ref_18 = true;
+                  $$ref_22 = true;
                 }
               }
             }
           }
         }
         {
-          const $$ref_22 = ast.Expression.At.unapply($$ref_17);
+          const $$ref_26 = ast.Expression.At.unapply($$ref_21);
 
-          if ($$ref_22 != null) {
-            if (!Array.isArray($$ref_22)) throw new Error("unapply() must return null or an array");
+          if ($$ref_26 != null) {
+            if (!Array.isArray($$ref_26)) throw new Error("unapply() must return null or an array");
             {
-              const $$ref_24 = $$ref_22[0];
-              const o = $$ref_24;
+              const $$ref_28 = $$ref_26[0];
+              const o = $$ref_28;
               {
-                const $$ref_23 = $$ref_22[1];
-                const k = $$ref_23;
+                const $$ref_27 = $$ref_26[1];
+                const k = $$ref_27;
                 {
                   return new ast.Expression.AtPut(o, k, e);
-                  $$ref_18 = true;
+                  $$ref_22 = true;
                 }
               }
             }
           }
         }
         {
-          const $$ref_25 = ast.Expression.Variable.unapply($$ref_17);
+          const $$ref_29 = ast.Expression.Variable.unapply($$ref_21);
 
-          if ($$ref_25 != null) {
-            if (!Array.isArray($$ref_25)) throw new Error("unapply() must return null or an array");
+          if ($$ref_29 != null) {
+            if (!Array.isArray($$ref_29)) throw new Error("unapply() must return null or an array");
             {
-              const $$ref_26 = $$ref_25[0];
-              const n = $$ref_26;
+              const $$ref_30 = $$ref_29[0];
+              const n = $$ref_30;
               {
                 return new ast.Expression.Assign(m, e);
-                $$ref_18 = true;
+                $$ref_22 = true;
               }
             }
           }
         }
-        if (!$$ref_18) throw new Error("Pattern matching failed");
+        if (!$$ref_22) throw new Error("Pattern matching failed");
       }
     },
     MemberExpression_alt0: function (meta, m, $1, k, $3) {
@@ -686,12 +690,12 @@ const Grammar = (() => {
     },
     ArgList_alt0: function (meta, $0, x, $2) {
       if (!(arguments.length === 4)) throw new Error("This function takes 4 arguments, but got " + arguments.length);
-      const positional = x.filter(function (x) {
-        if (!(arguments.length === 1)) throw new Error("This function takes 1 arguments, but got " + arguments.length);
+      const positional = x.filter(function (x, $$ignore_2, $$ignore_3) {
+        if (!(arguments.length === 3)) throw new Error("This function takes 3 arguments, but got " + arguments.length);
         return $rt.$not($rt.$is(x, ast.NamedParameter));
       });
-      const named = x.filter(function (x) {
-        if (!(arguments.length === 1)) throw new Error("This function takes 1 arguments, but got " + arguments.length);
+      const named = x.filter(function (x, $$ignore_4, $$ignore_5) {
+        if (!(arguments.length === 3)) throw new Error("This function takes 3 arguments, but got " + arguments.length);
         return $rt.$is(x, ast.NamedParameter);
       });
       return new ast.Arguments(positional, named);
