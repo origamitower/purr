@@ -13,16 +13,23 @@ module Grammar {
 
   let sameOperator = (xs) => {
     let [[op, _], ...rest] = xs;
-    rest.every(pair => pair[0] === op);
+    rest.every((pair) => pair[0] === op);
+  };
+
+  let fixDigits = (xs) => {
+    let re = new RegExp("_", "g");
+    let digits = xs.join("").replace(re, "");
+    digits;
   };
 
   let grammar = <origami.grammar.peg> """
+Origami {
   Program
-    = h:Header d:Definition* end    { new ast.Program(h, d); }
+    = h:Header* d:Definition* end    { new ast.Program(h, d); }
     ;
 
   Header
-    = "%" n:identifier ":" l:line   { new ast.Header(n, l); }
+    = "%" n:id ":" l:line   { new ast.Header(n, l); }
     ;
   
   Definition
@@ -88,12 +95,13 @@ module Grammar {
     / "(" p:NonemptyListOf<ParamName, ","> "," np:NonemptyListOf<NamedParam, ","> ")"
       { new ast.Parameters.Regular(p, np); }
 
-    / "(" p:ListOf<ParamName, "," ")"
+    / "(" p:ListOf<ParamName, ","> ")"
       { new ast.Parameters.Regular(p, []); }
     ;
 
   ParamName
     = n:Name ~":"   { n; }
+    ;
 
   NamedParam
     = k:Name ":" v:Name "=" e:Expression  { new ast.NamedParameter(k, v, e); }
@@ -102,6 +110,7 @@ module Grammar {
 
   FunctionType
     = t:FunctionType1?  { if t === null then new ast.FunctionKind.Regular() else t; }
+    ;
 
   FunctionType1
     = "*"     { new ast.FunctionKind.Regular(); }
@@ -122,12 +131,12 @@ module Grammar {
 
   Class
     = m:Meta data_ c:ClassDeclaration   { new ast.Definition.DataClass(m, c); }
-    / m:meta c:ClassDeclaration         { new ast.Definition.Class(m, c); }
+    / m:Meta c:ClassDeclaration         { new ast.Definition.Class(m, c); }
     ;
 
   ClassDeclaration
-    = class_ n:Name p:ParamList s:SuperClass? "{" f:ClassField* s:Statement* m:ClassMember* "}"
-      { new ast.Class(n, p, s, f, s, m); }
+    = class_ n:Name p:ParamList s:SuperClass? "{" f:ClassField* b:Statement* m:ClassMember* "}"
+      { new ast.Class(n, p, s, f, b, m); }
     ;
 
   SuperClass
@@ -272,9 +281,9 @@ module Grammar {
     ;
 
   YieldAwait
-    = await_ e:BinaryExpression                                 { new ast.Expression.Await(e); }
-    / yield_ "*" e:BinaryExpression                             { new ast.Expression.YieldAll(e); }
-    / yield_ e:BinaryExpression                                 { new ast.Expression.Yield(e); }
+    = await_ e:SendExpression                                 { new ast.Expression.Await(e); }
+    / yield_ "*" e:SendExpression                             { new ast.Expression.YieldAll(e); }
+    / yield_ e:SendExpression                                 { new ast.Expression.Yield(e); }
     / BinaryExpression
     ;
 
@@ -287,6 +296,8 @@ module Grammar {
     
     / l:UnaryExpression t:BinaryExpressionTrail<">>">+    { binaryL(l, t); }
     / l:UnaryExpression t:BinaryExpressionTrail<"<<">+    { binaryL(l, t); }
+    
+    / l:UnaryExpression "->" r:UnaryExpression            { new ast.Expression.Binary("->", l, r); }
 
     / l:UnaryExpression t:BinaryExpressionTrail<"+">+     { binaryL(l, t); }
     / l:UnaryExpression "**" r:UnaryExpression            { new ast.Expression.Binary("**", l, r); }
@@ -306,6 +317,314 @@ module Grammar {
     = op:operator e:UnaryExpression   { { operator: op, expression: e }; }
     ;
 
+  UnaryExpression
+    = SendExpression;
+
+  SendExpression
+    = s:SendExpression k:SendContinuation   { k(s); }
+    / AssignExpression
+    ;
+
+  SendContinuation
+    = a:ArgList                                     { (x) => new ast.Expression.Call(x, a); }
+    / "." m:Name a:ArgList                          { (x) => new ast.Expression.MethodCall(x, m, a); }
+    / "[" k:Expression "]" "<-" v:Expression        { (x) => new ast.Expression.AtPut(x, k, v); }
+    / "[" k:Expression "]"                          { (x) => new ast.Expression.At(x, k); }
+    / "." n:Name "<-" v:Expression                  { (x) => new ast.Expression.Set(x, n, v); }
+    / "." n:Name                                    { (x) => new ast.Expression.Get(x, n); }
+    ;
+
+  AssignExpression
+    = m:MemberExpression "<-" e:Expression
+      {
+        match m {
+          case ast.Expression.Get(o, p):   new ast.Expression.Set(o, p, e);
+          case ast.Expression.At(o, k):    new ast.Expression.AtPut(o, k, e);
+          case ast.Expression.Variable(n): new ast.Expression.Assign(m, e);
+          // TODO: anything else isn't an L-Value
+        }
+      }
+    / MemberExpression
+    ;
+
+  MemberExpression
+    = m:MemberExpression "[" k:Expression "]"   { new ast.Expression.At(m, k); }
+    / m:MemberExpression "." n:Name             { new ast.Expression.Get(m, n); }
+    / NewExpression
+    ;
+
+  NewExpression
+    = new_ m:MemberExpression a:ArgList         { new ast.Expression.New(m, a); }
+    / PrimaryExpression
+    ;
+
+  PrimaryExpression
+    = ~reserved_var n:Name ~":"                 { new ast.Expression.Variable(n); }
+    / super_                                    { new ast.Expression.Super(); }
+    / "_"                                       { new ast.Expression.Hole(); }
+    / l:Literal                                 { new ast.Expression.Literal(l); }
+    / ArrayExpression
+    / ObjectExpression
+    / FunctionExpression
+    / ClassExpression
+    / "(" e:Expression ")"                      { e; }
+    ;
+
+  ClassExpression
+    = c:Class   { new ast.Expression.Class(c); }
+    ;
+
+  ArrayExpression
+    = "[" xs:ListOf<ArrayItem, ","> "]"         { new ast.Expression.Array(xs); }
+    ;
+
+  ArrayItem
+    = "..." e:Expression                        { new ast.SequenceItem.Spread(e); }
+    / e:Expression                              { new ast.SequenceItem.Element(e); }
+    ;
+
+  ObjectExpression
+    = "{" p:ListOf<Pair, ","> "}"               { new ast.Expression.Object(p); }
+    ;
+
+  FunctionExpression
+    = t:FunctionType p:ParamList "=>" b:Block         
+      { new ast.Expression.Function(t, p, new ast.FunctionBody.Block(b)); }
+
+    / t:FunctionType p:ParamList "=>" e:Expression    
+      { new ast.Expression.Function(t, p, new ast.FunctionBody.Expression(e)); }
+    ;
+
+  Literal
+    = String
+    / Boolean
+    / Decimal
+    / Integer
+    / null_     { new ast.Literal.Null(); }
+    ;
+
+  String = string;
+  Boolean = boolean;
+  Decimal = decimal;
+  Integer = integer;
+
+  ArgList
+    = "(" x:ListOf<Argument, ","> ")"     
+      {
+        let positional = x.filter((x) => not (x is ast.NamedParameter)) ;
+        let named = x.filter((x) => x is ast.NamedParameter);
+        new ast.Arguments(positional, named);
+      }
+    ;
+
+  Argument
+    = "..." e:Expression                  { new ast.Argument.Spread(e); }
+    / n:Name ":" e:Expression             { new ast.Argument.Named(n, e); }
+    / e:Expression                        { new ast.Argument.Positional(e); }
+    ;
+
+  CompileTimeArgList
+    = "(" x:ListOf<CompileTimeArg, ","> ")"
+    ;
+
+  CompileTimeArg
+    = "[" x:ListOf<CompileTimeArg, ","> "]"   { new ast.MacroLiteral.Array(x); }
+    / "{" x:ListOf<CompileTimePair, ","> "}"  { new ast.MacroLiteral.Object(x); }
+    / l:Literal                               { new ast.MacroLiteral.Literal(x); }
+    ;
+
+  CompileTimePair
+    = n:Name ":" e:CompileTimeArg   { new ast.MacroPair(n, e); }
+    ;
+
+  Pair
+    = n:Name ":" e:Expression             { new ast.Pair(n, e); }
+    ;
+
+  Name
+    = ~reserved n:id                      { n; }
+    ;
+
+  QualifiedName
+    = x:NonemptyListOf<Name, ".">         { x; }
+    ;
+
+  //-- LEXICAL --------------------------------------------------------
+  newline = "\n" / "\r";
+  line = (~newline any)*;
+  comment = "//" line;
+  doc_comment = "/*" (~"*/" any)* "*/";
+  space += comment;
+
+  id_start = letter / "_";
+  id_rest = id_start / digit;
+  id = id_start id_rest*;
+
+  kw<word> = word ~id_rest;
+  reserved_var = "_" ~id_rest;
+
+  operator 
+    = "===" / "=/="
+    / ">="  / ">>"  / ">"
+    / "<="  / "<<"  / "<"
+    / "++"  / "+"
+    / "->"  / "-"
+    / "**"  / "*"
+    / "/"
+    / and_  / or_;
+
+
+  octal_digit = "0" .. "7" / "_";
+  hex_digit = raw_hex_digit / "_";
+  raw_hex_digit = "0" .. "9" / "a" .. "f" / "A" .. "F";
+  bin_digit = "0" / "1" / "_";
+  decimal_digit = "0" .. "9" / "_";
+
+  integral_number 
+    = "0o" d:octal_digit+       { String(parseInt(fixDigits(d), 8)); }
+    / "0x" d:hex_digit+         { String(parseInt(fixDigits(d), 16)); }
+    / "0b" d:bin_digit+         { String(parseInt(fixDigits(d), 2)); }
+    / ~"_" d:decimal_digit+     { fixDigits(d); }
+    ;
+
+  raw_character 
+    = ~"\"\"\"" any;
+
+  escape_sequence
+    = "b"                   { "\b"; }
+    / "f"                   { "\f"; }
+    / "n"                   { "\n"; }
+    / "r"                   { "\r"; }
+    / "t"                   { "\t"; }
+    / "u" e:unicode_escape  { String.fromCodePoint(parseInt(e, 16)); }
+    / "\""                  { "\""; }
+    / "\\"                  { "\\"; }
+    ;
+
+  string_character
+    = ~("\"" / "\\") any
+    / "\\" e:escape_sequence   { e; }
+    ;
+
+  unicode_escape 
+    = raw_hex_digit raw_hex_digit raw_hex_digit raw_hex_digit
+    ;
+
+  string
+    = "\"\"\"" cs:raw_character* "\"\"\""       { cs.join(""); }
+    / "\"" cs:string_character* "\""            { cs.join(""); }
+    ;
   
-  """
+  integer
+    = "-" i:integral_number   { new ast.Literal.Integer(new ast.Sign.Negative(), i); }
+    / "+" i:integral_number   { new ast.Literal.Integer(new ast.Sign.Positive(), i); }
+    / i:integral_number       { new ast.Literal.Integer(new ast.Sign.Unsigned(), i); }
+    ;
+
+  decimal
+    = "-" i:decimal_digit+ "." d:decimal_digit+
+      { new ast.Literal.Decimal(new ast.Sign.Negative(), fixDigits(i), fixDigits(d)); }
+    
+    / "+" i:decimal_digit+ "." d:decimal_digit+
+      { new ast.Literal.Decimal(new ast.Sign.Positive(), fixDigits(i), fixDigits(d)); }
+
+    / ~ "_" i:decimal_digit+ "." d:decimal_digit+
+      { new ast.Literal.Decimal(new ast.Sign.Unsigned(), fixDigits(i), fixDigits(d)); }
+    ;
+  
+  boolean
+    = true_    { new ast.Literal.Boolean(true); }
+    / false_   { new ast.Literal.Boolean(false); }
+    ;
+
+
+  import_ = kw<"import">;
+  exposing_ = kw<"exposing">;
+  as_ = kw<"as">;
+
+  function_ = kw<"function">;
+  async_ = kw<"async">;
+
+  data_ = kw<"data">;
+  class_ = kw<"class">;
+  abstract_ = kw<"abstract">;
+  extends_ = kw<"extends">;
+  static_ = kw<"static">;
+  member_ = kw<"member">;
+  field_ = kw<"field">;
+
+  let_ = kw<"let">;
+  mutable_ = kw<"mutable">;
+
+  assert_ = kw<"assert">;
+
+  if_ = kw<"if">;
+  then_ = kw<"then">;
+  else_ = kw<"else">;
+
+  and_ = kw<"and">;
+  or_ = kw<"or">;
+  not_ = kw<"not">;
+  
+  await_ = kw<"await">;
+  yield_ = kw<"yield">;
+
+  new_ = kw<"new">;
+  super_ = kw<"super">;
+
+  for_ = kw<"for">;
+  each_ = kw<"each">;
+  of_ = kw<"of">;
+  repeat_ = kw<"repeat">;
+  with_ = kw<"with">;
+  while_ = kw<"while">;
+  until_ = kw<"until">;
+  from_ = kw<"from">;
+  to_ = kw<"to">;
+  by_ = kw<"by">;
+
+  true_ = kw<"true">;
+  false_ = kw<"false">;
+
+  try_ = kw<"try">;
+  finally_ = kw<"finally">;
+  catch_ = kw<"catch">;
+
+  match_ = kw<"match">;
+  case_ = kw<"case">;
+  when_ = kw<"when">;
+  default_ = kw<"default">;
+
+  null_ = kw<"null">;
+
+  module_ = kw<"module">;
+  export_ = kw<"export">;
+
+  in_ = kw<"in">;
+
+
+  reserved
+    = abstract_ / and_ / assert_ / async_ / as_ / await_
+    / by_
+    / case_ / catch_ / class_
+    / data_ / default_
+    / each_ / else_ / export_ / exposing_ / extends_
+    / false_ / field_ / finally_ / for_ / from_ / function_
+    / if_ / import_ / in_
+    / let_
+    / match_ / member_ / module_ / mutable_
+    / new_ / not_ / null_
+    / of_ / or_
+    / repeat_
+    / static_ / super_
+    / then_ / to_ / true_ / try_
+    / until_
+    / with_ / when_ / while_
+    / yield_;
+}
+  """;
+
+  function parse(source) {
+    grammar.parse(source);
+  }
 }
