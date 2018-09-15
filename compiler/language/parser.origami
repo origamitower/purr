@@ -311,6 +311,7 @@ Origami {
     / l:UnaryExpression "<=" r:UnaryExpression            { new ast.Expression.Binary("<=", l, r); }
     / l:UnaryExpression ">" r:UnaryExpression             { new ast.Expression.Binary(">", l, r); }
     / l:UnaryExpression "<" r:UnaryExpression             { new ast.Expression.Binary("<", l, r); }
+    / UnaryExpression
     ;
 
   BinaryExpressionTrail<operator>
