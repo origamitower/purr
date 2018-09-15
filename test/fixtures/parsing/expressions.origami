@@ -11,7 +11,6 @@ function main() {
   // Binary
   a === b;
   a =/= b;
-  a ==> b;
   a >= b;
   a >> b;
   a > b;
@@ -143,7 +142,6 @@ function class_expression() {
     static _[a] <- b { }
     static a === b { }
     static a =/= b { }
-    static a ==> b { }
     static a >= b { }
     static a >= b { }
     static a >> b { }
@@ -171,7 +169,6 @@ function class_expression() {
     member _[a] <- b { }
     member a === b { }
     member a =/= b { }
-    member a ==> b { }
     member a >= b { }
     member a >= b { }
     member a >> b { }
