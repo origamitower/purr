@@ -1,34 +1,101 @@
 % language: origami
 
-data class Program(header, definitions) {}
-data class Header(name, value) {}
+/* Represents an Origami compilation unit/file. */
+data class File(header, definitions) {}
 
-data class FunctionSignature(kind, name, parameters) {}
-data class Class(name, parameters, superclass, fields, ctor, members) {}
-data class ClassField(meta, name, initializer) {}
-data class ClassMember(meta, kind, declaration) {}
-data class Superclass(object, args) {}
-data class Metadata(documentation, decorators) {}
-data class Decorator(name, args) {}
+/* Represents any key/value pair that may occurr in the grammar. */
 data class Pair(key, value) {}
-data class PairPattern(name, pattern) {}
-data class MacroPair(name, value) {}
-data class NamedParameter(name, local, initializer) {}
-data class Arguments(positional, named) {}
+
+/* Represents metadata */
+data class Metadata(documentation, decorators) {}
+
+/* Represents a decorator */
+data class Decorator(id, args) {}
 
 
-//--- MAIN DEFINITIONS ---
+// -- Modules and top-level -------------------------------------------
+/* Top-level definitions */
 module Definition {
+  /* An import of an user-land/Node module package. */
   data class Import(id, alias, bindings) {}
-  data class ImportEffect(id) {}
-  data class ImportCore(name, alias, binidngs) {}
+  /* An import of special host/specification modules */
+  data class ImportCore(name, alias, bindings) {}
+  /* An export of a local name */
   data class ExportLocal(name, alias) {}
-  data class Function(meta, signature, body) {}
-  data class Module(meta, name, declarations) {}
-  data class DataClass(meta, classDefinition) {}
-  data class Class(meta, classDefinition) {}
+  /* A definition of a function */
+  data class Function(meta, kind, name, parameters, body) {}
+  /* A definition of a class */
+  data class Class(meta, kind, name, classDeclaration) {}
+
+  // FIXME: this should probably be way more restricted
+  /* A top-level statement */
+  data class Statement(statement) {}
 }
 
+/* Types of bindings */
+module ImportBinding {
+  data class Alias(name, local) {}
+  data class Default(local) {}
+}
+
+
+// -- Classes ---------------------------------------------------------
+/* Possible types of classes */
+module ClassKind {
+  data class Regular() {}
+  data class Data() {}
+}
+
+/* Class declaration (which can be shared with different contexts) */
+data class ClassDeclaration(parameters, superclass, fields, ctor, members) {}
+
+/* A superclass definition */
+data class Superclass(ctor, args) {}
+
+/* A field in a class */
+data class ClassField(meta, name, initializer) {}
+
+/* A method in a class */
+data class ClassMember(meta, kind, declaration) {}
+
+/* Where a member should be attached */
+module MemberKind {
+  data class Static() {}
+  data class Instance() {}
+}
+
+/* What kind of class method a member is */
+module MemberDeclaration {
+  data class Method(kind, self, name, parameters, body) {}
+  data class Setter(self, name, parameter, body) {}
+  data class Getter(self, name, body) {}
+  data class AtPut(self, key, value, body) {}
+  data class At(self, key, body) {}
+  data class In(self, value, body) {}
+  data class Binary(self, operator, right, body) {}
+  data class Unary(self, operator, body) {}
+}
+
+// -- Functions and other parameterisable definitions -----------------
+/* Represents a named parameter */
+data class NamedParameter(key, value, initializer) {}
+
+/* Possible kinds of functions */
+module FunctionKind {
+  data class Regular() {}
+  data class Asynchronous() {}
+  data class Generator() {}
+}
+
+/* Possible kinds of parameters for parameterised definitions */
+module Parameters {
+  data class Spread(positional, spread) {}
+  data class Regular(positional, named) {}
+}
+
+
+// -- Statements and expressions --------------------------------------
+/* The statement sub-language */
 module Statement {
   data class Let(name, initializer) {}
   data class LetMutable(name, initializer) {}
@@ -46,6 +113,13 @@ module Statement {
   data class Decorated(decorator, statement) {}
 }
 
+/* Possible braces of an If-statement */
+module Alternate {
+  data class If(ifStatement) {}
+  data class Else(block) {}
+}
+
+/* The expression sub-language */
 module Expression {
   data class IfThenElse(test, consequent, alternate) {}
   data class Pipe(left, right) {}
@@ -74,43 +148,32 @@ module Expression {
   data class Decorated(decorator, expression) {}
 }
 
-module Literal {
-  data class String(value) {}
-  data class Boolean(value) {}
-  data class Decimal(sign, integer, decimal) {}
-  data class Integer(sign, digits) {}
-  data class Null() {}
-}
-
-module MacroLiteral {
-  data class Literal(literal) {}
-  data class Array(items) {}
-  data class Object(pairs) {}
-}
-
-//--- SUPPORTING DEFINITIONS ---
-module Sign {
-  data class Positive() {}
-  data class Negative() {}
-  data class Unsigned() {}
-}
-
-module SequenceItem {
+/* Items in an array expression */
+module ArrayItem {
   data class Spread(expression) {}
   data class Element(expression) {}
 }
 
-module FunctionBody {
-  data class Expression(expression) {}
-  data class Block(statements) {}
+/* Kinds of arguments */
+module Argument {
+  data class Positional(expression) {}
+  data class Named(name, expression) {}
+  data class Spread(expression) {}
 }
 
+/* The arguments for a function call */
+data class Arguments(positional, named) {}
+
+
+// -- Pattern matching ------------------------------------------------
+/* Types of cases in a match */
 module MatchCase {
   data class When(pattern, predicate, body) {}
   data class Case(pattern, body) {}
   data class Default(body) {}
 }
 
+/* Types of pattern to match */
 module Pattern {
   data class Literal(literal) {}
   data class Array(items) {}
@@ -119,55 +182,32 @@ module Pattern {
   data class Bind(name) {}
 }
 
+/* Array patterns can have or not a spread */
 module ArrayPattern {
   data class Spread(items, spread) {}
   data class Fixed(items) {}
 }
 
-module MemberKind {
-  data class Static() {}
-  data class Instance() {}
+// -- Literals --------------------------------------------------------
+/* Types of literals */
+module Literal {
+  data class String(value) {}
+  data class Boolean(value) {}
+  data class Decimal(sign, integer, decimal) {}
+  data class Integer(sign, digits) {}
+  data class Null() {}
 }
 
-module MemberDeclaration {
-  data class Method(kind, self, name, parameters, body) {}
-  data class Setter(self, name, parameter, body) {}
-  data class Getter(self, name, body) {}
-  data class AtPut(self, key, value, body) {}
-  data class At(self, key, body) {}
-  data class In(self, value, body) {}
-  data class Binary(self, operator, right, body) {}
-  data class Unary(self, operator, body) {}
+/* An extended set of literals for compile-time programming */
+module MacroLiteral {
+  data class Literal(literal) {}
+  data class Array(items) {}
+  data class Object(pairs) {}
 }
 
-module ModuleDeclaration {
-  data class Definition(definition) {}
-  data class Statement(statement) {}
-}
-
-module Parameters {
-  data class Spread(positional, spread) {}
-  data class Regular(positional, named) {}
-}
-
-module Argument {
-  data class Positional(expression) {}
-  data class Named(name, expression) {}
-  data class Spread(expression) {}
-}
-
-module FunctionKind {
-  data class Regular() {}
-  data class Generator() {}
-  data class Async() {}
-}
-
-module ImportBinding {
-  data class Alias(name, local) {}
-  data class Default(local) {}
-}
-
-module Alternate {
-  data class If(ifStatement) {}
-  data class Else(block) {}
+/* The sign of a number literal */
+module Sign {
+  data class Positive() {}
+  data class Negative() {}
+  data class Unsigned() {}
 }

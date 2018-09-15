@@ -1,6 +1,11 @@
 % language: origami
 
 import "./ast" as ast;
+import es2015 exposing Reflect;
+
+data class Pair(key, value) {}
+data class Signature(kind, name, parameters) {}
+
 
 module Grammar {
   let assocLeft = (initial, xs, f) => {
@@ -22,14 +27,22 @@ module Grammar {
     digits;
   };
 
+  let pairsToObject = (pairs) => {
+    let mutable result = {};
+    for each pair of pairs {
+      Reflect.set(result, pair.key, pair.value);
+    }
+    result;
+  };
+
   let grammar = <origami.grammar.peg> """
 Origami {
   Program
-    = h:Header* d:Definition* end    { new ast.Program(h, d); }
+    = h:Header* d:Definition* end    { new ast.File(pairsToObject(h), d); }
     ;
 
   Header
-    = "%" n:id ":" l:line   { new ast.Header(n, l); }
+    = "%" n:id ":" l:line   { new Pair(n, l); }
     ;
   
   Definition
@@ -38,11 +51,12 @@ Origami {
     / Function
     / Class
     / Module
+    / l:LetStatement    { new ast.Definition.Statement(l); }
     ;
 
   Import
     = import_ id:String ";"    
-      { new ast.Definition.ImportEffect(id); }
+      { new ast.Definition.Import(id, null, []); }
 
     / import_ id:String as_ n:Name ";"
       { new ast.Definition.Import(id, n, []); }
@@ -70,16 +84,16 @@ Origami {
 
   Function
     = m:Meta function_ s:FunctionSignature b:FunctionBody
-      { new ast.Definition.Function(m, s, b); }
+      { new ast.Definition.Function(m, s.kind, s.name, s.parameters, b); }
     ;
 
   FunctionBody
-    = "=" e:Expression ";"    { [new ast.FunctionBody.Expression(e)]; }
-    / b:Block                 { new ast.FunctionBody.Block(b); }
+    = "=" e:Expression ";"    { [new ast.Statement.Expression(e)]; }
+    / b:Block                 { b; }
     ;
 
   FunctionSignature
-    = t:FunctionType n:Name p:ParamList   { new ast.FunctionSignature(t, n, p); }
+    = t:FunctionType n:Name p:ParamList   { new Signature(t, n, p); }
     ;
 
   ParamList
@@ -113,30 +127,28 @@ Origami {
     ;
 
   FunctionType1
-    = "*"     { new ast.FunctionKind.Regular(); }
-    / async_  { new ast.FunctionKind.Async(); }
+    = "*"     { new ast.FunctionKind.Generator(); }
+    / async_  { new ast.FunctionKind.Asynchronous(); }
     ;
 
   Module
-    = m:Meta module_ n:Name "{" d:ModuleDeclaration* "}"   { new ast.Definition.Module(m, n, d); }
-    ;
-
-  ModuleDeclaration
-    = c:Class         { new ast.ModuleDeclaration.Definition(c); }
-    / f:Function      { new ast.ModuleDeclaration.Definition(f); }
-    / m:Module        { new ast.ModuleDeclaration.Definition(m); }
-    / e:Export        { new ast.ModuleDeclaration.Definition(e); }
-    / l:Statement     { new ast.ModuleDeclaration.Statement(l); }
+    = m:Meta module_ n:Name "{" d:Definition* "}"   { new ast.Definition.Module(m, n, d); }
     ;
 
   Class
-    = m:Meta data_ c:ClassDeclaration   { new ast.Definition.DataClass(m, c); }
-    / m:Meta c:ClassDeclaration         { new ast.Definition.Class(m, c); }
+    = m:Meta data_ class_ n:Name c:ClassDeclaration
+      { 
+        new ast.Definition.Class(m, new ast.ClassKind.Data(), n, c); 
+      }
+    / m:Meta class_ n:Name c:NamedClassDeclaration         
+      { 
+        new ast.Definition.Class(m, new ast.ClassKind.Regular(), n, c); 
+      }
     ;
 
   ClassDeclaration
-    = class_ n:Name p:ParamList s:SuperClass? "{" f:ClassField* b:Statement* m:ClassMember* "}"
-      { new ast.Class(n, p, s, f, b, m); }
+    = p:ParamList s:SuperClass? "{" f:ClassField* b:Statement* m:ClassMember* "}"
+      { new ast.ClassDeclaration(p, s, f, b, m); }
     ;
 
   SuperClass
@@ -263,7 +275,7 @@ Origami {
     ;
 
   PairPattern
-    = n:Name ":" p:Pattern                                  { new ast.PairPattern(n, p); }
+    = n:Name ":" p:Pattern                                  { new ast.Pair(n, p); }
     ;
 
   Expression
@@ -382,8 +394,8 @@ Origami {
     ;
 
   ArrayItem
-    = "..." e:Expression                        { new ast.SequenceItem.Spread(e); }
-    / e:Expression                              { new ast.SequenceItem.Element(e); }
+    = "..." e:Expression                        { new ast.ArrayItem.Spread(e); }
+    / e:Expression                              { new ast.ArrayItem.Element(e); }
     ;
 
   ObjectExpression
@@ -392,10 +404,10 @@ Origami {
 
   FunctionExpression
     = t:FunctionType p:ParamList "=>" b:Block         
-      { new ast.Expression.Function(t, p, new ast.FunctionBody.Block(b)); }
+      { new ast.Expression.Function(t, p, b); }
 
     / t:FunctionType p:ParamList "=>" e:Expression    
-      { new ast.Expression.Function(t, p, new ast.FunctionBody.Expression(e)); }
+      { new ast.Expression.Function(t, p, [new ast.Statement.Expression(e)]); }
     ;
 
   Literal
@@ -414,8 +426,8 @@ Origami {
   ArgList
     = "(" x:ListOf<Argument, ","> ")"     
       {
-        let positional = x.filter((x, _, _) => not (x is ast.NamedParameter)) ;
-        let named = x.filter((x, _, _) => x is ast.NamedParameter);
+        let positional = x.filter((x, _, _) => not (x is ast.Argument.Named)) ;
+        let named = x.filter((x, _, _) => x is ast.Argument.Named);
         new ast.Arguments(positional, named);
       }
     ;
@@ -437,7 +449,7 @@ Origami {
     ;
 
   CompileTimePair
-    = n:Name ":" e:CompileTimeArg   { new ast.MacroPair(n, e); }
+    = n:Name ":" e:CompileTimeArg   { new ast.Pair(n, e); }
     ;
 
   Pair

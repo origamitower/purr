@@ -1,0 +1,1 @@
+- Imports in an inner module must bubble up to the top-level, but the names should only be exposed in the inner module.
