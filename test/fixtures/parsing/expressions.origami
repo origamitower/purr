@@ -108,14 +108,14 @@ function main() {
   (a);
 
   // Holes
-  ? + a;
-  a === ?;
-  f(?);
-  f(a, ...?);
-  new f(?);
-  not ?;
-  a.b(c, ?);
-  a[b](?);
+  _ + a;
+  a === _;
+  f(_);
+  f(a, ..._);
+  new f(_);
+  not _;
+  a.b(c, _);
+  a[b](_);
 }
 
 function* gen() {
