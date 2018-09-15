@@ -140,7 +140,7 @@ Origami {
       { 
         new ast.Definition.Class(m, new ast.ClassKind.Data(), n, c); 
       }
-    / m:Meta class_ n:Name c:NamedClassDeclaration         
+    / m:Meta class_ n:Name c:ClassDeclaration         
       { 
         new ast.Definition.Class(m, new ast.ClassKind.Regular(), n, c); 
       }
