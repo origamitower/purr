@@ -23,9 +23,9 @@ module Definition {
   /* An export of a local name */
   data class ExportLocal(meta, name, alias) {}
   /* A definition of a function */
-  data class Function(meta, kind, name, parameters, body) {}
+  data class Function(meta, kind, name, parameters, body) {}  // Parameters
   /* A definition of a class */
-  data class Class(meta, kind, name, classDeclaration) {}
+  data class Class(meta, kind, name, classDeclaration) {} // ClassDeclaration
   /* A definition of an inner module */
   data class Module(meta, name, definitions) {}
 
@@ -131,22 +131,22 @@ module Expression {
   data class Binary(operator, left, right) {}
   data class In(object, value) {}
   data class Unary(operator, expression) {}
-  data class Call(callee, args) {}
-  data class MethodCall(object, message, args) {}
+  data class Call(callee, args) {}                // args :: Arguments
+  data class MethodCall(object, message, args) {} // args :: Arguments
   data class Set(object, property, value) {}
-  data class Get(object, property) {}
+  data class Get(object, property) {}        // property :: string  
   data class At(object, key) {}
   data class AtPut(object, key, value) {}
-  data class Assign(name, value) {}
-  data class New(object, args) {}
+  data class Assign(name, value) {}           // name :: string
+  data class New(ctor, args) {}             // args :: Arguments
   data class Variable(name) {}
   data class Super() {}
-  data class Literal(literal) {}
+  data class Literal(literal) {}              // literal :: Literal
   data class Hole() {}
-  data class Array(items) {}
-  data class Object(pairs) {}
-  data class Function(kind, parameters, body) {}
-  data class Class(classDefinition) {}
+  data class Array(items) {}                  // items :: ArrayItem[]
+  data class Object(pairs) {}                 // pairs :: Pair[]
+  data class Function(kind, parameters, body) {}    // parameters :: Parameters
+  data class Class(classDefinition) {}              // classDefinition :: Class
   data class Decorated(decorators, expression) {}
 }
 
@@ -203,8 +203,8 @@ module Literal {
 /* An extended set of literals for compile-time programming */
 module MacroLiteral {
   data class Literal(literal) {}
-  data class Array(items) {}
-  data class Object(pairs) {}
+  data class Array(items) {}        // MacroLiteral[]
+  data class Object(pairs) {}       // Pair<MacroLiteral>[]
 }
 
 /* The sign of a number literal */

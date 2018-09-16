@@ -1,0 +1,9 @@
+% language: origami
+
+function map(value, fn) {
+  if value === null {
+    null;
+  } else {
+    fn(value);
+  }
+}

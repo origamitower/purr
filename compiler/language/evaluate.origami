@@ -1,0 +1,51 @@
+% language: origami
+
+import "./ast" as ast;
+import "../utils/mutable-map" exposing MutableMap;
+
+function pairsToMap(pairs) {
+  let mutable result = new MutableMap();
+  for each pair of pairs {
+    result[pair.key] <- pair.value;
+  }
+  result;
+}
+
+function evaluateLiteral(literal) {
+  let m = ast.MacroLiteral;
+  let l = ast.Literal;
+  let s = ast.Sign;
+
+  let lowerSign = (sign) => {
+    match sign {
+      case s.Positive(): "+";
+      case s.Negative(): "-";
+      case s.Unsigned(): "";
+    }
+  };
+
+  match literal {
+    case m.Array(items):
+      array.map(items, evaluateLiteral);
+
+    case m.Object(pairs):
+      pairsToMap(array.map(pairs, (pair) => {
+        new origami.ast.Pair(pair.key, evaluateLiteral(pair.value));
+      }));
+
+    case m.Literal(literal):
+      match literal {
+        case l.String(s): s;
+        case l.Boolean(b): b;
+        
+        case l.Decimal(sign, integer, decimal): 
+          Number([lowerSign(sign), integer, ".", decimal].join(""));
+
+        case l.Integer(sign, integer):
+          Number(lowerSign(sign) + integer);
+
+        case l.Null():
+          null;
+      }
+  }
+}

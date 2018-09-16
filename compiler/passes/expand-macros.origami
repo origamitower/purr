@@ -1,0 +1,374 @@
+% language: origami
+
+import "../language" as origami;
+import "../utils/array" as array;
+import "../utils/maybe" as maybe;
+
+
+function expandMacros(ast, macros) {
+  assert ast is origami.ast.File;
+
+  let applyMacros = (decorators, initialNode) => {
+    array.reduceRight(decorators, initialNode, (node, decorator) => {
+      let macro = macros[decorator.id];
+      macro.transform(origami, node, array.map(decorator.args, origami.evaluateLiteral));
+    });
+  };
+
+  let expandElseBranches = (branch) => {
+    let alt = origami.ast.Alternate;
+
+    match branch {
+      case alt.If(statement):
+        let [newStatement] = expandStatementMacros(statement);
+        new alt.If(newStatement);
+
+      case alt.Else(block):
+        new alt.Else(array.flatmap(block, expandStatementMacros));
+    }
+  };
+
+  let expandCaseMacros = (matchCase) => {
+    let m = origami.ast.MatchCase;
+
+    match matchCase { // FIXME: expand patterns?
+      case m.When(pattern, predicate, body):
+        new m.When(
+          pattern, 
+          expandExpressionMacros(predicate),
+          array.flatmap(body, expandStatementMacros)  
+        );
+
+      case m.Case(pattern, body):
+        new m.Case(
+          pattern,
+          array.flatmap(body, expandStatementMacros)
+        );
+
+      case m.Default(body):
+        new m.Default(array.flatmap(body, expandStatementMacros));
+    }
+  };
+
+  let expandStatementMacros = (statement) => {
+    let stmt = origami.ast.Statement;
+
+    match statement {
+      case stmt.Let(name, initializer):
+        [new stmt.Let(name, expandExpressionMacros(initializer))];
+
+      case stmt.LetMutable(name, initializer):
+        [new stmt.LetMutable(name, expandExpressionMacros(initializer))];
+
+      case stmt.LetMatch(pattern, initializer): // FIXME: macros on patterns
+        [new stmt.LetMatch(pattern, expandExpressionMacros(initializer))];
+
+      case stmt.Assert(expression):
+        [new stmt.Assert(expandExpressionMacros(expression))];
+
+      case stmt.Foreach(name, expression, body):
+        [new stmt.Foreach(
+          name,
+          expandExpressionMacros(expression),
+          array.flatmap(body, expandStatementMacros)
+        )];
+
+      case stmt.While(predicate, body):
+        [new stmt.While(
+          expandExpressionMacros(expression),
+          array.flatmap(body, expandStatementMacros)
+        )];
+
+      case stmt.Until(predicate, body):
+        [new stmt.Until(
+          expandExpressionMacros(expression),
+          array.flatmap(body, expandStatementMacros)
+        )];
+
+      case stmt.For(name, start, end, step, body):
+        [new stmt.For(
+          name,
+          expandExpressionMacros(start),
+          expandExpressionMacros(end),
+          expandExpressionMacros(step),
+          array.flatmap(body, expandStatementMacros)
+        )];
+
+      case stmt.Repeat(body):
+        [new stmt.Repeat(
+          array.flatmap(body, expandStatementMacros)
+        )];
+
+      case stmt.IfElse(test, consequent, alternate):
+        [new stmt.IfElse(
+          expandExpressionMacros(test),
+          array.flatmap(consequent, expandStatementMacros),
+          expandElseBranches(alternate)
+        )];
+
+      case stmt.If(test, consequent):
+        [new stmt.If(
+          expandExpressionMacros(test),
+          array.flatmap(consequent, expandStatementMacros)
+        )];
+
+      case stmt.Match(expression, cases):
+        [new stmt.Match(
+          expandExpressionMacros(expression),
+          array.map(cases, expandCaseMacros)
+        )];
+
+      case stmt.Expression(expression):
+        [new stmt.Expression(expandExpressionMacros(expression))];
+
+      case stmt.Decorated(decorators, statement):
+        array.flatmap(applyMacros(decorators, statement), expandStatementMacros);
+    }
+  };
+
+  let expandExpressionMacros = (expression) => {
+    let m = origami.ast.Expression;
+
+    match expression {
+      case m.IfThenElse(test, consequent, alternate):
+        new m.IfThenElse(
+          expandExpressionMacros(test),
+          expandExpressionMacros(consequent),
+          expandExpressionMacros(alternate)
+        );
+
+      case m.Pipe(left, right):
+        new m.Pipe(
+          expandExpressionMacros(left),
+          expandExpressionMacros(right)
+        );
+
+      case m.Await(expression):
+        new m.Await(expandExpressionMacros(expression));
+
+      case m.YieldAll(expression):
+        new m.YieldAll(expandExpressionMacros(expression));
+
+      case m.Yield(expression):
+        new m.Yield(expandExpressionMacros(expression));
+
+      case m.Binary(operator, left, right):
+        new m.Binary(
+          operator,
+          expandExpressionMacros(left),
+          expandExpressionMacros(right)
+        );
+
+      case m.In(object, value):
+        new m.In(
+          expandExpressionMacros(object),
+          expandExpressionMacros(value)
+        );
+
+      case m.Unary(operator, expression):
+        new m.Unary(operator, expandExpressionMacros(expression));
+
+      case m.Call(callee, args):
+        new m.Call(
+          expandExpressionMacros(callee),
+          expandArgumentMacros(args)
+        );
+
+      case m.MethodCall(object, message, args):
+        new m.MethodCall(
+          expandExpressionMacros(object),
+          message,
+          expandArgumentMacros(args)
+        );
+
+      case m.Set(object, property, value):
+        new m.Set(
+          expandExpressionMacros(object),
+          property,
+          expandExpressionMacros(value)
+        );
+
+      case m.Get(object, property):
+        new m.Get(
+          expandExpressionMacros(object),
+          property
+        );
+
+      case m.At(object, key):
+        new m.At(
+          expandExpressionMacros(object),
+          expandExpressionMacros(key)
+        );
+
+      case m.AtPut(object, key, value):
+        new m.AtPut(
+          expandExpressionMacros(object),
+          expandExpressionMacros(key),
+          expandExpressionMacros(value)
+        );
+
+      case m.Assign(name, value):
+        new m.Assign(name, expandExpressionMacros(value));
+
+      case m.New(ctor, args):
+        new m.New(
+          expandExpressionMacros(ctor),
+          expandArgumentMacros(args)
+        );
+
+      case m.Variable(name):
+        new m.Variable(name);
+
+      case m.Super():
+        new m.Super();
+      
+      case m.Literal(lit):
+        new m.Literal(lit);
+
+      case m.Hole():
+        new m.Hole();
+
+      case m.Array(items):
+        new m.Array(array.map(items, expandArrayItem));
+
+      case m.Object(pairs):
+        new m.Object(array.map(pairs, expandPair(expandExpressionMacros)));
+
+      case m.Function(kind, parameters, body):
+        new m.Function(
+          kind, 
+          expandFunctionParameters(parameters),
+          array.flatmap(body, expandStatementMacros)
+        );
+
+      case m.Class(definition):
+        new m.Class(new origami.ast.Definition.Class(
+          definition.meta,
+          definition.kind,
+          definition.name,
+          expandClassDeclaration(definition.classDeclaration)
+        ));
+
+      case m.Decorated(decorators, expression):
+        let [newExpression] = applyMacros(decorators, expression);
+        newExpression;
+    }
+  };
+
+  let expandArrayItem = (item) => {
+    let m = origami.ast.ArrayItem;
+    
+    match item {
+      case m.Spread(expression): 
+        new m.Spread(expandExpressionMacros(expression));
+
+      case m.Element(expression): 
+        new m.Element(expandExpressionMacros(expression));
+    }
+  };
+
+  let expandArgumentMacros = (node) => {
+    assert node is origami.ast.Arguments;
+
+    new origami.ast.Arguments(
+      array.map(node.positional, expandArgumentItemMacros),
+      array.map(node.named, expandArgumentItemMacros)
+    );
+  };
+
+  let expandArgumentItemMacros = (argument) => {
+    let m = origami.ast.Argument;
+
+    match argument {
+      case m.Positional(expression):
+        new m.Positional(expandExpressionMacros(expression));
+
+      case m.Named(name, expression):
+        new m.Named(name, expandExpressionMacros(expression));
+
+      case m.Spread(expression):
+        new m.Spread(expandExpressionMacros(expression));
+    }
+  };
+
+  let expandFunctionParameters = (parameters) => {
+    let m = origami.ast.Parameters;
+
+    match parameters {
+      case m.Spread(positiona, spread):
+        new m.Spread(positional, spread);
+
+      case m.Regular(positional, named):
+        new m.Regular(
+          positional,
+          array.map(named, (param) => {
+            assert param is origami.ast.NamedParameter;
+
+            new origami.ast.NamedParameter(
+              key, value,
+              expandExpressionMacros(initializer)
+            );
+          })
+        );
+    }
+  };
+
+  let expandClassDeclaration = (klass) => {
+    new origami.ast.ClassDeclaration(
+      expandFunctionParameters(klass.parameters),
+
+      maybe.map(klass.superclass, (s) => {
+        new origami.ast.Superclass(
+          expandExpressionMacros(s.ctor),
+          expandArgumentMacros(s.args)
+        );
+      })
+      // TODO: 
+    )
+  };
+
+  let expandDefinitionMacros = (definition) => {
+    let def = origami.ast.Definition;
+
+    match definition {
+      case def.Statement(s):
+        [new def.Statement(expandStatementMacros(s))];
+
+      default:
+        if m.decorators.length > 0 {
+          array.flatmap(applyMacros(m.decorators, definition), expandDefinitionMacros);
+        } else {
+          match definition {
+            case def.Function(meta, kind, name, parameters, body):
+              [new def.Function(
+                meta,
+                kind,
+                name,
+                expandFunctionParameters(parameters),
+                array.flatmap(body, expandStatementMacros)
+              )];
+
+            case def.Module(meta, name, definitions):
+              [new def.Module(
+                meta,
+                name,
+                array.flatmap(definitions, expandDefinitionMacros)
+              )];
+
+            case def.Class(meta, kind, name, classDeclaration):
+              [new def.Class(
+                meta,
+                kind,
+                name,
+                expandClassDeclaration(classDeclaration)
+              )];
+
+            default:
+              [definition]; // assert Definition
+          }
+        }
+    }
+  };
+
+  new origami.ast.File(ast.header, array.flatmap(ast.definitions, expandDefinitionMacros));
+}
