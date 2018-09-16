@@ -3,8 +3,10 @@
 import "./ast" as ast;
 import "./parser" exposing Grammar;
 import "./evaluate" exposing pairsToMap, evaluateLiteral;
+import "./model" exposing ImportContext;
 
 export Grammar;
 export ast;
 export pairsToMap;
 export evaluateLiteral;
+export ImportContext;

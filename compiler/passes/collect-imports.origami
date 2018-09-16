@@ -1,0 +1,27 @@
+% language: origami
+// Collects all import statements and variables they expose
+
+import "../language" exposing ast, ImportContext;
+import "../utils/array" exposing flatmap;
+
+function collectImports(node) {
+  assert node is ast.File;
+
+  let getImports = (definition) => {
+    match definition {
+      case ast.Definition.Import(meta, id, alias, bindings):
+        [definition];
+
+      case ast.Definition.ImportCore(meta, name, alias, bindings):
+        [definition];
+
+      case ast.Definition.Module(meta, name, definitions):
+        flatmap(definitions, getImports);
+
+      default:
+        [];
+    }
+  };
+
+  new ImportContext(flatmap(node.definitions, getImports));
+}
