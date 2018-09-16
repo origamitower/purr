@@ -1,0 +1,70 @@
+% language: origami
+% pass: true
+
+@foo
+@bar(1, "foo", [true, { key: "qux" }])
+@qualified.decorator.here()
+import "something" as x;
+
+@deco
+export a as b;
+
+@deco
+function f() { }
+
+@deco
+class Foo() {}
+
+@deco
+data class Foo() {}
+
+
+function statements() {
+  @deco
+  if x { y; }
+
+  @deco
+  match x { default: 1; }
+
+  @deco
+  let x = y;
+
+  @deco 
+  assert x === y;
+
+  @deco
+  for each x of y { z; }
+
+  @deco
+  repeat while x { }
+
+  @deco
+  repeat until x { }
+
+  @deco
+  repeat with x from a to b by c { }
+
+  @deco
+  repeat { }
+}
+
+
+function expressions() {
+  @deco
+  x + y;
+
+  @deco
+  1;
+
+  @deco """foo""";
+
+  @deco [1, 2, 3];
+
+  @deco { a: 1, b: 2 };
+
+  @deco null;
+
+  @deco if a then b else c;
+
+  @deco a.b(c);
+}

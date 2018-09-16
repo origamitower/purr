@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { parse, compile } = require("../bootstrap");
+const { shouldTest } = require("./utils");
 
 const root = path.join(__dirname, "fixtures/parsing");
 const files = fs.readdirSync(root).map(name => ({
@@ -8,14 +9,16 @@ const files = fs.readdirSync(root).map(name => ({
   contents: fs.readFileSync(path.join(root, name), "utf8")
 }));
 
-describe("Compiler pipeline validation", () => {
-  for (const file of files) {
-    it(`Parsing ${file.name}`, () => {
-      parse(file.contents);
-    });
+if (shouldTest("bootstrap")) {
+  describe("Compiler pipeline validation", () => {
+    for (const file of files) {
+      it(`Parsing ${file.name}`, () => {
+        parse(file.contents);
+      });
 
-    it(`Compiling ${file.name}`, () => {
-      compile(file.contents);
-    });
-  }
-});
+      it(`Compiling ${file.name}`, () => {
+        compile(file.contents);
+      });
+    }
+  });
+}

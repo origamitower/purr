@@ -12,5 +12,8 @@ build: $(TGT)
 test: build
 	npm test
 
+test-new: build
+	TEST_ONLY=new npm test
+
 clean:
 	rm -r $(LIB_DIR)

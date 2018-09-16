@@ -17,11 +17,11 @@ data class Decorator(id, args) {}
 /* Top-level definitions */
 module Definition {
   /* An import of an user-land/Node module package. */
-  data class Import(id, alias, bindings) {}
+  data class Import(meta, id, alias, bindings) {}
   /* An import of special host/specification modules */
-  data class ImportCore(name, alias, bindings) {}
+  data class ImportCore(meta, name, alias, bindings) {}
   /* An export of a local name */
-  data class ExportLocal(name, alias) {}
+  data class ExportLocal(meta, name, alias) {}
   /* A definition of a function */
   data class Function(meta, kind, name, parameters, body) {}
   /* A definition of a class */
@@ -112,7 +112,7 @@ module Statement {
   data class If(test, consequent) {}
   data class Match(expression, cases) {}
   data class Expression(expression) {}
-  data class Decorated(decorator, statement) {}
+  data class Decorated(decorators, statement) {}
 }
 
 /* Possible braces of an If-statement */
@@ -147,7 +147,7 @@ module Expression {
   data class Object(pairs) {}
   data class Function(kind, parameters, body) {}
   data class Class(classDefinition) {}
-  data class Decorated(decorator, expression) {}
+  data class Decorated(decorators, expression) {}
 }
 
 /* Items in an array expression */

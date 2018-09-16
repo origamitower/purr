@@ -55,20 +55,20 @@ Origami {
     ;
 
   Import
-    = import_ id:String ";"    
-      { new ast.Definition.Import(id, null, []); }
+    = m:Meta import_ id:String ";"    
+      { new ast.Definition.Import(m, id, null, []); }
 
-    / import_ id:String as_ n:Name ";"
-      { new ast.Definition.Import(id, n, []); }
+    / m:Meta import_ id:String as_ n:Name ";"
+      { new ast.Definition.Import(m, id, n, []); }
 
-    / import_ id:String exposing_ b:NonemptyListOf<Binding, ","> ";"
-      { new ast.Definition.Import(id, null, b); }
+    / m:Meta import_ id:String exposing_ b:NonemptyListOf<Binding, ","> ";"
+      { new ast.Definition.Import(m, id, null, b); }
 
-    / import_ id:Name as_ n:Name ";"
-      { new ast.Definition.ImportCore(id, n, []); }
+    / m:Meta import_ id:Name as_ n:Name ";"
+      { new ast.Definition.ImportCore(m, id, n, []); }
 
-    / import_ id:Name exposing_ b:NonemptyListOf<Binding, ","> ";"
-      { new ast.Definition.ImportCore(id, null, b); }
+    / m:Meta import_ id:Name exposing_ b:NonemptyListOf<Binding, ","> ";"
+      { new ast.Definition.ImportCore(m, id, null, b); }
     ;
 
   Binding
@@ -78,8 +78,8 @@ Origami {
     ;
 
   Export
-    = export_ l:Name as_ e:Name ";"   { new ast.Definition.ExportLocal(l, e); }
-    / export_ n:Name ";"              { new ast.Definition.ExportLocal(n, n); }
+    = m:Meta export_ l:Name as_ e:Name ";"   { new ast.Definition.ExportLocal(m, l, e); }
+    / m:Meta export_ n:Name ";"              { new ast.Definition.ExportLocal(m, n, n); }
     ;
 
   Function
@@ -198,6 +198,7 @@ Origami {
 
   Decorator
     = "@" q:QualifiedName a:CompileTimeArgList  { new ast.Decorator(q, a); }
+    / "@" q:QualifiedName                       { new ast.Decorator(q, []); }
     ;
 
   Block
@@ -205,6 +206,11 @@ Origami {
     ;
 
   Statement
+    = d:Decorator+ s:CommonStatement    { new ast.Statement.Decorated(d, s); }
+    / CommonStatement
+    ;
+
+  CommonStatement
     = LetStatement
     / AssertStatement
     / LoopStatement
@@ -279,6 +285,11 @@ Origami {
     ;
 
   Expression
+    = d:Decorator+ e:CommonExpression                       { new ast.Expression.Decorated(d, e); }
+    / CommonExpression
+    ;
+    
+  CommonExpression
     = IfExpression
     / PipeExpression
     ;
@@ -439,13 +450,13 @@ Origami {
     ;
 
   CompileTimeArgList
-    = "(" x:ListOf<CompileTimeArg, ","> ")"
+    = "(" x:ListOf<CompileTimeArg, ","> ")"   { x; }
     ;
 
   CompileTimeArg
     = "[" x:ListOf<CompileTimeArg, ","> "]"   { new ast.MacroLiteral.Array(x); }
     / "{" x:ListOf<CompileTimePair, ","> "}"  { new ast.MacroLiteral.Object(x); }
-    / l:Literal                               { new ast.MacroLiteral.Literal(x); }
+    / l:Literal                               { new ast.MacroLiteral.Literal(l); }
     ;
 
   CompileTimePair
