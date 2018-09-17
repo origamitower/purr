@@ -820,7 +820,8 @@ function compileClass(node) {
               $rt("$$checkClassEquals", [
                 t.arrayExpression(
                   paramNames.map(k => t.stringLiteral(`__${k}`))
-                )
+                ),
+                id("that")
               ])
             )
           ])
