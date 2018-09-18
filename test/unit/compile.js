@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { register } = require("../bootstrap");
+const { register } = require("../../bootstrap");
 const { shouldTest } = require("./utils");
 
 if (shouldTest("bootstrap")) {
