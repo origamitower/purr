@@ -15,5 +15,8 @@ test: build
 test-new: build
 	TEST_ONLY=new npm test
 
+benchmark:
+	node test/benchmark/run.js
+
 clean:
 	rm -r $(LIB_DIR)

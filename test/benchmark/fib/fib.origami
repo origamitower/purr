@@ -1,0 +1,20 @@
+% language: origami
+
+module Benchmark {
+  function fib_recursive(n) {
+    if n < 2 then n
+    else fib_recursive(n - 1) + fib_recursive(n - 2);
+  }
+
+  function fib_tail_recursive(n, acc, current) {
+    if n === 0 then acc
+    else if n === 1 then current
+    else fib_tail_recursive(n - 1, current, acc + current);
+  }
+
+  function fib_tail_recursive_named(n, acc: a = 0, current: b = 1) {
+    if n === 0 then a
+    else if n === 1 then b
+    else fib_tail_recursive_named(n - 1, acc: b, current: a + b);
+  }
+}

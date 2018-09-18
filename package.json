@@ -4,7 +4,7 @@
   "description": "A simple compile-to-JS language for teaching and live-programming.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha 'test/unit/**/*.js'"
   },
   "keywords": [
     "programming",

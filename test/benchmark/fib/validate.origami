@@ -1,0 +1,61 @@
+function validate(m) {
+  assert m.fib_recursive_baseline(0) === 0;
+  assert m.fib_recursive_baseline(1) === 1;
+  assert m.fib_recursive_baseline(2) === 1;
+  assert m.fib_recursive_baseline(3) === 2;
+  assert m.fib_recursive_baseline(4) === 3;
+  assert m.fib_recursive_baseline(5) === 5;
+  assert m.fib_recursive_baseline(6) === 8;
+  assert m.fib_recursive_baseline(7) === 13;
+  assert m.fib_recursive_baseline(8) === 21;
+  assert m.fib_recursive_baseline(9) === 34;
+  assert m.fib_recursive_baseline(20) === 6765;
+
+  assert m.fib_recursive(0) === 0;
+  assert m.fib_recursive(1) === 1;
+  assert m.fib_recursive(2) === 1;
+  assert m.fib_recursive(3) === 2;
+  assert m.fib_recursive(4) === 3;
+  assert m.fib_recursive(5) === 5;
+  assert m.fib_recursive(6) === 8;
+  assert m.fib_recursive(7) === 13;
+  assert m.fib_recursive(8) === 21;
+  assert m.fib_recursive(9) === 34;
+  assert m.fib_recursive(20) === 6765;
+
+  assert m.fib_tail_recursive_baseline(0, 0, 1) === 0;
+  assert m.fib_tail_recursive_baseline(1, 0, 1) === 1;
+  assert m.fib_tail_recursive_baseline(2, 0, 1) === 1;
+  assert m.fib_tail_recursive_baseline(3, 0, 1) === 2;
+  assert m.fib_tail_recursive_baseline(4, 0, 1) === 3;
+  assert m.fib_tail_recursive_baseline(5, 0, 1) === 5;
+  assert m.fib_tail_recursive_baseline(6, 0, 1) === 8;
+  assert m.fib_tail_recursive_baseline(7, 0, 1) === 13;
+  assert m.fib_tail_recursive_baseline(8, 0, 1) === 21;
+  assert m.fib_tail_recursive_baseline(9, 0, 1) === 34;
+  assert m.fib_tail_recursive_baseline(20, 0, 1) === 6765;
+
+  assert m.fib_tail_recursive(0, 0, 1) === 0;
+  assert m.fib_tail_recursive(1, 0, 1) === 1;
+  assert m.fib_tail_recursive(2, 0, 1) === 1;
+  assert m.fib_tail_recursive(3, 0, 1) === 2;
+  assert m.fib_tail_recursive(4, 0, 1) === 3;
+  assert m.fib_tail_recursive(5, 0, 1) === 5;
+  assert m.fib_tail_recursive(6, 0, 1) === 8;
+  assert m.fib_tail_recursive(7, 0, 1) === 13;
+  assert m.fib_tail_recursive(8, 0, 1) === 21;
+  assert m.fib_tail_recursive(9, 0, 1) === 34;
+  assert m.fib_tail_recursive(20, 0, 1) === 6765;
+
+  assert m.fib_tail_recursive_named(0) === 0;
+  assert m.fib_tail_recursive_named(1) === 1;
+  assert m.fib_tail_recursive_named(2) === 1;
+  assert m.fib_tail_recursive_named(3) === 2;
+  assert m.fib_tail_recursive_named(4) === 3;
+  assert m.fib_tail_recursive_named(5) === 5;
+  assert m.fib_tail_recursive_named(6) === 8;
+  assert m.fib_tail_recursive_named(7) === 13;
+  assert m.fib_tail_recursive_named(8) === 21;
+  assert m.fib_tail_recursive_named(9) === 34;
+  assert m.fib_tail_recursive_named(20) === 6765;
+}
