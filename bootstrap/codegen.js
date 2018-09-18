@@ -168,7 +168,7 @@ function $paramNames(params) {
 }
 
 function $countParams(params) {
-  return [params.positional.length, !!params.spread];
+  return [params.positional.length, !!params.spread || params.named.length > 0];
 }
 
 function $fnExpr(kind, params, block) {
