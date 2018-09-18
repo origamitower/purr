@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@babel/core": "^7.1.0",
+    "@babel/generator": "^7.0.0",
+    "@babel/types": "^7.0.0"
+  }
+}
