@@ -19,8 +19,10 @@
     "typescript": "^2.6.2"
   },
   "dependencies": {
+    "console.table": "^0.10.0",
     "mocha": "^5.2.0",
     "ohm-js": "^0.14.0",
+    "pretty-bytes": "^5.1.0",
     "reflect-metadata": "^0.1.12"
   }
 }

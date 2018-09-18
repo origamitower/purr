@@ -1,3 +1,5 @@
+const { args } = require("./setup");
+
 function fib_recursive_baseline(n) {
   if (n < 2) {
     return n;
@@ -16,4 +18,14 @@ function fib_tail_recursive_baseline(n, acc, current) {
   }
 }
 
-exports.Benchmark = { fib_recursive_baseline, fib_tail_recursive_baseline };
+exports.fib_recursive_baseline = fib_recursive_baseline;
+exports.fib_tail_recursive_baseline = fib_tail_recursive_baseline;
+
+exports.Benchmark = {
+  fib_recursive_baseline(i) {
+    return fib_recursive_baseline(args(i));
+  },
+  fib_tail_recursive_baseline(i) {
+    return fib_tail_recursive_baseline(args(i), 0, 1);
+  }
+};

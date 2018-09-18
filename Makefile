@@ -16,7 +16,10 @@ test-new: build
 	TEST_ONLY=new npm test
 
 benchmark:
-	node test/benchmark/run.js
+	node --expose_gc test/benchmark/run.js
+
+benchmark-time:
+	node --expose_gc test/benchmark/run.js time
 
 clean:
 	rm -r $(LIB_DIR)
