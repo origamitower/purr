@@ -2,7 +2,7 @@
 % pass: true
 
 function main() {
-  <origami.grammar.peg>"""
+  @origami.grammar.peg"""
     Arithmetic {
       Expr
         = a:Expr "+" b:Expr { new Add(a, b); }

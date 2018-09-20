@@ -907,7 +907,7 @@ const visitor = {
     };
   },
 
-  PrimaryExpression_plug_literal(_1, id, _2, lit) {
+  PrimaryExpression_plug_literal(_1, id, lit) {
     const pluginId = id.toAST(visitor);
     const plugin = plugins[pluginId];
     if (!plugin) {

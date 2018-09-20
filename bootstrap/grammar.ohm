@@ -241,9 +241,9 @@ Origami {
   PrimaryExpression
     = ~reserved_var Name ~":"           -- variable
     | super_                            -- super
-    | "<" QualifiedName ">" Literal     -- plug_literal
+    | "@" QualifiedName Literal         -- plug_literal
     | Literal                           -- literal
-    | "?"                               -- hole
+    | "_"                               -- hole
     | ArrayExpression                   -- array
     | ObjectExpression                  -- object
     | FunctionExpression                -- function

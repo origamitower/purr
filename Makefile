@@ -12,6 +12,9 @@ build: $(TGT)
 test: build
 	npm test
 
+test-bootstrap:
+	TEST_ONLY=bootstrap npm test
+
 test-new: build
 	TEST_ONLY=new npm test
 
