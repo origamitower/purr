@@ -23,6 +23,8 @@ class A() {
   static _.f { }
   static _[a] { }
   static _[a] <- b { }
+  static _[a, b, c] {}
+  static _[a, b, c] <- d {}
   static a === b { }
   static a =/= b { }
   static a >= b { }
@@ -51,6 +53,8 @@ class A() {
   member _.f { }
   member _[a] { }
   member _[a] <- b { }
+  member _[a, b, c] {}
+  member _[a, b, c] <- d {}
   member a === b { }
   member a =/= b { }
   member a >= b { }

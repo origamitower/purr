@@ -309,7 +309,7 @@ const visitor = {
       self: self.toAST(visitor),
       name: mangle("[]<-"),
       params: {
-        positional: [key.toAST(visitor), value.toAST(visitor)],
+        positional: [...key.toAST(visitor), value.toAST(visitor)],
         spread: null,
         named: []
       },
@@ -322,7 +322,7 @@ const visitor = {
       type: "MemberMethod",
       self: self.toAST(visitor),
       name: mangle("[]"),
-      params: { positional: [key.toAST(visitor)], spread: null, named: [] },
+      params: { positional: [...key.toAST(visitor)], spread: null, named: [] },
       block: block.toAST(visitor)
     };
   },

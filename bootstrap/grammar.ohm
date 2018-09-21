@@ -55,6 +55,9 @@ Origami {
     = "(" Name "::" Expression ")"  -- checked
     | Name ~":"                     -- unchecked
 
+  PParamNames
+    = NonemptyListOf<PParamName, ",">
+
   NamedParam
     = Name ":" ParamName "=" Expression    -- with_default
     | Name ":" ParamName                   -- no_default
@@ -100,14 +103,14 @@ Origami {
     | Metadata? member_ MemberDeclaration    -- instance
 
   MemberDeclaration
-    = FunctionType? PParamName "." Name ParamList ReturnContract? MemberBlock   -- method
-    | PParamName "." Name "<-" PParamName ReturnContract? MemberBlock           -- setter
-    | PParamName "." Name ReturnContract? MemberBlock                           -- getter
-    | PParamName "[" PParamName "]" "<-" PParamName ReturnContract? MemberBlock -- atput
-    | PParamName "[" PParamName "]" ReturnContract? MemberBlock                 -- at
-    | PParamName in_ PParamName ReturnContract? MemberBlock                     -- in
-    | PParamName operator PParamName ReturnContract? MemberBlock                -- operator
-    | not_ PParamName ReturnContract? MemberBlock                               -- not
+    = FunctionType? PParamName "." Name ParamList ReturnContract? MemberBlock     -- method
+    | PParamName "." Name "<-" PParamName ReturnContract? MemberBlock             -- setter
+    | PParamName "." Name ReturnContract? MemberBlock                             -- getter
+    | PParamName "[" PParamNames "]" "<-" PParamName ReturnContract? MemberBlock  -- atput
+    | PParamName "[" PParamNames "]" ReturnContract? MemberBlock                  -- at
+    | PParamName in_ PParamName ReturnContract? MemberBlock                       -- in
+    | PParamName operator PParamName ReturnContract? MemberBlock                  -- operator
+    | not_ PParamName ReturnContract? MemberBlock                                 -- not
   
   MemberBlock
     = "=" Expression ";"    -- expr

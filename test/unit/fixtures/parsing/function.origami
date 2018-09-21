@@ -32,3 +32,8 @@ function f(x, y, z) -> a {}
 function f(x :: a) {}
 function f(...z :: a) {}
 function f(...z) -> a {}
+
+class A() {
+  member x[a, b, c] <- d {}
+  member x[a, b, c] {}
+}
