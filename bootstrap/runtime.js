@@ -10,6 +10,8 @@ const $$GLOBAL =
       : this;
 exports.$$GLOBAL = $$GLOBAL;
 
+exports.$freeze = Object.freeze;
+
 exports.$$makeParser = $$makeParser;
 function $$makeParser(code, bindings) {
   const $$Ohm = require("ohm-js");

@@ -259,14 +259,14 @@ Origami {
     | "(" Expression ")"                -- group
 
   ArrayExpression
-    = "[" ListOf<ArrayItem, ","> "]"
+    = mutable_? "[" ListOf<ArrayItem, ","> "]"
 
   ArrayItem
     = "..." Expression    -- spread
     | Expression          -- item
 
   ObjectExpression
-    = "{" ListOf<Pair, ","> "}"
+    = mutable_? "{" ListOf<Pair, ","> "}"
 
   FunctionExpression
     = FunctionType? ParamList ReturnContract? "=>" Block        -- block

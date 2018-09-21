@@ -941,9 +941,10 @@ const visitor = {
     };
   },
 
-  ArrayExpression(_1, items, _2) {
+  ArrayExpression(mutable, _1, items, _2) {
     return {
       type: "ArrayExpression",
+      mutable: mutable.toAST(visitor) === "mutable",
       items: items.toAST(visitor)
     };
   },
@@ -962,9 +963,10 @@ const visitor = {
     };
   },
 
-  ObjectExpression(_1, pairs, _2) {
+  ObjectExpression(mutable, _1, pairs, _2) {
     return {
       type: "ObjectExpression",
+      mutable: mutable.toAST(visitor) === "mutable",
       pairs: pairs.toAST(visitor)
     };
   },

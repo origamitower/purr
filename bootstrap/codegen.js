@@ -62,6 +62,10 @@ function $rtMember(name) {
   return t.memberExpression(id("$rt"), id(name));
 }
 
+function $frozen(obj) {
+  return $rt("$freeze", [obj]);
+}
+
 function $compileArgs(params, fn) {
   let holeId = 0;
   let holes = [];
@@ -618,15 +622,26 @@ function compile(node) {
             throw new Error(`Invalid array item type ${item.type}`);
         }
       };
-      return t.arrayExpression(node.items.map(compileItem));
+      const array = t.arrayExpression(node.items.map(compileItem));
+      if (node.mutable) {
+        return array;
+      } else {
+        return $frozen(array);
+      }
     }
 
-    case "ObjectExpression":
-      return t.objectExpression(
+    case "ObjectExpression": {
+      const obj = t.objectExpression(
         node.pairs.map(({ name, expression }) => {
           return t.objectProperty(id(name), compile(expression));
         })
       );
+      if (node.mutable) {
+        return obj;
+      } else {
+        return $frozen(obj);
+      }
+    }
 
     case "FunctionExpression":
       return $fnExpr(node.kind, node.params, node.block);

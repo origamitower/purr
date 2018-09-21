@@ -95,6 +95,10 @@ function main() {
   [a, ...b];
   { a: b, c: d };
 
+  mutable [1, "foo", a];
+  mutable [a, ...b];
+  mutable { a: b, c: d };
+
   () => { };
   (a, b, c) => { };
   *(a, b) => { };

@@ -3,3 +3,5 @@
 - Exports should support multiple bindings + export directly from a module.
 
 - Allow macros on patterns
+
+- Bind methods on access.
