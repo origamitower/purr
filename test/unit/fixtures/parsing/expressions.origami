@@ -196,3 +196,12 @@ function test_named() {
   a.f(a, b: 1, c: 2);
   a.f(b: 1, c: 2);
 }
+
+// Contracts
+function test_contracts() {
+  (x :: a) -> a => { };
+  (x) -> a => { };
+  (x :: a) => { };
+  (x, ...y :: a) => {};
+  (x, y: z :: a) => {};
+}

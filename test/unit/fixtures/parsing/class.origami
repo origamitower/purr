@@ -100,3 +100,42 @@ class A() {
   static _.f(a, b: c, c: d = 1) = a;
   static _.f(b: c) = c;
 }
+
+// Contracts
+class A(x :: a) extends B() {
+  field x :: a = 1;
+
+  static (x :: a).f() -> a {}  
+  static _.f(x :: a) -> a {}
+  static _.f(x) -> a {}
+  static _.f(x :: a) {}
+  static _.f <- (g :: a) {}
+  static _.f {}
+  static (x :: a) === (y :: a) -> a {}
+  static (x :: a) === y -> a {}
+  static x === (y :: a) -> a {}
+  static x === y -> a {}
+  static (x :: a) === (y :: a) {}
+  static (x :: a) in (y :: a) {}
+  static x in y -> a {}
+  static not (x :: a) -> a {}
+  static not x -> a {}
+  static not (x :: a) {}
+
+  member (x :: a).f() -> a {}  
+  member _.f(x :: a) -> a {}
+  member _.f(x) -> a {}
+  member _.f(x :: a) {}
+  member _.f <- (g :: a) {}
+  member _.f {}
+  member (x :: a) === (y :: a) -> a {}
+  member (x :: a) === y -> a {}
+  member x === (y :: a) -> a {}
+  member x === y -> a {}
+  member (x :: a) === (y :: a) {}
+  member (x :: a) in (y :: a) {}
+  member x in y -> a {}
+  member not (x :: a) -> a {}
+  member not x -> a {}
+  member not (x :: a) {}
+}

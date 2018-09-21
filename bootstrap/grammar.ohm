@@ -38,21 +38,32 @@ Origami {
     | Block                 -- block
 
   FunctionSignature
-    = FunctionType? Name ParamList
+    = FunctionType? Name ParamList ReturnContract?
 
   ParamList
-    = "(" "..." Name ")"                                                            -- only_spread
-    | "(" NonemptyListOf<ParamName, ","> "," "..." Name ")"                         -- pos_spread
+    = "(" "..." ParamName ")"                                                       -- only_spread
+    | "(" NonemptyListOf<ParamName, ","> "," "..." ParamName ")"                    -- pos_spread
     | "(" NonemptyListOf<NamedParam, ","> ")"                                       -- only_named
     | "(" NonemptyListOf<ParamName, ","> "," NonemptyListOf<NamedParam, ","> ")"    -- pos_named
     | "(" ListOf<ParamName, ","> ")"                                                -- only_pos
 
   ParamName
-    = Name ~":"
+    = Name "::" Expression      -- checked
+    | Name ~":"                 -- unchecked
+
+  PParamName
+    = "(" Name "::" Expression ")"  -- checked
+    | Name ~":"                     -- unchecked
 
   NamedParam
-    = Name ":" Name "=" Expression    -- with_default
-    | Name ":" Name                   -- no_default
+    = Name ":" ParamName "=" Expression    -- with_default
+    | Name ":" ParamName                   -- no_default
+
+  ReturnContract
+    = "->" Expression
+
+  NameContract
+    = "::" Expression
 
   FunctionType
     = "*"     -- generator
@@ -82,21 +93,21 @@ Origami {
     = extends_ MemberExpression ArgList
 
   ClassField
-    = Metadata? field_ Name "=" Expression ";"
+    = Metadata? field_ Name NameContract? "=" Expression ";"
 
   ClassMember
     = Metadata? static_ MemberDeclaration    -- static
     | Metadata? member_ MemberDeclaration    -- instance
 
   MemberDeclaration
-    = FunctionType? Name "." Name ParamList MemberBlock     -- method
-    | Name "." Name "<-" Name MemberBlock                   -- setter
-    | Name "." Name MemberBlock                             -- getter
-    | Name "[" Name "]" "<-" Name MemberBlock               -- atput
-    | Name "[" Name "]" MemberBlock                         -- at
-    | Name in_ Name MemberBlock                             -- in
-    | Name operator Name MemberBlock                        -- operator
-    | not_ Name MemberBlock                                 -- not
+    = FunctionType? PParamName "." Name ParamList ReturnContract? MemberBlock   -- method
+    | PParamName "." Name "<-" PParamName ReturnContract? MemberBlock           -- setter
+    | PParamName "." Name ReturnContract? MemberBlock                           -- getter
+    | PParamName "[" PParamName "]" "<-" PParamName ReturnContract? MemberBlock -- atput
+    | PParamName "[" PParamName "]" ReturnContract? MemberBlock                 -- at
+    | PParamName in_ PParamName ReturnContract? MemberBlock                     -- in
+    | PParamName operator PParamName ReturnContract? MemberBlock                -- operator
+    | not_ PParamName ReturnContract? MemberBlock                               -- not
   
   MemberBlock
     = "=" Expression ";"    -- expr
@@ -261,8 +272,8 @@ Origami {
     = "{" ListOf<Pair, ","> "}"
 
   FunctionExpression
-    = FunctionType? ParamList "=>" Block        -- block
-    | FunctionType? ParamList "=>" Expression   -- expr
+    = FunctionType? ParamList ReturnContract? "=>" Block        -- block
+    | FunctionType? ParamList ReturnContract? "=>" Expression   -- expr
 
   Literal
     = String

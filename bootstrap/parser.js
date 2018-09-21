@@ -108,7 +108,7 @@ const visitor = {
     return block.toAST(visitor);
   },
 
-  FunctionSignature(type, name, params) {
+  FunctionSignature(type, name, params, _contract) {
     return {
       type: "FunctionSignature",
       kind: type.toAST(visitor),
@@ -154,6 +154,17 @@ const visitor = {
       named: []
     };
   },
+
+  ParamName_checked(name, _, contract) {
+    return name.toAST(visitor);
+  },
+
+  ParamName_unchecked(name) {
+    return name.toAST(visitor);
+  },
+
+  PParamName_checked: 1,
+  PParamName_unchecked: 0,
 
   NamedParam_with_default(key, _1, name, _2, expr) {
     return {
@@ -234,7 +245,7 @@ const visitor = {
     };
   },
 
-  ClassField(meta, _1, name, _2, value, _3) {
+  ClassField(meta, _1, name, contract, _2, value, _3) {
     return {
       type: "ClassField",
       meta: meta.toAST(visitor),
@@ -261,7 +272,7 @@ const visitor = {
     };
   },
 
-  MemberDeclaration_method(type, self, _, name, params, block) {
+  MemberDeclaration_method(type, self, _, name, params, contract, block) {
     return {
       type: "MemberMethod",
       kind: type.toAST(visitor),
@@ -272,7 +283,7 @@ const visitor = {
     };
   },
 
-  MemberDeclaration_setter(self, _1, name, _2, param, block) {
+  MemberDeclaration_setter(self, _1, name, _2, param, contract, block) {
     return {
       type: "MemberSetter",
       self: self.toAST(visitor),
@@ -282,7 +293,7 @@ const visitor = {
     };
   },
 
-  MemberDeclaration_getter(self, _1, name, block) {
+  MemberDeclaration_getter(self, _1, name, contract, block) {
     return {
       type: "MemberGetter",
       self: self.toAST(visitor),
@@ -292,7 +303,7 @@ const visitor = {
     };
   },
 
-  MemberDeclaration_atput(self, _1, key, _2, _3, value, block) {
+  MemberDeclaration_atput(self, _1, key, _2, _3, value, contract, block) {
     return {
       type: "MemberMethod",
       self: self.toAST(visitor),
@@ -306,7 +317,7 @@ const visitor = {
     };
   },
 
-  MemberDeclaration_at(self, _1, key, _2, block) {
+  MemberDeclaration_at(self, _1, key, _2, contract, block) {
     return {
       type: "MemberMethod",
       self: self.toAST(visitor),
@@ -316,7 +327,7 @@ const visitor = {
     };
   },
 
-  MemberDeclaration_in(param, _1, self, block) {
+  MemberDeclaration_in(param, _1, self, contract, block) {
     return {
       type: "MemberMethod",
       self: self.toAST(visitor),
@@ -326,7 +337,7 @@ const visitor = {
     };
   },
 
-  MemberDeclaration_operator(self, op, arg, block) {
+  MemberDeclaration_operator(self, op, arg, contract, block) {
     return {
       type: "MemberMethod",
       self: self.toAST(visitor),
@@ -336,7 +347,7 @@ const visitor = {
     };
   },
 
-  MemberDeclaration_not(_1, self, block) {
+  MemberDeclaration_not(_1, self, contract, block) {
     return {
       type: "MemberMethod",
       self: self.toAST(visitor),
@@ -958,7 +969,7 @@ const visitor = {
     };
   },
 
-  FunctionExpression_expr(kind, params, _, expr) {
+  FunctionExpression_expr(kind, params, contract, _, expr) {
     return {
       type: "FunctionExpression",
       kind: kind.toAST(visitor),
@@ -967,7 +978,7 @@ const visitor = {
     };
   },
 
-  FunctionExpression_block(kind, params, _, block) {
+  FunctionExpression_block(kind, params, contract, _, block) {
     return {
       type: "FunctionExpression",
       kind: kind.toAST(visitor),

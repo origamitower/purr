@@ -25,3 +25,10 @@ function f(...b) {}
 // Named
 function f(a, b: c, c: d = 1) {}
 function f(b: c) {}
+
+// Contracts
+function f(x :: a, y: z :: a) -> a {}
+function f(x, y, z) -> a {}
+function f(x :: a) {}
+function f(...z :: a) {}
+function f(...z) -> a {}

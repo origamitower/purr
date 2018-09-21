@@ -1,7 +1,7 @@
 % language: origami
 import "./setup" exposing args;
 
-function fib_recursive(n) {
+function fib_recursive(n :: Number) -> Number {
   if n < 2 then n
   else fib_recursive(n - 1) + fib_recursive(n - 2);
 }
