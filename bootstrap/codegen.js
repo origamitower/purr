@@ -348,32 +348,47 @@ function blockPrepend(blockStmt, stmts) {
 
 function compileProgram(module) {
   return t.program(
-    flatmap(module.definitions, compileDefinition),
+    [
+      defConst(id("$exports"), id("exports")),
+      ...flatmap(module.definitions, compileDefinition)
+    ],
     [],
     "module"
   );
 }
 
 function compileDefinition(node) {
+  const exportNameAs = (name, alias) =>
+    t.expressionStatement(
+      t.assignmentExpression("=", $member(id("$exports"), id(alias)), id(name))
+    );
+
+  const exportName = name => exportNameAs(name, name);
+
   switch (node.type) {
     case "Import":
       return compileImport(node);
 
     case "Function":
-      return [t.exportNamedDeclaration(compileFunction(node), [])];
+      return [compileFunction(node), exportName(node.signature.name)];
 
     case "Class":
-      return [t.exportNamedDeclaration(compileClass(node), [])];
+      return [compileClass(node), exportName(node.declaration.name)];
 
     case "Export":
-      return [
-        t.exportNamedDeclaration(null, [
-          t.exportSpecifier(id(node.name), id(node.alias))
-        ])
-      ];
+      switch (node.tag) {
+        case "Named":
+          return [exportNameAs(node.name, node.alias)];
+
+        default:
+          throw new TypeError(`Unknown export type ${node.tag}`);
+      }
 
     case "Module":
-      return [t.exportNamedDeclaration(compileModule(node), [])];
+      return [compileModule(node), exportName(node.name)];
+
+    case "Statement":
+      return [compile(node.statement)];
 
     default:
       throw new Error(`Unknown node ${node.type}`);
@@ -389,7 +404,7 @@ function compileModule(node) {
           [],
           t.blockStatement([
             defConst(id("$exports"), t.objectExpression([])),
-            ...flatmap(node.declarations, compileModuleDeclaration),
+            ...flatmap(node.declarations, compileDefinition),
             t.returnStatement(id("$exports"))
           ])
         ),
@@ -399,49 +414,13 @@ function compileModule(node) {
   ]);
 }
 
-function compileModuleDeclaration(node) {
-  const exportNameAs = (name, alias) =>
-    t.expressionStatement(
-      t.assignmentExpression("=", $member(id("$exports"), id(alias)), id(name))
-    );
-
-  const exportName = name => exportNameAs(name, name);
-
-  switch (node.type) {
-    case "Function":
-      return [compileFunction(node), exportName(node.signature.name)];
-
-    case "Class":
-      return [compileClass(node), exportName(node.declaration.name)];
-
-    case "Module":
-      return [compileModule(node), exportName(node.name)];
-
-    case "Statement":
-      return compile(node.statement);
-
-    case "Export": {
-      switch (node.tag) {
-        case "Named":
-          return [exportNameAs(node.name, node.alias)];
-
-        default:
-          throw new TypeError(`Unknown export type ${node.tag}`);
-      }
-    }
-
-    default:
-      throw new Error(`Unknown node ${node.type}`);
-  }
-}
-
 function compile(node) {
   switch (node.type) {
     case "Binding":
-      return t.importSpecifier(id(node.alias), id(node.name));
+      return [id(node.alias), id(node.name)];
 
     case "DefaultBinding":
-      return t.importDefaultSpecifier(id(node.name));
+      return [id(node.name), "default"];
 
     case "ExpressionStatement":
       return t.expressionStatement(compile(node.expression));
@@ -666,18 +645,24 @@ function compile(node) {
 }
 
 function compileImport(node) {
+  const req = n => t.callExpression(id("require"), [n]);
+
   switch (node.tag) {
     case "As":
-      return [
-        t.importDeclaration(
-          [t.importNamespaceSpecifier(id(node.alias))],
-          compileLiteral(node.id)
-        )
-      ];
+      return [defConst(id(node.alias), req(compileLiteral(node.id)))];
 
     case "Exposing":
       return [
-        t.importDeclaration(node.bindings.map(compile), compileLiteral(node.id))
+        t.variableDeclaration("const", [
+          t.variableDeclarator(
+            t.objectPattern(
+              node.bindings
+                .map(compile)
+                .map(([alias, name]) => t.objectProperty(name, alias))
+            ),
+            req(compileLiteral(node.id))
+          )
+        ])
       ];
 
     case "Core": {

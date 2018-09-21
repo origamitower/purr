@@ -199,7 +199,7 @@ const visitor = {
     };
   },
 
-  ModuleDecl_stmt(stmt) {
+  Definition_stmt(stmt) {
     return {
       type: "Statement",
       statement: stmt.toAST(visitor)

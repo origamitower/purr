@@ -11,6 +11,7 @@ Origami {
     | Function
     | Class
     | Module
+    | Statement  -- stmt
 
 
   // ## Imports
@@ -75,14 +76,7 @@ Origami {
 
   // ## Modules
   Module
-    = Metadata? module_ Name "{" ModuleDecl* "}"
-
-  ModuleDecl
-    = Class
-    | Function
-    | Module
-    | Export
-    | Statement   -- stmt
+    = Metadata? module_ Name "{" Definition* "}"
 
 
   // ## Classes

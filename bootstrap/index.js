@@ -1,6 +1,5 @@
 const { parse } = require("./parser");
 const { compileProgram, generate } = require("./codegen");
-const babel = require("@babel/core");
 const fs = require("fs");
 const path = require("path");
 
@@ -16,15 +15,7 @@ function compile(program) {
 }
 
 function compileToNode(program) {
-  const jsAst = compileProgram(parse(program));
-  const js = babel.transformFromAstSync(jsAst, null, {
-    plugins: [
-      path.join(
-        __dirname,
-        "node_modules/@babel/plugin-transform-modules-commonjs"
-      )
-    ]
-  });
+  const js = generate(parse(program));
   return `"use strict"; const $rt = require('@origamitower/origami/runtime');\n${
     js.code
   }`;
