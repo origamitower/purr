@@ -35,10 +35,13 @@ function $$makeParser(code, bindings) {
             ", "
           )}) }`
         )((ctx, ...args) => {
-          const meta = args.map(x => ({
-            source: x.source,
-            rule: x.ctorName
-          }));
+          const meta = {
+            children: args.map(x => ({
+              source: x.source,
+              rule: x.ctorName
+            })),
+            sourceString: ctx.sourceString
+          };
           return bindings[x](meta, ...args.map(x => x.toAST(ctx.args.mapping)));
         });
         return {
