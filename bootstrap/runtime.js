@@ -15,7 +15,7 @@ exports.$freeze = Object.freeze;
 exports.$$makeParser = $$makeParser;
 function $$makeParser(code, bindings) {
   const $$Ohm = require("ohm-js");
-  const $$OhmToAST = require("ohm-js/extras").toAST;
+  const $$OhmToAST = require("./to-ast").helper;
   const grammar = $$Ohm.grammar(code);
   const parse = (source, rule) => {
     const match = grammar.match(source, rule);
