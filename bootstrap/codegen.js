@@ -763,7 +763,8 @@ function compileClass(node) {
       return t.expressionStatement(
         t.assignmentExpression("=", field(x.name), compile(x.value))
       );
-    })
+    }),
+    ...fields.map(x => defConst(id(x.name), field(x.name)))
   ];
 
   const superPrelude = superclass
