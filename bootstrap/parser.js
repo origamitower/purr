@@ -507,7 +507,7 @@ const visitor = {
   LetStatement_bind(_1, mutable, name, _2, expr, _3) {
     return {
       type: "LetStatement",
-      mutable: mutable === "mutable",
+      mutable: mutable.toAST(visitor) === "mutable",
       name: name.toAST(visitor),
       expression: expr.toAST(visitor)
     };
