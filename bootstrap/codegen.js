@@ -719,8 +719,8 @@ function compileClass(node) {
   const isData = classType === "data";
   const className = name;
 
-  const field = x => t.memberExpression(t.thisExpression(), id(`__${x}`));
-  const objField = (obj, x) => t.memberExpression(obj, id(`__${x}`));
+  const field = x => t.memberExpression(t.thisExpression(), id(`${x}`));
+  const objField = (obj, x) => t.memberExpression(obj, id(`${x}`));
 
   function compileMember(member) {
     const { type, self, name, block } = member.definition;
@@ -735,6 +735,7 @@ function compileClass(node) {
             ? "get"
             : null;
     const realBlock = type === "MemberSetter" ? block : fixReturns(block);
+    const paramSet = new Set($paramNames(methodParams));
 
     return $classMethod(className, {
       static: member.tag === "Static",
@@ -743,7 +744,14 @@ function compileClass(node) {
       kind: functionKind,
       params: methodParams,
       body: t.blockStatement([
-        ...unpackPrelude,
+        ...unpackPrelude(
+          new Set(
+            fields
+              .map(x => x.name)
+              .concat($paramNames(params))
+              .filter(x => !paramSet.has(x))
+          )
+        ),
         t.variableDeclaration("const", [
           t.variableDeclarator(id(self), t.thisExpression())
         ]),
@@ -771,9 +779,11 @@ function compileClass(node) {
     ? [t.expressionStatement($call(id("super"), superclass.params))]
     : [];
 
-  const unpackPrelude = [
-    ...paramNames.map(x => defConst(id(x), field(x))),
-    ...fields.map(x => defConst(id(x.name), field(x.name)))
+  const unpackPrelude = names => [
+    ...paramNames.filter(x => names.has(x)).map(x => defConst(id(x), field(x))),
+    ...fields
+      .filter(x => names.has(x.name))
+      .map(x => defConst(id(x.name), field(x.name)))
   ];
 
   const compiledMembers = members.map(compileMember);
