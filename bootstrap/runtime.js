@@ -410,3 +410,5 @@ exports.$is = $is;
 function $is(a, type) {
   return a instanceof type;
 }
+
+exports.$defineProperty = Object.defineProperty;

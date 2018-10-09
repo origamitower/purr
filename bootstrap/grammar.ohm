@@ -90,7 +90,7 @@ Origami {
     = extends_ MemberExpression ArgList
 
   ClassField
-    = Metadata? field_ Name NameContract? "=" Expression ";"
+    = Metadata? mutable_? field_ Name NameContract? "=" Expression ";"
 
   ClassMember
     = Metadata? static_ MemberDeclaration    -- static

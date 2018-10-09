@@ -760,18 +760,25 @@ function compileClass(node) {
     });
   }
 
+  const defProp = (obj, k, v, mutable) =>
+    t.expressionStatement(
+      $rt("defineProperty", [
+        obj,
+        t.stringLiteral(k),
+        t.objectExpression([
+          t.objectProperty(id("value"), v),
+          t.objectProperty(id("configurable"), t.booleanLiteral(false)),
+          t.objectProperty(id("writable"), t.booleanLiteral(mutable))
+        ])
+      ])
+    );
+
   // We always set all properties in the class
   const constructorPrelude = [
-    ...paramNames.map(x => {
-      return t.expressionStatement(
-        t.assignmentExpression("=", field(x), id(x))
-      );
-    }),
-    ...fields.map(x => {
-      return t.expressionStatement(
-        t.assignmentExpression("=", field(x.name), compile(x.value))
-      );
-    }),
+    ...paramNames.map(x => defProp(t.thisExpression(), x, id(x), false)),
+    ...fields.map(x =>
+      defProp(t.thisExpression(), x.name, compile(x.value), x.mutable)
+    ),
     ...fields.map(x => defConst(id(x.name), field(x.name)))
   ];
 

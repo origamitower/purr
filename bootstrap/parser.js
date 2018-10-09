@@ -245,9 +245,10 @@ const visitor = {
     };
   },
 
-  ClassField(meta, _1, name, contract, _2, value, _3) {
+  ClassField(meta, _mutable, _1, name, contract, _2, value, _3) {
     return {
       type: "ClassField",
+      mutable: _mutable.toAST(visitor) === "mutable",
       meta: meta.toAST(visitor),
       name: name.toAST(visitor),
       value: value.toAST(visitor)
