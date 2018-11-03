@@ -394,6 +394,9 @@ function compileDefinition(node) {
     case "Statement":
       return [compile(node.statement)];
 
+    case "Splice":
+      return flatmap(node.items, compileDefinition);
+
     default:
       throw new Error(`Unknown node ${node.type}`);
   }
@@ -836,9 +839,7 @@ function compileClass(node) {
           t.blockStatement([
             t.returnStatement(
               $rt("$$checkClassEquals", [
-                t.arrayExpression(
-                  paramNames.map(k => t.stringLiteral(`__${k}`))
-                ),
+                t.arrayExpression(paramNames.map(k => t.stringLiteral(`${k}`))),
                 id("that")
               ])
             )
@@ -871,9 +872,7 @@ function compileClass(node) {
               $rt("$$showObject", [
                 t.stringLiteral(className),
                 t.thisExpression(),
-                t.arrayExpression(
-                  paramNames.map(k => t.stringLiteral(`__${k}`))
-                ),
+                t.arrayExpression(paramNames.map(k => t.stringLiteral(`${k}`))),
                 id("depth"),
                 id("visited")
               ])

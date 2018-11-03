@@ -155,7 +155,7 @@ const visitor = {
     };
   },
 
-  ParamName_checked(name, _, contract) {
+  ParamName_checked(name, contract) {
     return name.toAST(visitor);
   },
 
@@ -206,6 +206,71 @@ const visitor = {
     };
   },
 
+  Union(meta, declaration) {
+    return {
+      type: "Splice",
+      items: declaration.toAST(visitor)(meta.toAST(visitor))
+    };
+  },
+
+  UnionDeclaration(_1, name, _2, cases, _3) {
+    return meta => {
+      return [
+        {
+          type: "Module",
+          meta: meta,
+          name: name.toAST(visitor),
+          declarations: [
+            {
+              type: "Class",
+              meta: meta,
+              declaration: {
+                type: "regular",
+                name: name.toAST(visitor),
+                params: { spread: null, positional: [], named: [] },
+                superclass: null,
+                fields: [],
+                constructor: [],
+                members: []
+              }
+            },
+            ...cases.toAST(visitor).map(x => x(name.toAST(visitor)))
+          ]
+        }
+      ];
+    };
+  },
+
+  UnionCase(metadata, _1, name, params, _2) {
+    return parent => {
+      return {
+        type: "Class",
+        meta: metadata.toAST(visitor),
+        declaration: {
+          type: "data",
+          name: name.toAST(visitor),
+          params: params.toAST(visitor) || {
+            spread: null,
+            positional: [],
+            named: []
+          },
+          superclass: {
+            type: "SuperClass",
+            constructor: { type: "VariableExpression", name: parent },
+            params: {
+              spread: null,
+              positional: [],
+              named: []
+            }
+          },
+          fields: [],
+          constructor: [],
+          members: []
+        }
+      };
+    };
+  },
+
   Class(meta, declarations) {
     return {
       type: "Class",
@@ -229,7 +294,11 @@ const visitor = {
     return {
       type: type.toAST(visitor) || "regular",
       name: name.toAST(visitor),
-      params: params.toAST(visitor) || [],
+      params: params.toAST(visitor) || {
+        spread: null,
+        positional: [],
+        named: []
+      },
       superclass: superClass.toAST(visitor),
       fields: fields.toAST(visitor),
       constructor: ctor.toAST(visitor),
@@ -505,7 +574,7 @@ const visitor = {
     return statements.toAST(visitor);
   },
 
-  LetStatement_bind(_1, mutable, name, _2, expr, _3) {
+  LetStatement_bind(_1, mutable, name, _2, _3, expr, _4) {
     return {
       type: "LetStatement",
       mutable: mutable.toAST(visitor) === "mutable",

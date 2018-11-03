@@ -11,6 +11,7 @@ Origami {
     | Function
     | Class
     | Module
+    | Union
     | Statement  -- stmt
 
 
@@ -49,12 +50,12 @@ Origami {
     | "(" ListOf<ParamName, ","> ")"                                                -- only_pos
 
   ParamName
-    = Name "::" Expression      -- checked
-    | Name ~":"                 -- unchecked
+    = Name NameContract    -- checked
+    | Name ~":"            -- unchecked
 
   PParamName
-    = "(" Name "::" Expression ")"  -- checked
-    | Name ~":"                     -- unchecked
+    = "(" Name NameContract ")"  -- checked
+    | Name ~":"                  -- unchecked
 
   PParamNames
     = NonemptyListOf<PParamName, ",">
@@ -64,10 +65,14 @@ Origami {
     | Name ":" ParamName                   -- no_default
 
   ReturnContract
-    = "->" Expression
+    = "->" TypeExpression
 
   NameContract
-    = "::" Expression
+    = "::" TypeExpression
+
+  TypeExpression
+    = QualifiedName "<" NonemptyListOf<TypeExpression, ","> ">" -- apply
+    | QualifiedName                                             -- name
 
   FunctionType
     = "*"     -- generator
@@ -80,6 +85,16 @@ Origami {
 
 
   // ## Classes
+  Union
+    = Metadata? UnionDeclaration
+
+  UnionDeclaration
+    = union_ Name "{" UnionCase+ "}"
+
+  UnionCase
+    = Metadata? case_ Name ParamList ";"
+
+
   Class
     = Metadata? ClassDeclaration
 
@@ -146,7 +161,7 @@ Origami {
     | Expression ";"    -- expression
 
   LetStatement
-    = let_ mutable_? Name "=" Expression ";"      -- bind
+    = let_ mutable_? Name NameContract? "=" Expression ";"      -- bind
     | let_ Pattern "=" Expression ";"             -- destructure
 
   AssertStatement
@@ -419,6 +434,7 @@ Origami {
 
   in_ = kw<"in">
   is_ = kw<"is">
+  union_ = kw<"union">
 
 
   reserved
@@ -436,7 +452,7 @@ Origami {
     | repeat_
     | static_ | super_
     | then_ | to_ | true_ | try_
-    | until_
+    | until_ | union_
     | with_ | when_ | while_
     | yield_
 }
