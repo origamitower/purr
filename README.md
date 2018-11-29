@@ -14,6 +14,32 @@ It does not add any feature that does not interact cleanly and modularly with Ja
 
 It supports compiler plugins, inline DSLs, and plugabble literals. Macros are plain AST-transforming functions that must be compiled prior to execution.
 
+## Getting this to work
+
+You'll need to install [.NET core 2.1+](https://dotnet.microsoft.com/download) and [Node 10+](https://nodejs.org/en/).
+
+Clone this repository:
+
+    $ git clone git@github.com:origamitower/origami.git
+
+Install the tools (from the project's root):
+
+    $ cd origami
+    $ npm install
+
+Install the compiler dependencies (from the compiler's root):
+
+    $ cd origami/projects/compiler
+    $ npm install
+    $ dotnet restore src
+    $ dotnet restore test
+
+To build the compiler, run `make build`.
+
+To run the tests, run `make test`.
+
+If you're implementing a new feature, it might be useful to run the tests in "watch mode" (the project is recompiled and tests are run every time you change a source file). To do this, run `make test-watch-build` in one terminal, and `make test-watch-run` in another terminal.
+
 ## Licence
 
 Origami is (c) Quildreen Motta, and released under MIT.
