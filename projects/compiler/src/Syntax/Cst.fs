@@ -1,24 +1,9 @@
 module Origami.Compiler.Syntax.Cst
 
-type Line = int
-type Column = int
-type Offset = int
+open Origami.Compiler.Syntax.Range
 
-type Range = 
-  | R_Known of RangeInfo
-  | R_Unknown
-  
-and RangeInfo = {
-  span: Offset * Offset
-  start: Line * Column
-  stop: Line * Column
-  source: string
-  filename: string option
-}
-
-and Module = {
+type Module = {
   range: Range
-  source: string
   meta: Metadata
   id: ModuleId
   declarations: Declaration[]
@@ -137,7 +122,7 @@ and Statement =
   | For of Range * Name * Contract * start: Expression * stop: Expression * Statement[]
   | ForBy of Range * Name * Contract * start: Expression * stop: Expression * by: Expression * Statement[]
   | Assign of Range * Name * Expression
-  | ExprStmt of Expression
+  | ExprStmt of Range * Expression
 
 
 and Expression =
