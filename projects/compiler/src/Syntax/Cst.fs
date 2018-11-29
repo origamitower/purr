@@ -121,7 +121,6 @@ and Statement =
   | Repeat of Range * Statement[]
   | For of Range * Name * Contract * start: Expression * stop: Expression * Statement[]
   | ForBy of Range * Name * Contract * start: Expression * stop: Expression * by: Expression * Statement[]
-  | Assign of Range * Name * Expression
   | ExprStmt of Range * Expression
 
 
@@ -135,6 +134,7 @@ and Expression =
   | EffectExpr of Range * Expression
   | Call of Range * callee: Expression * Argument[]
   | MethodCall of Range * object: Expression * message: Name * Argument[]
+  | Assign of Range * Name * Expression
   | AtPut of Range * object: Expression * key: Expression * value: Expression
   | At of Range * object: Expression * key: Expression
   | Set of Range * object: Expression * property: Name * value: Expression
