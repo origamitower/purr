@@ -1,5 +1,9 @@
 # Origami RFC #0001 - Modules
 
+|             |      |
+| ----------- | ---- |
+| **Authors** | Quil |
+
 - [ ] Discussion
 - [ ] Implementation
 
@@ -28,11 +32,13 @@ There are not many module systems in usage that fit all of the criteria above, a
 - [Modularity Without a Name](https://awelonblue.wordpress.com/2011/09/29/modularity-without-a-name/)  
   -- David Barbour, 2011
 
-- [Modules Divided: Interface and Implement](https://awelonblue.wordpress.com/2011/10/03/modules-divided-interface-and-implement/)
+- [Modules Divided: Interface and Implement](https://awelonblue.wordpress.com/2011/10/03/modules-divided-interface-and-implement/)  
   -- David Barbour, 2011
 
-- [Modules as Objects in Newspeak](http://bracha.org/newspeak-modules.pdf)
+- [Modules as Objects in Newspeak](http://bracha.org/newspeak-modules.pdf)  
   -- Gilad Bracha, Peter von der Ahé, Vassili Bykov, Yaron Kashai, William Madok, and Eliot Miranda, 2010
 
-- [F-ing Modules](https://people.mpi-sws.org/~rossberg/f-ing/)
+- [F-ing Modules](https://people.mpi-sws.org/~rossberg/f-ing/)  
   -- Andreas Rossberg, Claudio Russo, and Derek Dreyer, 2014
+
+## Background
