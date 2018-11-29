@@ -3,6 +3,9 @@ module Origami.Compiler.Core.Ast
 
 open Origami.Compiler.Syntax.Range
 
+type Fresh(prefix: string) =
+  member __.Prefix = prefix
+
 type Module = {
   range: Range
   meta: Metadata
@@ -14,11 +17,13 @@ and Metadata = {
   documentation: string
 }
 
-and Name = string
+and Name = 
+  | NBound of string
+  | NFresh of Fresh
 
 and ModuleId = {
   range: Range
-  names: Name list
+  names: string list
 }
 
 and Declaration =
@@ -51,8 +56,8 @@ and Expression =
 
   // ### Locations
   | Assign of Range * Name * Expression
-  | Get of Range * object: Expression * property: Name
-  | Set of Range * object: Expression * property: Name * value: Expression
+  | Get of Range * object: Expression * property: string
+  | Set of Range * object: Expression * property: string * value: Expression
 
   // ### Loads
   | LoadFree of Range * Name
@@ -95,7 +100,7 @@ and ArrayItem =
 
 and RecordPair = {
   range: Range
-  key: Name
+  key: string
   value: Expression
 }
 
@@ -128,7 +133,7 @@ and Pattern =
   | PLiteral of Range * Literal
   | PFixedArray of Range * arity: int
   | PSpreadArray of Range * arity: int
-  | PRecord of Range * keys: Name list
+  | PRecord of Range * keys: string list
   | PExtractor of Range * object: Expression * arity: int
   | PGuarded of Range * Contract
 
@@ -139,7 +144,7 @@ and Field = {
   range: Range
   meta: Metadata
   isMutable: bool
-  name: Name
+  name: string
   contract: Contract
   initializer: Expression option
 }
@@ -147,15 +152,15 @@ and Field = {
 and UnionCase = {
   range: Range
   meta: Metadata
-  name: Name
+  name: string
   fields: Field list
 }
 
 // ## Functions
 and Parameters =
-  | Fixed of Name list
-  | Variadic of Name list * Name
-  | Named of Name list * (Name * Name) list
+  | Fixed of string list
+  | Variadic of string list * string
+  | Named of string list * (string * string) list
 
 and Arguments =
   | APositional of Argument list
@@ -163,7 +168,7 @@ and Arguments =
 
 and NamedArgument = {
   range: Range
-  key: Name
+  key: string
   value: Expression
 }
 

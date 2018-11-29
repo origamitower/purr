@@ -464,9 +464,7 @@ let private visitor =
               | Get(_, o, p) -> Set(range meta, o, p, e)
               | At(_, o, k) -> AtPut(range meta, o, k, e)
               | _ -> 
-                match range meta with
-                | R_Known(v) -> failwithf "a <- b is only valid in an expression if `a` is a member expression (at line %d, column %d in %s)" (fst v.start) (snd v.start) (Option.defaultValue "(unknown file)" v.filename)
-                | R_Unknown -> failwithf "a <- b is only valid in an expression if `a` is a member expression."
+                failwithf "a <- b is only valid in an expression if `a` is a member expression %s" (range meta).ToLocationString
             
               
     "MemberExpression_alt0" ==> fun (meta:Meta) o _1 k _3 ->

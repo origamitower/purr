@@ -58,6 +58,13 @@ and BindingSignature =
   | BS_AtPut of Range * container: Name * key: Name * value: Name
   | BS_At of Range * container: Name * key: Name
   | BS_Name of Range * Name
+  member self.Range =
+    match self with
+    | BS_Unary(r, _, _) -> r
+    | BS_Binary(r, _, _, _) -> r
+    | BS_AtPut(r, _, _, _) -> r
+    | BS_At(r, _, _) -> r
+    | BS_Name(r, _) -> r
 
 
 // ## FFI
