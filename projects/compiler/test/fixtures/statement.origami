@@ -1,0 +1,67 @@
+% language: origami
+
+module Test.Statement
+
+function main() {
+  let x = 1;
+  let mutable x = 1;
+  let x :: A = 1;
+  let mutable x :: A = 1;
+
+  assert x;
+  unreachable "foo";
+
+  for each x of y {}
+  for each x :: A of y {}
+
+  repeat while x {}
+  repeat until x {}
+
+  repeat with x from y to z {}
+  repeat with x from w to y by z {}
+  repeat with x :: A from y to z {}
+  repeat with x :: A from w to y by z {}
+  repeat {}
+}
+
+function `pattern matching`() {
+  match x {
+    // Simple values
+    case 1_000: a;
+    case true: a;
+    case "foo": a;
+
+    // Arrays
+    case [a, b, c]: a;
+    case [a, ...b]: a;
+
+    // Objects
+    case { a: b, c: d }: a;
+
+    // Extractors
+    case Foo(a, b, c): a;
+
+    // Instances/Contracts
+    case _ :: Foo: a;
+
+    // Variables
+    case a when a > 1: a;
+
+    // Wildcard
+    default: a;
+  }
+}
+
+
+function `do effects`() {
+  do State + IO + Random {
+    !write_line("foo");
+    let x = ref(0);
+    !x.swap(1);
+    !random();
+  }
+
+  do {
+    !current_effects();
+  }
+}

@@ -1,5 +1,6 @@
 node_modules/
-/build/
-/dist/
+build/
+dist/
+obj/
+bin/
 *.orig
-/compiler-build/

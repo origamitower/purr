@@ -1,7 +1,0 @@
-% language: origami
-
-import "@babel/types" as t;
-
-data class Location(source, start, end) {}
-data class Position(line, column) {}
-

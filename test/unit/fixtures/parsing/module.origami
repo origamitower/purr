@@ -1,9 +1,0 @@
-% version: 1
-% pass: true
-
-module Test {
-  let x = 1;
-  function foo() {}
-  class A() {}
-  module B {}
-}

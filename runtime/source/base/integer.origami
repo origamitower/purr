@@ -1,0 +1,10 @@
+% language: origami
+
+/**
+ * Arbitrary-precision integers.
+ */
+module Origami.Base.Integer
+
+external "integer" {
+  
+}

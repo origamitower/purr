@@ -1,5 +1,7 @@
-% version: 1
+% language: origami
 
-function main(argv) {
-  console.log("Hello, world");
+import "@origami/io" exposing write_line;
+
+function main(_) *{
+  !write_line("Hello, world!");
 }
