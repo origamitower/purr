@@ -23,6 +23,7 @@ type ParseOptions =
   { filename: string option }
 
 
+open Origami.Compiler.Syntax.Range
 open Origami.Compiler.Syntax.Cst
 open Fable.Core
 open Fable.Core.JsInterop
@@ -106,7 +107,6 @@ let private visitor =
       
               {
                 range = range meta
-                source = meta.source.sourceSlice
                 meta = m
                 id = id
                 declarations = defs
@@ -322,6 +322,9 @@ let private visitor =
     "LetDefinition_alt0" ==> fun (meta:Meta) m _1 n t _4 e _6 ->
        Define(range meta, m, n, contract t, e) 
               
+    "Statement_alt6" ==> fun (meta:Meta) e _1 ->
+       ExprStmt(range meta, e) 
+              
     "LetStatement_alt0" ==> fun (meta:Meta) _0 mut n t _4 e _6 ->
       
               match mut with
@@ -462,7 +465,7 @@ let private visitor =
               | At(_, o, k) -> AtPut(range meta, o, k, e)
               | _ -> 
                 match range meta with
-                | R_Known(v) -> failwithf "a <- b is only valid in an expression if `a` is a member expression (at line %d, column %d at %s)" (fst v.start) (snd v.start) (Option.defaultValue "(unknown file)" v.filename)
+                | R_Known(v) -> failwithf "a <- b is only valid in an expression if `a` is a member expression (at line %d, column %d in %s)" (fst v.start) (snd v.start) (Option.defaultValue "(unknown file)" v.filename)
                 | R_Unknown -> failwithf "a <- b is only valid in an expression if `a` is a member expression."
             
               
