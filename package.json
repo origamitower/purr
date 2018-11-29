@@ -5,10 +5,10 @@
     "test-watch": "jest --watch"
   },
   "devDependencies": {
-    "@origamitower/fohm": "^1.0.0",
-    "@origamitower/transforma": "^0.2.0",
-    "jest": "^23.6.0",
-    "ts-node": "^7.0.1",
-    "typescript": "^3.1.6"
-  }
+    "@origamitower/fohm": "^1.1.0",
+    "fable-compiler": "^2.1.0-beta-006",
+    "fable-splitter": "^2.1.0-beta-005",
+    "jest": "^23.6.0"
+  },
+  "dependencies": {}
 }

@@ -1,6 +1,7 @@
-BIN := ../../node_modules/.bin/
+BIN := ../../node_modules/.bin
 JEST := $(BIN)/jest
 FOHM := $(BIN)/fohm
+FABLE_SPLITTER := $(BIN)/fable-splitter
 
 # -- TASKS ------------------------------------------------------------
 .PHONY: help
@@ -25,29 +26,26 @@ help:
 
 .PHONY: build
 build: build-grammars
-	dotnet restore src
-	cd src && dotnet fable fable-splitter -- --config src/splitter.config.js
+	$(FABLE_SPLITTER) --config src/splitter.config.js
 
 .PHONY: build-tests
 build-tests: build-grammars
-	dotnet restore src
-	dotnet restore test
-	cd test && dotnet fable fable-splitter -- --config test/splitter.config.js
-	cp -R test/fixtures build/test
+	$(FABLE_SPLITTER) --config test/splitter.config.js
 
 .PHONY: build-grammars
 build-grammars:
 	$(FOHM) compile language/Origami.ohm --outDir src/Generated --name OrigamiGrammar
 
 .PHONY: test
-test: build-tests
+test: build-tests run-tests
+
+.PHONY: run-tests
+run-tests:
 	$(JEST)
 
 .PHONY: test-watch-build
 test-watch-build: build-grammars
-	dotnet restore src
-	dotnet restore test
-	cd test && dotnet fable fable-splitter -- --config test/splitter.config.js --watch
+	$(FABLE_SPLITTER) --config test/splitter.config.js --watch
 
 .PHONY: test-watch-run
 test-watch-run:

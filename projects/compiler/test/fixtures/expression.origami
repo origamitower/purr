@@ -58,7 +58,6 @@ function `sends`() {
   a[b];
   a.b <- c;
   a.b;
-  true <- c;
 }
 
 function `new`() {

@@ -13,6 +13,5 @@
   <ItemGroup>
     <PackageReference Include="Fable.Core" Version="2.0.1" />
     <PackageReference Include="Fable.Import.Node" Version="0.4.3" />
-    <DotNetCliToolReference Include="dotnet-fable" Version="2.0.10" />
   </ItemGroup>
 </Project>
