@@ -25,10 +25,13 @@ help:
 
 .PHONY: build
 build: build-grammars
+	dotnet restore src
 	cd src && dotnet fable fable-splitter -- --config src/splitter.config.js
 
 .PHONY: build-tests
 build-tests: build-grammars
+	dotnet restore src
+	dotnet restore test
 	cd test && dotnet fable fable-splitter -- --config test/splitter.config.js
 	cp -R test/fixtures build/test
 
@@ -42,6 +45,8 @@ test: build-tests
 
 .PHONY: test-watch-build
 test-watch-build: build-grammars
+	dotnet restore src
+	dotnet restore test
 	cd test && dotnet fable fable-splitter -- --config test/splitter.config.js --watch
 
 .PHONY: test-watch-run
