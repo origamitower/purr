@@ -1,0 +1,183 @@
+% language: origami
+
+module Test.Expression
+
+function `if`() {
+  if a then b else c;
+  if a then b else if c then d else e;
+}
+
+function `pipe`() {
+  a |> b |> c |> d;
+}
+
+function* `yield`() {
+  yield x;
+  yield* x;
+}
+
+function `operators`() {
+  a and b and c and d;
+  a or b or c or d;
+  a and (b or c) and d;
+  a or (b and c) or d;
+  not b;
+
+  a ++ b ++ c ++ d;
+  a >> b >> c >> d;
+  a << b << c << d;
+
+  a in b;
+
+  a --> b;
+
+  a + b + c + d;
+  a ** b;
+  a * b * c * d;
+  a - b;
+  a / b;
+
+  a == b;
+  a /= b;
+  a >= b;
+  a <= b;
+  a > b;
+  a < b;
+}
+
+function* `effects`() {
+  !effect();
+}
+
+function `sends`() {
+  a(b, c, d);
+  a(b, ...c, d: e);
+  a.b(c, d, e);
+  a.b(c, ...d, e: f);
+  a[b] <- c;
+  a[b];
+  a.b <- c;
+  a.b;
+  true <- c;
+}
+
+function `new`() {
+  new foo(a, b, c);
+  new foo(a, ...b, c: d);
+  new foo { a: b, c: d };
+}
+
+function `primary`() {
+  // names
+  name;
+  `this is a variable`;
+  `if`;
+  _;
+
+  // strings
+  "some string \n foo \u0032";
+  """some raw string""";
+  
+  "this
+   can
+   have
+   newlines";
+
+  """this
+     too
+     can
+     have
+     newlines""";
+
+
+  true; false;
+
+  1_000;
+  1_000.000_000;
+  0xcafe_cafe;
+  0o123;
+  0b1010101;
+  -1_000;
+  +1_000;
+  -1_000.000_000;
+  +1_000.000_000;
+
+  null;
+
+  // collections
+  [1, "foo", a];
+  [a, ...b];
+  { a: b, c: d };
+
+  mutable [1, "foo", a];
+  mutable [a, ...b];
+  mutable { a: b, c: d };
+
+  // arrows
+  (a, b, c) => { };
+  (a, ...b) => { };
+  (a, b, c: d, e: f = 1) => { };
+  () => { };
+
+  (a, b, c) *=> { };
+
+  // grouping
+  (a);
+
+  // partial application
+  _ + a;
+  a == _;
+  f(_);
+  f(a, ..._);
+  f(a, b: _);
+  new f(_);
+  not _;
+  a.b(c, _);
+  a[b](_);
+  _[b];
+  a[_];
+  a[_] <- _;
+  _.b;
+}
+
+
+function `pattern matching`() {
+  let y = match x {
+    // Simple values
+    case 1_000: a;
+    case true: a;
+    case "foo": a;
+
+    // Arrays
+    case [a, b, c]: a;
+    case [a, ...b]: a;
+
+    // Objects
+    case { a: b, c: d }: a;
+
+    // Extractors
+    case Foo(a, b, c): a;
+
+    // Instances/Contracts
+    case _ :: Foo: a;
+
+    // Variables
+    case a when a > 1: a;
+
+    // Wildcard
+    default: a;
+  };
+}
+
+function* `do effects`() {
+  let a = !do State + IO + Random {
+    !write_line("foo");
+    let x = ref(0);
+    !x.swap(1);
+    !random();
+  };
+
+  let b = !do {
+    !current_effects();
+  };
+}

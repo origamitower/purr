@@ -1,0 +1,27 @@
+import "x" as y;
+// const __y = $import("x")
+// $define("y", () => __y);
+
+export x as y;
+// $export("y", () => x)
+
+export "x" exposing everything;
+// $re_export("x");
+
+function foo(a, b, c: d) {}
+// function (a, b, { c: d }) { }
+
+function* foo(a, b, c: d) { }
+// function* (a, b, { c: d }) { }
+
+define x = y + 1;
+// $define("x", lazy(() => y + 1))
+
+record x { y, z }
+// $record('x', ['y', 'z'])
+
+union x { y, z }
+// $union('x', [['y'], ['z']])
+
+
+

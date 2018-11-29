@@ -1,5 +1,0 @@
-% language: origami
-
-data class ImportContext(imports) {
-  
-}

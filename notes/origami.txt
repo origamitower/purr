@@ -1,0 +1,26 @@
+Top-level
+=========
+
+Definition :
+  Import(kind, id, bindings...)
+  Export(kind, id, bindings...)
+  Data(name, fields...)
+  Union(name, (name, fields)...)
+  Function(kind, name, params, ret, body)
+  Let(mutable, name, initializer)
+
+Field : { name, mutable, type }
+Binding : Alias(name, name) | Everything(name)
+
+
+import "module" exposing a, b, everything as c
+import core "module" exposing a, b, everyting as c
+export "module" exposing a, b, c
+export core "module" exposing a, b, c
+
+data Foo(a :: b, c :: d)
+union Foo { A; B(c, d) }
+
+function f(a, b, c) { }
+*function f(a, b, c) { }
+

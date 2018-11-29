@@ -1,0 +1,71 @@
+% language: origami
+
+module Test.Functions
+
+function not x { }
+function a + b { }
+function a[b] { }
+function a[b] <- c { }
+function f() { }
+function f(a, ...b) { }
+function f(...b) { }
+function f(a, b: c, d: e = 1) { }
+function f(b: c) { }
+function f(a, b) { }
+
+
+function not (x :: A) :: A { }
+function (a :: A) + (b :: A) :: A { }
+function (a :: A)[b :: A] :: A { }
+function (a :: A)[b :: A] <- (c :: A) :: A { }
+function f() :: A { }
+function f(a :: A, ...b :: A) :: A { }
+function f(...b :: A) :: A { }
+function f(a :: A, b: c :: A, d: e :: A = 1) :: A { }
+function f(b: c :: A) :: A { }
+function f(a :: A, b :: A) :: A { }
+
+function* not x { }
+function* a + b { }
+function* a[b] { }
+function* a[b] <- c { }
+function* f() { }
+function* f(a, ...b) { }
+function* f(...b) { }
+function* f(a, b: c, d: e = 1) { }
+function* f(b: c) { }
+function* f(a, b) { }
+
+
+function* not (x :: A) :: A { }
+function* (a :: A) + (b :: A) :: A { }
+function* (a :: A)[b :: A] :: A { }
+function* (a :: A)[b :: A] <- (c :: A) :: A { }
+function* f() :: A { }
+function* f(a :: A, ...b :: A) :: A { }
+function* f(...b :: A) :: A { }
+function* f(a :: A, b: c :: A, d: e :: A = 1) :: A { }
+function* f(b: c :: A) :: A { }
+function* f(a :: A, b :: A) :: A { }
+
+
+function not x = null
+function a + b = null
+function a[b] = null
+function a[b] <- c = null
+function f() = null
+function f(a, ...b) = null
+function f(...b) = null
+function f(a, b: c, d: e = 1) = null
+function f(b: c) = null
+function f(a, b) = null
+
+define something = 1;
+define `something really long can go here` = 2;
+define `if` = 3;
+
+/** docs */
+function f() { }
+
+/** docs **/
+define f = null;

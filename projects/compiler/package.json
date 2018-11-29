@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "dependencies": {
+    "ohm-js": "^0.14.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.6",
+    "fable-splitter": "^2.0.2"
+  }
+}

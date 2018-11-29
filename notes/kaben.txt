@@ -1,0 +1,15 @@
+Kaben is the core language used by Origami. It's not supposed to be used directly, but as an intermediate representation for all languages in the Origami system. It's serialisable and debuggable, allowing REPL sessions to be stored on disk completely.
+
+A Kaben module is a set of declarations. Declarations don't require the execution of any code, so modules are naturally mutually recursive.
+
+AST:
+
+  Declaration ::=
+    (#define-data <name> <field>...)
+    (#define-union <name> (<name> <field>...)...)
+    (#define-function <name> [<param>...] <expr>...)
+
+  Expression ::=
+    (#load <name>)
+    (#send <expr> <prop> <expr>...)
+    (#call <expr> <expr>...)

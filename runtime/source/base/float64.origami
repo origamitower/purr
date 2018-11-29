@@ -1,0 +1,525 @@
+% language: origami
+
+/**
+ * 64-bit floating point numbers.
+ */
+module Origami.Base.Float64
+
+
+external "float64" {
+  // ## Constants
+
+  /**
+   * The smallest interval between two representable numbers.
+   */
+  define EPSILON :: Float64
+
+  /**
+   * The maximum safe integer $$(2^{53} - 1)$$.
+   */
+  define MAX_SAFE_INTEGER :: Float64
+
+  /**
+   * The largest positive representable number.
+   */
+  define MAX_VALUE :: Float64
+
+  /**
+   * The minimum safe integer $$(-(2^{53} - 1))$$.
+   */
+  define MIN_SAFE_INTEGER :: Float64
+
+  /**
+   * The special "not a number" value.
+   */
+  define NAN :: Float64
+
+  /**
+   * Special value representing negative infinity. Returned on overflow.
+   */
+  define NEGATIVE_INFINITY :: Float64
+
+  /**
+   * Special value representing infinity. Returned on overflow.
+   */
+  define POSITIVE_INFINITY :: Float64
+
+  /**
+   * Euler's constant and the base of natural logarithms, approximately $$2.718$$.
+   */
+  define E :: Float64
+
+  /**
+   * Natural logarithm of 2, approximately $$0.693$$.
+   */
+  define LN_2 :: Float64
+
+  /**
+   * Natural logarithm of 10, approximately $$2.303$$.
+   */
+  define LN_10 :: Float64
+
+  /**
+   * Base 2 logarithm of E, approximately $$1.443$$.
+   */
+  define LOG2_E :: Float64
+
+  /**
+   * Base 10 logarithm of E, approximately $$0.434$$.
+   */
+  define LOG10_E :: Float64
+
+  /**
+   * Ratio of the circumference of a circle to its diameter, approximately
+   * $$3.14159$$.
+   */
+  define PI :: Float64
+
+  /**
+   * Square root of $$1/2$$, 1 over the square root of 2, approximately
+   * $$0.707$$.
+   */
+  define SQRT_1_2 :: Float64
+
+  /**
+   * Square root of 2, approximately $$1.414$$.
+   */
+  define SQRT_2 :: Float64
+
+
+  // ## Functions
+
+  /**
+   * Returns `true` if this value is `NaN`.
+   */
+  function is_nan(value :: Float64) :: Boolean
+  where {
+    is_nan(NAN) --> true;
+    is_nan(1.0f) --> false;
+  }
+
+  /**
+   * Returns `true` if this value is the special value Infinity.
+   */
+  function is_infinity(value :: Float64) :: Boolean
+  where {
+    is_infinity(POSITIVE_INFINITY) --> true;
+    is_infinity(NEGATIVE_INFINITY) --> true;
+    is_infinity(1.0f) --> false;
+    is_infinity(NAN) --> false;
+  }
+
+  /**
+   * Returns `true` if the number is neither infinite nor NaN.
+   */
+  function is_finite(value :: Float64) :: Boolean
+  where {
+    is_finite(POSITIVE_INFINITY) --> false;
+    is_finite(NEGATIVE_INFINITY) --> false;
+    is_finite(1.0f) --> true;
+    is_finite(NAN) --> false;
+  }
+
+  /**
+   * Returns `true` if the number is a whole number.
+   */
+  function is_integer(value :: Float64) :: Boolean
+  where {
+    is_integer(10.0f) --> true;
+    is_integer(10.1f) --> false;
+    is_integer(NAN) --> false;
+    is_integer(POSITIVE_INFINITY) --> false;
+    is_integer(NEGATIVE_INFINITY) --> false;
+  }
+
+  /**
+   * Returns `true` if the number is a whole number between
+   * $$-(2^{53} - 1)$$ and $$2^{53} - 1$$.
+   */
+  function is_safe_integer(value :: Float64) :: Boolean
+  where {
+    is_safe_integer(10.0f) --> true;
+    is_safe_integer(18_014_398_509_481_984.0f) --> false;
+    is_safe_integer(-18_014_398_509_481_984.0f) --> false;
+    is_safe_integer(NAN) --> false;
+    is_safe_integer(POSITIVE_INFINITY) --> false;
+    is_safe_integer(NEGATIVE_INFINITY) --> false;
+  }
+
+  /**
+   * Returns the absolute value of a number.
+   *
+   * $$
+   *    {\mathtt{\operatorname{abs}(z)}} = {|z|} = 
+   *     \begin{cases} 
+   *       x & \text{if} \quad x \geq 0 \\ 
+   *       x & \text{if} \quad x < 0 
+   *     \end{cases}
+   * $$
+   */
+  function abs(value :: Float64) :: Float64
+  where {
+    abs(0.0f) --> 0.0f;
+    abs(1.0f) --> 1.0f;
+    abs(-1.0f) --> 1.0f;
+  }
+
+  /**
+   * Returns the arccosine (in radians) of a number.
+   *
+   * $$
+   *   \forall x \in [{-1};1],\;
+   *     \mathtt{\operatorname{acos}(x)} = \arccos(x) = 
+   *     \text{ the unique } \; y \in [0; \pi] \, 
+   *     \text{such that} \; \cos(y) = x
+   * $$
+   */
+  function acos(value :: Float64) :: Float64
+  where {
+    acos(8.0f / 10.0f) -->  0.6435011087932843f;
+    acos(5.0f / 3.0f) --> NaN;
+  }
+
+  /**
+   * Returns the hyperbolic arc-cosine of a number.
+   */
+  function acosh(value :: Float64) :: Float64
+  where {
+    acos(1.0f) --> 0.0f;
+    acos(2.0f) --> 1.3169578969248166f;
+    acos(2.5f) --> 1.566799236972411f;
+  }
+
+  /**
+   * Returns the arcsine (in radians) of a number.
+   *
+   * $$
+   *   \forall x \in [{-1};1],\;
+   *     \mathtt{\operatorname{asin}(x)} = \arcsin(x) = 
+   *     \text{ the unique } \; y \in \left[-\frac{\pi}{2}; \frac{\pi}{2}\right] \, 
+   *     \text{such that} \; \sin(y) = x
+   * $$
+   */
+  function asin(value :: Float64) :: Float64
+  where {
+    asin(6.0f / 10.0f) --> 0.6435011087932844f;
+    asin(5.0f / 3.0f) --> NaN;
+  }
+
+  /**
+   * Returns the hyperbolic arcsine of a number.
+   */
+  function asinh(value :: Float64) :: Float64
+  where {
+    asinh(1.0f) --> 0.881373587019543f;
+    asinh(0.0f) --> 0.0f;
+    asinh(-1.0f) --> -0.881373587019543f;
+    asinh(2.0f) --> 1.4436354751788103f;
+  }
+
+  /**
+   * Returns the arctangent (in radians) of a number.
+   */
+  function atan(value :: Float64) :: Float64
+  where {
+    atan(8.0f / 10.0f) --> 0.6747409422235527f;
+    atan(5.0f / 3.0f) --> 1.0303768265243125f;
+  }
+
+  /**
+   * Returns the hyperbolic arctangent of a number.
+   */
+  function atanh(value :: Float64) :: Float64
+  where {
+    atanh(-1.0f) --> NEGATIVE_INFINITY;
+    atanh(0.0f) --> 0.0f;
+    atanh(0.4f) --> 0.42364893019360184f;
+    atanh(1.0f) --> POSITIVE_INFINITY;
+  }
+
+  /**
+   * Returns the angle in the plane (in radians) between the positive
+   * x-axis and the ray from $$(0, 0)$$ to the point $$(x, y)$$.
+   */
+  function atan2(x :: Float64, y :: Float64) :: Float64
+  where {
+    let angle_degrees = (x, y) => (atan2(y, x) * 180.0f) / PI;
+
+    angle_degrees(5.0f, 5.0f) --> 45.0f;
+    angle_degrees(10.0f, 10.0f) --> 45.0f;
+    angle_degrees(0.0f, 10.0f) --> 90.0f;
+  }
+
+  /**
+   * Returns the cube root of a number.
+   */
+  function cbrt(value :: Float64) :: Float64
+  where {
+    cbrt(-1.0f) --> -1.0f;
+    cbrt(1.0f) --> 1.0f;
+    cbrt(POSITIVE_INFINITY) --> POSITIVE_INFINITY;
+    cbrt(64.0f) --> 4.0f;
+  }
+
+  /**
+   * Returns the smallest integer greater than or equal to the given
+   * number.
+   */
+  function ceil(vlaue :: Float64) :: Float64
+  where {
+    ceil(0.95f) --> 1.0f;
+    ceil(4.0f) --> 4.0f;
+    ceil(7.004f) --> 8.0f;
+    ceil(-7.004f) --> -7.0f;
+  }
+
+  /**
+   * Returns the number of leading zero bits in the 32-bit binary
+   * representation of a number.
+   */
+  function clz32(value :: Float64) :: Float64
+  where {
+    clz32(1.0f) --> 31.0f;
+    clz32(4.0f) --> 29.0f;
+    clz32(1_000.0f) --> 22.0f;
+  }
+
+  /**
+   * Returns the cosine of the specified angle.
+   */
+  function cos(angle :: Float64) :: Float64
+  where {
+    let circle_x = (radians, radius) -> cos(radians) * radius;
+
+    circle_x(1.0f, 10.0f) --> 5.403023058681398f;
+    circle_x(2.0f, 10.0f) --> -4.161468365471424f;
+    circle_x(PI, 10.0f) --> -10.0f;
+  }
+
+  /**
+   * Returns the hyperbolic cosine of a number.
+   */
+  function cosh(value :: Float64) :: Float64
+  where {
+    cosh(0.0f) --> 1.0f
+    cosh(2.0f) --> 3.7621956910836314f;
+  }
+
+  /**
+   * Returns $$e^{x}$$, where $$x$$ is the argument, and $$e$$ is
+   * Euler's number, the base of the natural logatirhms.
+   */
+  function exp(value :: Float64) :: Float64
+  where {
+    exp(0.0f) --> 1.0f;
+    exp(-1.0f) --> 0.36787944117144233f;
+    exp(2.0f) --> 7.38905609893065f;
+  }
+
+  // TODO: declare the other functions here.
+
+  // ## Operators
+
+  /**
+   * True if two numbers are equal.
+   */
+  function (l :: Float64) == (r :: Float64) :: Boolean = "equals"
+  where {
+    (1.0f == 1.0f) --> true;
+    (1.1f == 1.0f) --> false;
+    (NAN == NAN) --> false;
+  }
+
+  /**
+   * True if two numbers are not equal.
+   */
+  function (l :: Float64) /= (r :: Float64) :: Boolean = "not_equals"
+  where {
+    (1.0f /= 1.0f) --> false;
+    (1.1f /= 1.1f) --> true;
+    (NAN /= NAN) --> false;
+  }
+
+  /**
+   * True if `l` is greater than `r`.
+   */
+  function (l :: Float64) > (r :: Float64) :: Boolean = "greater_than"
+  where {
+    (1.0f > 1.0f) --> false;
+    (1.0f > 0.0f) --> true;
+    (-1.0f > 0.0f) --> false;
+    (NAN > NAN) --> false;
+  }
+
+  /**
+   * True if `l` is greater than or equal to `r`.
+   */
+  function (l :: Float64) >= (r :: Float64) :: Boolean = "greater_or_equal"
+  where {
+    (1.0f >= 1.0f) --> true;
+    (1.0f >= 0.0f) --> true;
+    (-1.0f >= 0.0f) --> false;
+    (NAN >= NAN) --> false;
+  }
+
+  /**
+   * True if `l` is less than `r`.
+   */
+  function (l :: Float64) < (r :: Float64) :: Boolean = "less_than"
+  where {
+    (1.0f < 1.0f) --> false;
+    (1.0f < 0.0f) --> false;
+    (-1.0f < 0.0f) --> true;
+    (NAN < NAN) --> false;
+  }
+
+  /**
+   * True if `l` is less than or equal to `r`.
+   */
+  function (l :: Float64) <= (r :: Float64) :: Boolean = "less_or_equal"
+  where { 
+    (1.0f <= 1.0f) --> true;
+    (1.0f <= 0.0f) --> false;
+    (-1.0f <= 0.0f) --> true;
+    (NAN <= NAN) --> false;
+  }
+
+  /**
+   * Returns the integer remainder of dividing the two operands.
+   */
+  function remainder(l :: Float64, r :: Float64) :: Float64
+  where {
+    remainder(12.0f, 5.0f) --> 2.0f;
+    remainder(10.0f, 5.0f) --> 0.0f;
+  }
+
+  /**
+   * returns the negation of its operand.
+   */
+  function negate(value :: Float64) :: Float64
+  where {
+    negate(0.0f) --> 0.0f;
+    negate(1.0f) --> -1.0f;
+    negate(-1.0f) --> 1.0f;
+    negate(NAN) --> NAN;
+    negate(POSITIVE_INFINITY) --> NEGATIVE_INFINITY;
+    negate(NEGATIVE_INFINITY) --> POSITIVE_INFINITY;
+  }
+
+  /**
+   * Calculates $$x^{e}$$.
+   */
+  function (l :: Float64) ** (r :: Float64) :: Float64
+  where {
+    (2.0f ** 3.0f) --> 8.0f;
+    (10.0f ** -1.0f) --> 0.1f;
+  }
+
+  /**
+   * Returns a one in each bit position for which the corresponding bits of
+   * both operands are ones.
+   */
+  function bit_and(left :: Float64, right :: Float64) :: Float64
+  where {
+    bit_and(15.0f, 9.0f) --> 9.0f;
+  }
+
+  /**
+   * Returns a zero in each bit position for which the corresponding bits of
+   * both operands are zeroes.
+   */
+  function bit_or(left :: Float64, right :: Float64) :: Float64
+  where {
+    bit_or(15.0f, 9.0f) --> 15.0f;
+  }
+
+  /**
+   * Returns a zero in each position for which the corresponding bits are the
+   * same. A one where they're different.
+   */
+  function bit_xor(left :: Float64, right :: Float64) :: Float64
+  where {
+    bit_xor(15.0f, 9.0f) --> 6.0f;
+  }
+
+  /**
+   * Inverts the bits of the operand.
+   */
+  function bit_not(value :: Float64) :: Float64
+  where {
+    bit_not(15.0f) --> -16.0f;
+    bit_not(-9.0f) --> 8.0f;
+  }
+
+  /**
+   * Shifts `a` in binary representation `b` bits to the left,
+   * shifting in zeroes from the right.
+   */
+  function bit_shift_left(a :: Float64, b :: Float64) :: Float64
+  where {
+    bit_shift_left(9.0f, 2.0f) --> 36.0f;
+  }
+
+  /**
+   * Shifts `a` in binary representation `b` bits to the right,
+   * discarding bits shifted off.
+   */
+  function bit_shift_right(a :: Float64, b :: Float64) :: Float64
+  where {
+    bit_shift_right(9.0f, 2.0f) --> 2.0f;
+    bit_shift_right(-9.0f, 2.0f) --> -3.0f;
+  }
+
+  /**
+   * Shifts `a` in binary representation `b` bits to the right,
+   * discarding bits shifted off, and shifting in zeroes from
+   * the left.
+   */
+  function bit_unsigned_shift_right(a :: Float64, b :: Float64) :: Float64
+  where {
+    bit_unsigned_shift_right(19.0f, 2.0f) --> 4.0f;
+    bit_unsigned_shift_right(-19.0f, 2.0f) --> 1_073_741_819.0f;
+  }
+
+  /**
+   * Arithmetic addition.
+   */
+  function (l :: Float64) + (r :: Float64) :: Float64 = "add"
+  where {
+    (1.0f + 0.0f) --> 1.0f;
+    (10.0f + 5.0f) --> 15.0f;
+    (-1.0f + 5.0f) --> 4.0f;
+  }
+
+  /**
+   * Arithmetic subtraction.
+   */
+  function (l :: Float64) - (r :: Float64) :: Float64 = "subtract"
+  where {
+    (1.0f - 0.0f) --> 1.0f;
+    (10.0f - 5.0f) --> 15.0f;
+    (-1.0f - 5.0f) --> -6.0f;
+  }
+
+  // TODO: this probably should be moved to another function because
+  // floating points have their own rules around x/0.
+  /**
+   * Arithmetic division.
+   */
+  function (l :: Float64) / (r :: Float64) :: Float64 = "divide"
+  where {
+    (4.0f / 2.0f) --> 2.0f;
+    (0.0f / 1.0f) --> 0.0f;
+    (1.0f / 0.0f) --> POSITIVE_INFINITY;
+  }
+
+  /**
+   * Arithmetic multiplication.
+   */
+  function (l :: Float64) * (r :: Float64) :: Float64 = "multiply"
+  where {
+    (2.0f * 3.0f) --> 6.0f;
+    (2.0f * 1.0f) --> 2.0f;
+    (2.0f * 0.0f) --> 0.0f;
+  }
+}
