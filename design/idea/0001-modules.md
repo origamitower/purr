@@ -502,3 +502,4 @@ Note that we _still_ have to check that the linked modules fulfill all of the re
 - The application description format is not defined;
 - Threat modelling;
 - What happens if people plug values from different implementations into some function?
+- Deploying the same module with different configurations side-by-side;
