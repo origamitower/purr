@@ -358,6 +358,11 @@ Relation r ::=
   | r = p | r > p | r < p   -- relations
 ```
 
+> **TODO:**  
+> This is probably too much to implement efficiently right now, so the more SMT
+> parts of relation may be left to another iteration, and for this initial
+> implementation we'll only consider simple equality between terms in unification.
+
 This language is powerful enough to include most common categories, without causing problems such as non-termination. Evaluation is done by unification, as in relational logic.
 
 For example, a constraint may be given for the version of a module:
@@ -372,17 +377,79 @@ Would be the equivalent of "only link modules whose version is '>2.3 and <3.0'".
 
 ### Search spaces
 
-(TODO:)
+The linker needs access to a set of modules to link to when resolving the dependency constraints. These sets of modules are organised into **search spaces**. A search space is a set of modules, optionally given an unique identifier in the application.
+
+Each module gets its own search space, which may only be a subset of the search space available for the module that linked it. At the top level, in the application configuration, it's possible to define unrestricted sets of modules and give them a name. These uniquely-identified search spaces may then be assigned to specific modules within the application.
+
+Search spaces play the primary role of capabilities in Origami, and follow the principle of least authority. Modules have _exactly_ the rights you give them, and they cannot amplify those rights, or grant more rights to their dependencies. This way, if one does not provide a File System module to a module A, and this module depends on B that uses the File System, then B simply will fail to be linked before executing the program, as A does not have sufficient rights to use it.
+
+By default, there's one search space for the application, and the entry point of the application can see all of the modules in this space. From there, every module linked from the entry point has access to _at most_ those modules, but nothing else. Any module may specify a restricted search space when linking a dependency. For example, to sandbox a module, and revoke its possibilities of using the network, file system, or other IO effects:
+
+```
+module App
+
+uses Some.Untrusted.Module as um
+  without Origami.IO.*
+
+uses Some.Trusted.Module as tm
+```
+
+In this example, `tm` has access to the same set of modules that the linking module, `App`, does, and thus the same rights. It can provide all of its dependencies with the same rights, and it can do anything that `App` itself can. But `um` has access to a restricted subset of modules--all of those modules that `App` can use, without modules that implement any of the interfaces starting with `Origami.IO`. This effectively denies `um` from ever possibly doing any IO operation by default.
+
+It's possible to amplify these rights by assigning a different search space to modules linked from `um` at the application description. And its also possible to amplify these rights by giving more powerful references to a function from `um` or one of its dependencies.
 
 ### Ambiguity
 
-(TODO:)
+As it stands, the system does not preclude the existence of ambiguous linking in principle. All of the specified dependencies are potentially ambiguous, and it's fine for these to exist in source form. However, _executing_ or _compiling_ a program where the module to be linked is ambiguous is not allowed.
 
-## Security
+That is, if, when compiling a program P, there's any module M for which one of its dependencies resolve to more than one module, then P cannot be compiled, and the ambiguity must be resolved first.
 
-(TODO:)
+Much of the source code in modern applications is not controlled by the programmer, and they may not even have access to the source code itself, so it's unreasonable to expect the programmer to modify the source code to resolve the ambiguity. Because of this, Origami uses external resolution rules.
+
+Ambiguity resolution builds up on the idea of search spaces. A search space may contain ambiguous modules as long as the dependencies described in the source form resolve such ambiguity, and no ambiguous _linking_ happens.
+
+In the case of ambiguous linking, the application programmer can specify a resolution in the application description, either by refining the search space (e.g.: by removing the conflicting module), or by specifying an absolute module to link to (which is what dependency pinning does).
 
 ## Packaging
+
+Eventually applications need to be packaged for distribution in many forms: we may want to share the code with other people, in which case we'll generate a package manager package; we may want to run the application in a different computer, in which case we'll generate a binary package; etc.
+
+Most of these concerns will be dealt with in a separate proposal, but we must look into a couple of them here as they directly affect module loading, trust, and search spaces.
+
+### Origami packages
+
+An Origami package is any directory that contains Origami source code. Optionally this directory may contain a package description, external modules (e.g.: JS or C++ modules for FFI), documentation, and other resource files.
+
+All modules within a package (at any depth) are available for linking in the application's search space. We group modules through directories, which allows rules to be specified for groups of modules, instead of individual modules. Rules always use the relative path of the module to the package root.
+
+For example, in a tree such as:
+
+```
++ /
+|--+ src/
+|  `--o app.origami
+`--+ vendor/
+   |--o lib-a.origami
+   `--o lib-b.origami
+```
+
+We have two groups of modules: `src` and `vendor`. A rule such as `vendor/*` applies to all modules in the `vendor` group (so both `lib-a` and `lib-b` at the same time). These rules may be used to define and refine search spaces.
+
+### External packages
+
+Packages may be installed by a package manager. The package manager for Origami reserves the group root `.origami-packages` for all externally downloaded packages. These are further categorised as: `group` > `source` > `organization`? > `name` > `version`.
+
+Unlike npm (and some other flatter package managers), Origami has a generalised concept of **groups**. A group is any identifier that the application programmer decides to associate with some packages. For example, they may create a group for "development" packages, a group for "testing" packages, or a group for "low-trust" packages. Groups provide a simple way of specifying linking rules for many packages at the same time.
+
+Following the group, we have a `source` for the package. This allows packages installed directly from a git repository to be subject to different rules than a package installed from some central or vetted repository.
+
+Then we have `organization` and `name`. If the source supports a concept of organization (for example, GitHub's username), then that name is used, otherwise we use the special marker `.flat`. That's followed by the unique package name, which should be guaranteed somehow by the `source` and `organization`.
+
+Finally, we have the `version` of the module. Many different versions of a module may be installed, and we allow rules to be defined for each of the versions directly.
+
+> **TODO:** figure out a better name for this marker.
+
+## Security
 
 (TODO:)
 
