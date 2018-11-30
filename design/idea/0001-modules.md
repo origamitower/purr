@@ -449,9 +449,36 @@ Finally, we have the `version` of the module. Many different versions of a modul
 
 > **TODO:** figure out a better name for this marker.
 
+> **TODO:** Decide how dependencies specified in packages will be handled, and how it affects package rights.
+
 ## Security
 
-(TODO:)
+Before we talk about what security properties the module system defined here can guarantee, we will talk about the security properties it most definitely does not guarantee.
+
+Origami does not guarantee anything _outside of the process_. It assumes that the hardware and the file system can be trusted. It assumes that _external processes_ cannot read or tamper with Origami memory. And it makes no effort to mitigate these risks. This module system cannot help you avoid side-channel attacks, it cannot help you avoid something messing with your files, etc.
+
+With that out of the way, let's look at the security properties that we do guarantee.
+
+### Authority and trust
+
+The module system provides a way of managing trust levels in Origami components, and providing them with authority to do things. Origami does not have a global namespace, and intrinsic objects/other language features are defined on a per-module basis. Intrinsics are always immutable, in the sense that behaviours in such objects cannot be changed (we do support safe contextual extensions, but those will not be covered here, and they're still capability secure).
+
+A module in Origami has access to nothing by default. And it may _request_ access by specifying its dependencies as interface constraints. The application must them provide each module with the authority to do what it has to in order to work, by defining search spaces.
+
+To make the language practical, we lessen this work by specifying that linked modules have, by default, the same rights as their parent modules. Because this would be a security disaster in the presence of external packages, we require at least the definition of search spaces on groups of external packages. This definition may simply be "the same as the application", for groups of packages you highly trust.
+
+### Code execution
+
+The top level of each module consists solely of declarations. This means that no code can possibly run except from the entry point of the application--instantiating an Origami module that contains no FFI is always safe.
+
+### FFI boundary
+
+FFI is a no-rules land. We cannot guarantee anything about the behaviour of the linked code written in a different language, with different rules. So, by default, there's only two pieces of code with access to FFI:
+
+- Origami's runtime--because we do need it to work.
+- The application's code.
+
+For every other package, a configuration of whether they'll have access to the FFI or not must be explicitly made. It's also possible to revoke the default rights to FFI to any package. And revoke any transient rights to FFI as a result of the automatic search space definition.
 
 ## Practical affordances
 
