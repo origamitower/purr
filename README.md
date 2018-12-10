@@ -22,16 +22,16 @@ You'll need to install [.NET core 2.1+](https://dotnet.microsoft.com/download) a
 
 Clone this repository:
 
-    $ git clone git@github.com:origamitower/origami.git
+    $ git clone git@github.com:origamitower/purr.git
 
 Install the tools (from the project's root):
 
-    $ cd origami
+    $ cd purr
     $ npm install
 
 Install the compiler dependencies (from the compiler's root):
 
-    $ cd origami/projects/compiler
+    $ cd purr/projects/compiler
     $ npm install
     $ dotnet restore src
     $ dotnet restore test
