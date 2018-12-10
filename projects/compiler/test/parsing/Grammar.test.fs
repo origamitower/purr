@@ -4,7 +4,7 @@ open Tests.Matchers
 open Fable.Import.Jest
 open Fable.Import.Node.Exports
 open Fable.Import.Node.Globals
-open Origami.Compiler.Syntax.Parsing
+open Purr.Compiler.Syntax.Parsing
 
 
 describe "[Parsing] grammar validation" <| fun () ->

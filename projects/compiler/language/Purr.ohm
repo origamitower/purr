@@ -1,6 +1,6 @@
 %[
-open Origami.Compiler.Syntax.Range
-open Origami.Compiler.Syntax.Cst
+open Purr.Compiler.Syntax.Range
+open Purr.Compiler.Syntax.Cst
 open Fable.Core
 open Fable.Core.JsInterop
 open System.Text.RegularExpressions
@@ -71,7 +71,7 @@ let fixRawString (m:Range) xs =
 
 ]%
 
-Origami : Module {
+Purr : Module {
   Module
     = Header* m:Meta module_ id:ModuleId defs:Definition* end
       %[

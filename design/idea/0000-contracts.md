@@ -9,7 +9,7 @@
 
 ## Summary
 
-Origami uses a gradual type system with higher-order contracts (which allow runtime-enforced refinements).
+Purr uses a gradual type system with higher-order contracts (which allow runtime-enforced refinements).
 
 ## References
 

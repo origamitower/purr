@@ -1,6 +1,6 @@
-module Origami.Compiler.Syntax.Cst
+module Purr.Compiler.Syntax.Cst
 
-open Origami.Compiler.Syntax.Range
+open Purr.Compiler.Syntax.Range
 
 type Module = {
   range: Range

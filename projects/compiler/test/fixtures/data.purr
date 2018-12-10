@@ -1,4 +1,4 @@
-% language: origami
+% language: purr
 
 module Test.Data
 

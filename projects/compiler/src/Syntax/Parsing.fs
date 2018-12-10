@@ -1,9 +1,9 @@
-module Origami.Compiler.Syntax.Parsing
+module Purr.Compiler.Syntax.Parsing
 
 open Fohm.Generated
-open Origami.Compiler.Syntax.Cst
+open Purr.Compiler.Syntax.Cst
 
-let tryParse source options = Origami.parse "Module" source options
+let tryParse source options = Purr.parse "Module" source options
 
 let parse source options =
   match tryParse source options with

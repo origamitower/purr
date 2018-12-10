@@ -9,9 +9,9 @@
 
 ## Summary
 
-As a modular programming language, Origami aims to support both _modularity_ and _modular compilation_. We also care a lot about allowing mutual recursion between modules (disallowing it causes people to organise their programs in awkward ways), and security. The module system also has to be implementable in JavaScript (our target language) with acceptable performance.
+As a modular programming language, Purr aims to support both _modularity_ and _modular compilation_. We also care a lot about allowing mutual recursion between modules (disallowing it causes people to organise their programs in awkward ways), and security. The module system also has to be implementable in JavaScript (our target language) with acceptable performance.
 
-There are not many module systems in usage that fit all of the criteria above, at least not in widely used languages. Origami brings some ideas from academia and implements them. In short, the module system:
+There are not many module systems in usage that fit all of the criteria above, at least not in widely used languages. Purr brings some ideas from academia and implements them. In short, the module system:
 
 - Separates `modules` and `interfaces`, like ML does. Interfaces describe a type signature for what we expect of a module, and are identified by an unique name. Modules are anonymous implementations of these interfaces.
 
@@ -73,15 +73,15 @@ Sadly, most widely used programming languages do pretty poorly at both of these 
 
 Some work-arounds for these problems, like dependency injection containers in Java, and stack-inspection for security in the JVM, result in a lot of complexity--so applications are harder to write and debug,--and performance overhead.
 
-Origami is a language that values safety--it's one of its core goals,--so any unsafe module system is unacceptable. We also value practicality, so we'd like to have a system that isn't complex to reason about or use, but that can't come at the expense of security and safety.
+Purr is a language that values safety--it's one of its core goals,--so any unsafe module system is unacceptable. We also value practicality, so we'd like to have a system that isn't complex to reason about or use, but that can't come at the expense of security and safety.
 
 Luckily, people have been working on these issues for a long time, and while there isn't a language that coherently brings these together ([Pony](https://www.ponylang.io/) and [Newspeak](http://newspeaklanguage.org/) have promising security facilities, however), it's possible to combine different ideas into one module system that comes close to our ideal. That's what this document describes.
 
 ## An overview of the module system
 
-Origami's module system is primarily based on David Barbour's idea of linking modules using constraints, and dividing modules into interfaces and anonymous implementations of interfaces. The latter is also similar to ML module systems to an extent--you have a module signature that defines the expected shape for a module, and module implementations which provide concrete definitions of these signatures.
+Purr's module system is primarily based on David Barbour's idea of linking modules using constraints, and dividing modules into interfaces and anonymous implementations of interfaces. The latter is also similar to ML module systems to an extent--you have a module signature that defines the expected shape for a module, and module implementations which provide concrete definitions of these signatures.
 
-In Origami, an interface is a set of meta-data, contracts, and an unique identifier. For example, an interface for a Set may be specified as follows:
+In Purr, an interface is a set of meta-data, contracts, and an unique identifier. For example, an interface for a Set may be specified as follows:
 
 ```
 interface Data.Set
@@ -203,7 +203,7 @@ As an example, the boolean interface could be defined as such:
 @Experimental
 interface Data.Boolean
 
-uses Origami.Annotation.Stability exposing Experimental
+uses Purr.Annotation.Stability exposing Experimental
 
 /**
  * The boolean data type.
@@ -229,7 +229,7 @@ function (l :: Boolean) or (r :: Boolean) :: Boolean
 function not (v :: Boolean) :: Boolean
 ```
 
-This interface has the unique identifier `Data.Boolean`, a metadata of `Origami.Annotation.Stability.Experimental`, and four signatures: `Union(Boolean, [True, False])`, `_ and _`, `_ or _`, and `not _`.
+This interface has the unique identifier `Data.Boolean`, a metadata of `Purr.Annotation.Stability.Experimental`, and four signatures: `Union(Boolean, [True, False])`, `_ and _`, `_ or _`, and `not _`.
 
 ## Modules
 
@@ -255,7 +255,7 @@ An implementation of the previously-specified `Data.Boolean` interface would loo
 @Author("Quil")
 module Data.Boolean
 
-uses Origami.Annotation.Author exposing Author
+uses Purr.Annotation.Author exposing Author
 
 union Boolean { True; False }
 
@@ -319,7 +319,7 @@ uses Data.Boolean as b
 It considers the constraint:
 
 ```
-Id = Data.Boolean /\ Meta(Origami.Annotation.Author.Author("Quil"))
+Id = Data.Boolean /\ Meta(Purr.Annotation.Author.Author("Quil"))
 ```
 
 The following is the constraint language used by the linker:
@@ -360,7 +360,7 @@ This language is powerful enough to include most common categories, without caus
 For example, a constraint may be given for the version of a module:
 
 ```
-uses Origami.Annotations.Version exposing Version
+uses Purr.Annotations.Version exposing Version
 uses Data.List as L
   if Version(v.major = 2 & v.feature > 3)
 ```
@@ -373,7 +373,7 @@ The linker needs access to a set of modules to link to when resolving the depend
 
 Each module gets its own search space, which may only be a subset of the search space available for the module that linked it. At the top level, in the application configuration, it's possible to define unrestricted sets of modules and give them a name. These uniquely-identified search spaces may then be assigned to specific modules within the application.
 
-Search spaces play the primary role of capabilities in Origami, and follow the principle of least authority. Modules have _exactly_ the rights you give them, and they cannot amplify those rights, or grant more rights to their dependencies. This way, if one does not provide a File System module to a module A, and this module depends on B that uses the File System, then B simply will fail to be linked before executing the program, as A does not have sufficient rights to use it.
+Search spaces play the primary role of capabilities in Purr, and follow the principle of least authority. Modules have _exactly_ the rights you give them, and they cannot amplify those rights, or grant more rights to their dependencies. This way, if one does not provide a File System module to a module A, and this module depends on B that uses the File System, then B simply will fail to be linked before executing the program, as A does not have sufficient rights to use it.
 
 By default, there's one search space for the application, and the entry point of the application can see all of the modules in this space. From there, every module linked from the entry point has access to _at most_ those modules, but nothing else. Any module may specify a restricted search space when linking a dependency. For example, to sandbox a module, and revoke its possibilities of using the network, file system, or other IO effects:
 
@@ -381,12 +381,12 @@ By default, there's one search space for the application, and the entry point of
 module App
 
 uses Some.Untrusted.Module as um
-  without Origami.IO.*
+  without Purr.IO.*
 
 uses Some.Trusted.Module as tm
 ```
 
-In this example, `tm` has access to the same set of modules that the linking module, `App`, does, and thus the same rights. It can provide all of its dependencies with the same rights, and it can do anything that `App` itself can. But `um` has access to a restricted subset of modules--all of those modules that `App` can use, without modules that implement any of the interfaces starting with `Origami.IO`. This effectively denies `um` from ever possibly doing any IO operation by default.
+In this example, `tm` has access to the same set of modules that the linking module, `App`, does, and thus the same rights. It can provide all of its dependencies with the same rights, and it can do anything that `App` itself can. But `um` has access to a restricted subset of modules--all of those modules that `App` can use, without modules that implement any of the interfaces starting with `Purr.IO`. This effectively denies `um` from ever possibly doing any IO operation by default.
 
 It's possible to amplify these rights by assigning a different search space to modules linked from `um` at the application description. And its also possible to amplify these rights by giving more powerful references to a function from `um` or one of its dependencies.
 
@@ -396,7 +396,7 @@ As it stands, the system does not preclude the existence of ambiguous linking in
 
 That is, if, when compiling a program P, there's any module M for which one of its dependencies resolve to more than one module, then P cannot be compiled, and the ambiguity must be resolved first.
 
-Much of the source code in modern applications is not controlled by the programmer, and they may not even have access to the source code itself, so it's unreasonable to expect the programmer to modify the source code to resolve the ambiguity. Because of this, Origami uses external resolution rules.
+Much of the source code in modern applications is not controlled by the programmer, and they may not even have access to the source code itself, so it's unreasonable to expect the programmer to modify the source code to resolve the ambiguity. Because of this, Purr uses external resolution rules.
 
 Ambiguity resolution builds up on the idea of search spaces. A search space may contain ambiguous modules as long as the dependencies described in the source form resolve such ambiguity, and no ambiguous _linking_ happens.
 
@@ -408,9 +408,9 @@ Eventually applications need to be packaged for distribution in many forms: we m
 
 Most of these concerns will be dealt with in a separate proposal, but we must look into a couple of them here as they directly affect module loading, trust, and search spaces.
 
-### Origami packages
+### Purr packages
 
-An Origami package is any directory that contains Origami source code. Optionally this directory may contain a package description, external modules (e.g.: JS or C++ modules for FFI), documentation, and other resource files.
+An Purr package is any directory that contains Purr source code. Optionally this directory may contain a package description, external modules (e.g.: JS or C++ modules for FFI), documentation, and other resource files.
 
 All modules within a package (at any depth) are available for linking in the application's search space. We group modules through directories, which allows rules to be specified for groups of modules, instead of individual modules. Rules always use the relative path of the module to the package root.
 
@@ -419,19 +419,19 @@ For example, in a tree such as:
 ```
 + /
 |--+ src/
-|  `--o app.origami
+|  `--o app.purr
 `--+ vendor/
-   |--o lib-a.origami
-   `--o lib-b.origami
+   |--o lib-a.purr
+   `--o lib-b.purr
 ```
 
 We have two groups of modules: `src` and `vendor`. A rule such as `vendor/*` applies to all modules in the `vendor` group (so both `lib-a` and `lib-b` at the same time). These rules may be used to define and refine search spaces.
 
 ### External packages
 
-Packages may be installed by a package manager. The package manager for Origami reserves the group root `.origami-packages` for all externally downloaded packages. These are further categorised as: `group` > `source` > `organization`? > `name` > `version`.
+Packages may be installed by a package manager. The package manager for Purr reserves the group root `.Purr-packages` for all externally downloaded packages. These are further categorised as: `group` > `source` > `organization`? > `name` > `version`.
 
-Unlike npm (and some other flatter package managers), Origami has a generalised concept of **groups**. A group is any identifier that the application programmer decides to associate with some packages. For example, they may create a group for "development" packages, a group for "testing" packages, or a group for "low-trust" packages. Groups provide a simple way of specifying linking rules for many packages at the same time.
+Unlike npm (and some other flatter package managers), Purr has a generalised concept of **groups**. A group is any identifier that the application programmer decides to associate with some packages. For example, they may create a group for "development" packages, a group for "testing" packages, or a group for "low-trust" packages. Groups provide a simple way of specifying linking rules for many packages at the same time.
 
 Following the group, we have a `source` for the package. This allows packages installed directly from a git repository to be subject to different rules than a package installed from some central or vetted repository.
 
@@ -447,27 +447,27 @@ Finally, we have the `version` of the module. Many different versions of a modul
 
 Before we talk about what security properties the module system defined here can guarantee, we will talk about the security properties it most definitely does not guarantee.
 
-Origami does not guarantee anything _outside of the process_. It assumes that the hardware and the file system can be trusted. It assumes that _external processes_ cannot read or tamper with Origami memory. And it makes no effort to mitigate these risks. This module system cannot help you avoid side-channel attacks, it cannot help you avoid something messing with your files, etc.
+Purr does not guarantee anything _outside of the process_. It assumes that the hardware and the file system can be trusted. It assumes that _external processes_ cannot read or tamper with Purr memory. And it makes no effort to mitigate these risks. This module system cannot help you avoid side-channel attacks, it cannot help you avoid something messing with your files, etc.
 
 With that out of the way, let's look at the security properties that we do guarantee.
 
 ### Authority and trust
 
-The module system provides a way of managing trust levels in Origami components, and providing them with authority to do things. Origami does not have a global namespace, and intrinsic objects/other language features are defined on a per-module basis. Intrinsics are always immutable, in the sense that behaviours in such objects cannot be changed (we do support safe contextual extensions, but those will not be covered here, and they're still capability secure).
+The module system provides a way of managing trust levels in Purr components, and providing them with authority to do things. Purr does not have a global namespace, and intrinsic objects/other language features are defined on a per-module basis. Intrinsics are always immutable, in the sense that behaviours in such objects cannot be changed (we do support safe contextual extensions, but those will not be covered here, and they're still capability secure).
 
-A module in Origami has access to nothing by default. And it may _request_ access by specifying its dependencies as interface constraints. The application must them provide each module with the authority to do what it has to in order to work, by defining search spaces.
+A module in Purr has access to nothing by default. And it may _request_ access by specifying its dependencies as interface constraints. The application must them provide each module with the authority to do what it has to in order to work, by defining search spaces.
 
 To make the language practical, we lessen this work by specifying that linked modules have, by default, the same rights as their parent modules. Because this would be a security disaster in the presence of external packages, we require at least the definition of search spaces on groups of external packages. This definition may simply be "the same as the application", for groups of packages you highly trust.
 
 ### Code execution
 
-The top level of each module consists solely of declarations. This means that no code can possibly run except from the entry point of the application--instantiating an Origami module that contains no FFI is always safe.
+The top level of each module consists solely of declarations. This means that no code can possibly run except from the entry point of the application--instantiating an Purr module that contains no FFI is always safe.
 
 ### FFI boundary
 
 FFI is a no-rules land. We cannot guarantee anything about the behaviour of the linked code written in a different language, with different rules. So, by default, there's only two pieces of code with access to FFI:
 
-- Origami's runtime--because we do need it to work.
+- Purr's runtime--because we do need it to work.
 - The application's code.
 
 For every other package, a configuration of whether they'll have access to the FFI or not must be explicitly made. It's also possible to revoke the default rights to FFI to any package. And revoke any transient rights to FFI as a result of the automatic search space definition.
@@ -482,7 +482,7 @@ To avoid this problem, we allow interfaces to be generated from module definitio
 
 ### Caching & pinning linked modules
 
-In order to execute an Origami application, the linker must resolve all of the constraints in dependencies to provide actual module implementations to every module. The cost of resolving these constraints grows with the number of modules and dependencies. On top of that, if the module files change, a different module may be linked _even if_ the constraints themselves haven't changed. If a linked module changes after programmers have executed the program a few times, the behaviour could be confusing.
+In order to execute an Purr application, the linker must resolve all of the constraints in dependencies to provide actual module implementations to every module. The cost of resolving these constraints grows with the number of modules and dependencies. On top of that, if the module files change, a different module may be linked _even if_ the constraints themselves haven't changed. If a linked module changes after programmers have executed the program a few times, the behaviour could be confusing.
 
 To avoid this we allow linked modules to be pinned and cached. Which means that after we resolve the constraint once for a module, we will reuse the module previously linked until the programmer explicitly asks the linker to update the linked module--in which case we'll resolve the constraints again for that module.
 

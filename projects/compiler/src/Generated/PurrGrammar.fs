@@ -1,5 +1,5 @@
 // This code was automatically generated from a grammar definition by Fohm.
-module Fohm.Generated.Origami
+module Fohm.Generated.Purr
 
 type Offset = 
   { line: int; column: int }
@@ -23,8 +23,8 @@ type ParseOptions =
   { filename: string option }
 
 
-open Origami.Compiler.Syntax.Range
-open Origami.Compiler.Syntax.Cst
+open Purr.Compiler.Syntax.Range
+open Purr.Compiler.Syntax.Cst
 open Fable.Core
 open Fable.Core.JsInterop
 open System.Text.RegularExpressions
@@ -727,7 +727,7 @@ let private visitor =
 let private primParser: obj  =
   makeParser(
     """
-    Origami {
+    Purr {
       Module =
         | Header* Meta module_ ModuleId Definition* end -- alt0
               

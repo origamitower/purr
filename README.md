@@ -1,10 +1,12 @@
-# Origami
+# Purr
 
-[![Join the chat at https://gitter.im/origamitower/origami](https://badges.gitter.im/origamitower/origami.svg)](https://gitter.im/origamitower/origami?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/origamitower/purr](https://badges.gitter.im/origamitower/purr.svg)](https://gitter.im/origamitower/purr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-> **NOTE**: this project is in early stages of design and development. If you want to contribute, you should get familiar with the [design process](https://github.com/origamitower/origami/tree/master/design). Otherwise, this is [the current state of the language](https://github.com/origamitower/origami/blob/master/design/ROADMAP.md).
+> **NOTE**: this project is in early stages of design and development. If you want to contribute, you should get familiar with the [design process](https://github.com/origamitower/purr/tree/master/design). Otherwise, this is [the current state of the language](https://github.com/origamitower/purr/blob/master/design/ROADMAP.md).
 
-Origami is a safe, multi-paradigm, and practical programming language targeting JavaScript. It’s based on a simple call-by-value calculus with one-shot delimited continuations, algebraic effect handlers, gradual typing and higher-order contracts, and a generalised form of pattern matching.
+<img src="https://raw.githubusercontent.com/origamitower/purr/master/etc/purr.png" alt="A woman sitting cross-legged, using a computer. A beige lays on her right, and a white cat on her left." align="left">
+
+Purr is a safe, multi-paradigm, and practical programming language targeting JavaScript. It’s based on a simple call-by-value calculus with one-shot delimited continuations, algebraic effect handlers, gradual typing and higher-order contracts, and a generalised form of pattern matching.
 
 It supports functional, imperative, and object-oriented programming out-of-the-box. Other paradigms can be implemented as little embedded languages.
 
@@ -42,4 +44,4 @@ If you're implementing a new feature, it might be useful to run the tests in "wa
 
 ## Licence
 
-Origami is (c) Quildreen Motta, and released under MIT.
+Purr is (c) Quildreen Motta, and released under MIT.

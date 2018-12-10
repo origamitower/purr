@@ -1,7 +1,7 @@
 [<RequireQualifiedAccess>]
-module Origami.Compiler.Core.Ast
+module Purr.Compiler.Core.Ast
 
-open Origami.Compiler.Syntax.Range
+open Purr.Compiler.Syntax.Range
 
 type Fresh(prefix: string) =
   member __.Prefix = prefix

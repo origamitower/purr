@@ -5,7 +5,7 @@
   <ItemGroup>
     <Compile Include="Syntax/Range.fs" />
     <Compile Include="Syntax/Cst.fs" />
-    <Compile Include="Generated/OrigamiGrammar.fs" />
+    <Compile Include="Generated/PurrGrammar.fs" />
     <Compile Include="Syntax/Parsing.fs" />
     <Compile Include="Core/Ast.fs" />
     <Compile Include="Passes/CstToCore.fs" />

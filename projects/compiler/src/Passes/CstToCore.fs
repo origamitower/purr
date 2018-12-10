@@ -1,8 +1,8 @@
-module Origami.Compiler.Passes.CstToCore
+module Purr.Compiler.Passes.CstToCore
 
-open Origami.Compiler.Syntax.Range
-open Origami.Compiler.Syntax
-open Origami.Compiler.Core
+open Purr.Compiler.Syntax.Range
+open Purr.Compiler.Syntax
+open Purr.Compiler.Core
 
 let unknown = Ast.CUnknown(R_Unknown)
 let emptyMeta : Ast.Metadata = { documentation = "" }

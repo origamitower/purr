@@ -1,4 +1,4 @@
-module Origami.Compiler.Syntax.Range
+module Purr.Compiler.Syntax.Range
 
 type Line = int
 type Column = int

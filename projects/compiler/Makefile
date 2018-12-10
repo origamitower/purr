@@ -34,7 +34,7 @@ build-tests: build-grammars
 
 .PHONY: build-grammars
 build-grammars:
-	$(FOHM) compile language/Origami.ohm --outDir src/Generated --name OrigamiGrammar
+	$(FOHM) compile language/Purr.ohm --outDir src/Generated --name PurrGrammar
 
 .PHONY: test
 test: build-tests run-tests

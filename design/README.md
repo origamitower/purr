@@ -1,6 +1,6 @@
-# Origami design
+# Purr design
 
-This folder contains documents describing the design of all features in Origami. The current process is simple:
+This folder contains documents describing the design of all features in Purr. The current process is simple:
 
 - Proposals start in the `Idea` state, and can be discussed until accepted or rejected;
 - Accepted proposals require an experimental implementation and more technical discussions on its computational aspects (performance, memory usage, security, optimisability, etc);

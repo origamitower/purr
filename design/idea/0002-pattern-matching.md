@@ -11,7 +11,7 @@
 
 Pattern matching provides a generalised form of dispatching (selecting) an operation, while at the same time guaranteeing data coherence, being implementable efficiently, and supporting type refinements for a static type system.
 
-For Origami, pattern matching provides a practical and coherent way of operating on data, defining functions, supporting evolution and extensibility, all while not violating any security guarantees made by the other parts of the language.
+For Purr, pattern matching provides a practical and coherent way of operating on data, defining functions, supporting evolution and extensibility, all while not violating any security guarantees made by the other parts of the language.
 
 The goals of this idea are:
 
@@ -35,7 +35,7 @@ The goals of this idea are:
 
 ## Patterns and pattern matching
 
-In Origami, data is either a single thing (a scalar), or an aggregation of things (a record). It's easy to set expectations for scalar values. For example:
+In Purr, data is either a single thing (a scalar), or an aggregation of things (a record). It's easy to set expectations for scalar values. For example:
 
 ```
 if n == 0 then ...
@@ -60,7 +60,7 @@ match value {
 
 Patterns are tried top-to-bottom, in order. So first we look if the record has labels `x`, `y`, and `z`. And if it does, then we've found our code to run. Otherwise we check if it has labels `x`, and `y`. And if it does, we treat it as a point2d. Otherwise we fail.
 
-## Origami patterns
+## Purr patterns
 
 The core language for patterns is as follows:
 
@@ -127,7 +127,7 @@ match <v> { }
 
 ## Extractors
 
-Pattern matching in most languages is not extensible, and it's also not possible to maintain encapsulation as it has to be able to look at the internals (structure) of a value. Origami enforces encapsulation using unforgeable references for projecting values out of a record structure, which gets rid of the encapsulation problems, but makes some patterns very cumbersome to write.
+Pattern matching in most languages is not extensible, and it's also not possible to maintain encapsulation as it has to be able to look at the internals (structure) of a value. Purr enforces encapsulation using unforgeable references for projecting values out of a record structure, which gets rid of the encapsulation problems, but makes some patterns very cumbersome to write.
 
 To address this, we use an idea inspired by Scala's extractors. Besides record patterns, we allow _extractor_ patterns. An extractor is just an object providing a method labelled `unapply`, invoked with the keys we're interested in and the value. The method then returns either a public record with (at least) the labels we've asked for, if it can provide one, or `Nothing`. The record pattern is then matched agains the returned value.
 
@@ -182,7 +182,7 @@ Now this returns `1`, as expected.
 
 ### First-class patterns
 
-Writing custom extractors is a common thing to, so Origami also provides first-class combinators for constructing them. Combinators just build extractors. The previous example could be written as:
+Writing custom extractors is a common thing to, so Purr also provides first-class combinators for constructing them. Combinators just build extractors. The previous example could be written as:
 
 ```
 let Point = {
