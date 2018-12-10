@@ -4,7 +4,7 @@
 
 > **NOTE**: this project is in early stages of design and development. If you want to contribute, you should get familiar with the [design process](https://github.com/origamitower/purr/tree/master/design). Otherwise, this is [the current state of the language](https://github.com/origamitower/purr/blob/master/design/ROADMAP.md).
 
-<img src="https://raw.githubusercontent.com/origamitower/purr/master/etc/purr.png" alt="A woman sitting cross-legged, using a computer. A beige lays on her right, and a white cat on her left." align="left">
+<img src="https://github.com/origamitower/origami/raw/master/etc/purr.png" alt="A woman sitting cross-legged, using a computer. A beige lays on her right, and a white cat on her left." align="left">
 
 Purr is a safe, multi-paradigm, and practical programming language targeting JavaScript. It’s based on a simple call-by-value calculus with one-shot delimited continuations, algebraic effect handlers, gradual typing and higher-order contracts, and a generalised form of pattern matching.
 
