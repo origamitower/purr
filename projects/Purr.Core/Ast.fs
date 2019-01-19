@@ -7,18 +7,23 @@ type Program = {
 }
 
 and Declaration =
-  | Define of name: Name * body: Expression
+  | Define of name: Name * body: Expr
 
-and Expression =
-  | Lambda of parameters: Name list * body: Expression 
-  | Let of name: Name * init: Expression * body: Expression
-  | Apply of callee: Expression * arguments: Expression list
-  | Load of name: Name
+and AExpr =
+  | Lambda of parameters: Name list * body: Expr
+  | LoadLocal of Name
   | Text of string
   | Integer of int
   | Float of float
   | Boolean of bool
   | Nothing
-  | List of Expression list
-  | Sequence of left: Expression * right: Expression
-  | If of test: Expression * consequent: Expression * alternate: Expression
+  | List of AExpr list
+
+and CExpr =
+  | Apply of callee: AExpr * arguments: AExpr list
+  | If of test: AExpr * consequent: Expr * alternate: Expr
+
+and Expr =
+  | Let of name: Name * init: CExpr * body: Expr
+  | CExpr of CExpr
+  | AExpr of AExpr

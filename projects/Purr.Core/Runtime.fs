@@ -9,7 +9,7 @@ type PurrValue =
   | Boolean of bool
   | Cons of head: PurrValue * tail: PurrValue
   | Nothing
-  | Closure of Environment * parameters: Name list * body: Expression
+  | Closure of Environment * parameters: Name list * body: Expr
 
 
 and Environment(parent: Environment option) =

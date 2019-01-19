@@ -2,6 +2,7 @@ module Purr.Core.Evaluator
 
 open Purr.Core.Ast
 open Purr.Core.Runtime
+open Purr.Core.Common
 
 type Generator<'i, 'o, 'r> =
   | Yield of value: 'o * continuation: ('i -> Generator<'i, 'o, 'r>)
@@ -22,8 +23,11 @@ module Generator =
     | Fail reason -> Fail reason
     | Done r -> f r
 
+  let map f g = bind g (fun x -> greturn (f x))
+
   let sequence m1 m2 =
     bind m1 (fun _ -> m2)
+
 
   let rec runToValue g =
     match g with
@@ -42,13 +46,18 @@ module Generator =
     | Done r -> (r, Done r)
     | Fail e -> failwith e
     | Yield (v, k) -> (v, k v)
+
+  let fromResult r =
+    match r with
+    | Ok v -> greturn v
+    | Error e -> Fail e
   
 
 type GeneratorBuilder() =
   member __.Bind(m, f) = Generator.bind m f
   member __.Return(v) = Generator.greturn v
   member __.ReturnFrom(m) = m
-    
+
 
 let gen = GeneratorBuilder()
 
@@ -65,59 +74,88 @@ let ensureDiscarded value =
                 b
             """
 
+let rec evalAexpr env expr =
+  match expr with
+  | AExpr.Text v -> 
+      Ok <| text v
 
+  | AExpr.Integer v ->
+      Ok <| integer v
 
-let rec eval env (expr:Expression) : Generator<PurrValue, PurrValue, PurrValue> =
-  gen {
-    match expr with
-    | Expression.Text v ->
-        return (text v)
+  | AExpr.Float v ->
+      Ok <| float v
 
-    | Expression.Integer v ->
-        return (integer v)
+  | AExpr.Boolean v ->
+      Ok <| bool v
 
-    | Expression.Float v ->
-        return (float v)
+  | AExpr.Nothing ->
+      Ok <| nothing
 
-    | Expression.Boolean v ->
-        return (bool v)
+  | AExpr.List items ->
+      let rec go xs =
+        match xs with
+        | x :: xs -> 
+          result {
+            let! x = evalAexpr env x
+            let! xs = go xs
+            return cons x xs
+          }
+        | [] -> Ok nothing
+      in go items
 
-    | Expression.Nothing ->
-        return (nothing)
+  | AExpr.Lambda (parameters, body) ->
+      Ok <| closure env parameters body
 
-    | List items ->
-        return! Generator.gfail "Not implemented."
+  | AExpr.LoadLocal name ->
+      match Environment.lookup name env with
+      | Some v -> Ok <| v
+      | None -> Error (sprintf "%s is not defined" name)
+  
+and evalManyAexpr env exprs =
+  List.foldBack
+    (fun expr xs -> result {
+                      let! xs = xs
+                      let! expr = evalAexpr env expr
+                      return expr :: xs
+                    })
+    exprs
+    (Ok [])
 
-    | Lambda (parameters, body) ->
-        return (closure env parameters body)
-
-    | Load name ->
-        match Environment.lookup name env with
-        | Some v -> return v
-        | None -> return! Generator.gfail (sprintf "%s is not defined" name)
-
-    | Sequence (l, r) ->
-        let! lvalue = eval env l
-        return! Generator.sequence
-                  (ensureDiscarded lvalue)
-                  (eval env r)
-
-    | If (test, consequent, alternate) ->
-        let! testValue = eval env test
-        if asBoolean testValue then
-          return! eval env consequent
+and evalCexpr env expr =
+  match expr with
+  | CExpr.If (test, consequent, alternate) ->
+      gen {
+        let! test = Generator.fromResult (evalAexpr env test)
+        if asBoolean test then
+          return! evalExpr env consequent
         else
-          return! eval env alternate
+          return! evalExpr env alternate
+      }
+  
+  | CExpr.Apply (callee, args) ->
+      gen {
+        let! callee = Generator.fromResult (evalAexpr env callee)
+        match evalManyAexpr env args with
+        | Error e -> return! Fail e
+        | Ok args ->
+            match asClosure callee with
+            | Closure(cEnv, parameters, body) ->
+                let newEnv = Environment.extend (List.zip parameters args) cEnv
+                in return! evalExpr newEnv body
+            | _ -> 
+                return! Fail "[internal] asClosure returned a broken value in Apply"
+      }
 
-    | Let (name, init, body) ->
-        let! initValue = eval env init
-        let newEnv = Environment.extend [name, initValue] env
-        return! eval newEnv body
+and evalExpr env expr =
+  match expr with
+  | Expr.Let (name, init, body) ->
+      gen {
+        let! init = evalCexpr env init
+        let newEnv = Environment.extend [name, init] env
+        return! evalExpr newEnv body
+      }
 
-    | Apply (callee, args) ->
-        let! calleeValue = eval env callee
-        let fn = asClosure calleeValue
-        return Nothing
-  }
+  | Expr.CExpr expr -> evalCexpr env expr
+  | Expr.AExpr expr -> Generator.fromResult (evalAexpr env expr)
 
   

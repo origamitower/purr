@@ -3,6 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Common.fs" />
     <Compile Include="Ast.fs" />
     <Compile Include="Runtime.fs" />
     <Compile Include="Evaluator.fs" />

@@ -1,4 +1,5 @@
 ﻿
+#load "Common.fs"
 #load "Ast.fs"
 #load "Runtime.fs"
 #load "Evaluator.fs"
@@ -13,15 +14,16 @@ module dsl =
   let plet n i b = Let(n, i, b)
   let lambda p b = Lambda(p, b)
   let apply c a = Apply(c, a)
-  let load n = Load n
+  let load n = LoadLocal n
   let str t = Text t
   let int v = Integer v
   let float v = Float v 
   let bool v = Boolean v
   let nothing = Nothing
   let list v = List v
-  let (./) a b =  Sequence(a, b)
   let pif t c a = If(t, c, a)
+  let cexpr c = CExpr c
+  let aexpr a = AExpr a
 
 let rec runTracing g =
   match g with
@@ -34,9 +36,11 @@ let rec runTracing g =
       runTracing (k v)
 
 let program = 
-  pif (bool true)
-    (pif (bool false) (int 1) (int 2))
-    (int 2)
+  cexpr (pif (bool true)
+          (cexpr (pif (bool false) (aexpr (int 1)) (aexpr (int 2))))
+          (aexpr (int 2)))
 
-eval (Runtime.Environment.empty) program
+evalExpr (Runtime.Environment.empty) program
 |> runTracing
+
+
