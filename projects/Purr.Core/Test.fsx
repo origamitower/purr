@@ -25,7 +25,9 @@ module dsl =
 
 let rec runTracing g =
   match g with
-  | Done r -> r
+  | Done r ->
+      printfn "Done: %A" r
+      r
   | Fail e -> failwith e
   | Yield (v, k) ->
       printfn "Yield: %A" v
@@ -33,12 +35,8 @@ let rec runTracing g =
 
 let program = 
   pif (bool true)
-    (int 1)
+    (pif (bool false) (int 1) (int 2))
     (int 2)
-
 
 eval (Runtime.Environment.empty) program
 |> runTracing
-
-
-

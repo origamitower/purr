@@ -47,7 +47,7 @@ module Generator =
 type GeneratorBuilder() =
   member __.Bind(m, f) = Generator.bind m f
   member __.Return(v) = Generator.greturn v
-  member __.ReturnFrom(m) = Generator.runToHalt m
+  member __.ReturnFrom(m) = m
     
 
 let gen = GeneratorBuilder()
