@@ -22,6 +22,7 @@ and AExpr =
 and CExpr =
   | Apply of callee: AExpr * arguments: AExpr list
   | If of test: AExpr * consequent: Expr * alternate: Expr
+  | LoadModule of name: Name
   | AExpr of AExpr
 
 and Expr =

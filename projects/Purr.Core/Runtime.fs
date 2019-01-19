@@ -13,8 +13,25 @@ type PurrValue =
   | NativeProcedure of (PurrValue list -> PurrValue)
 
 
-and Environment(parent: Environment option) =
+and DefinitionValue =
+  | Unevaluated of Expr
+  | Evaluated of PurrValue
+
+
+and PurrModule(definitions: (Name * Expr) list) =
+  let mutable bindings = definitions |> List.map (fun (k, e) -> (k, Unevaluated e)) |> Map.ofList
+
+  member __.Lookup(name: Name) = 
+    Map.tryFind name bindings
+
+  member __.Update(name: Name, value: DefinitionValue) =
+    bindings <- Map.add name value bindings
+
+
+and Environment(``module``: PurrModule, parent: Environment option) =
   let mutable bindings: Map<Name, PurrValue> = Map.empty
+
+  member __.Module = ``module``
 
   member __.Lookup(name: string) =
     match (Map.tryFind name bindings), parent with
@@ -36,11 +53,11 @@ module Environment =
     pairs |> List.map (fun (k ,v) -> env.Add(k, v)) |> ignore
 
   let extend pairs (env: Environment) =
-    let newEnv = Environment(Some env)
+    let newEnv = Environment(env.Module, Some env)
     addAll pairs newEnv
     newEnv
 
-  let empty = Environment(None)
+  let empty ``module`` = Environment(``module``, None)
 
 [<AutoOpen>]
 module RuntimeType =   
@@ -52,6 +69,7 @@ module RuntimeType =
   let bool x = Boolean(x)
   let cons x y = Cons(x, y)
   let closure env parameters body = Closure(env, parameters, body)
+  let procedure fn = NativeProcedure fn
 
   let purrType value =
     match value with
@@ -62,6 +80,7 @@ module RuntimeType =
     | Cons _ -> "List"
     | Nothing _ -> "Nothing"
     | Closure _ -> "Function"
+    | NativeProcedure _ -> "NativeFunction"
 
   let asText value =
     match value with
@@ -97,3 +116,6 @@ module RuntimeType =
     match value with
     | Closure (e, p, b) -> Closure (e, p, b)
     | _ -> failwithf "Expected a Function, got %s" (purrType value)
+
+
+

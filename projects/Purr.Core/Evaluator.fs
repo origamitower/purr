@@ -3,6 +3,7 @@ module Purr.Core.Evaluator
 open Purr.Core.Ast
 open Purr.Core.Runtime
 open Purr.Core.Common
+open System.Reflection
 
 type Generator<'i, 'o, 'r> =
   | Yield of value: 'o * continuation: ('i -> Generator<'i, 'o, 'r>)
@@ -141,7 +142,7 @@ and evalCexpr env expr =
             match callee with
             | Closure(cEnv, parameters, body) ->
                 let newEnv = Environment.extend (List.zip parameters args) cEnv
-                if (List.length parameters != List.length args) then
+                if (List.length parameters <> List.length args) then
                   return! Fail (sprintf "Expected %d arguments, got %d"
                                  (List.length parameters) 
                                  (List.length args))
@@ -151,6 +152,20 @@ and evalCexpr env expr =
                 return fn args
             | _ -> 
                 return! Fail (sprintf "Apply expects a Function, got %s" (purrType callee))
+      }
+
+  | CExpr.LoadModule name ->
+      gen {
+        match env.Module.Lookup(name) with
+        | Some (Evaluated value) -> 
+            return value
+        | Some (Unevaluated expr) ->
+            let bareEnv = Environment.empty env.Module
+            let! value = evalExpr bareEnv expr
+            env.Module.Update(name, Evaluated value)
+            return value
+        | None ->
+            return! Fail (sprintf "No top-level definition for %s" name)
       }
 
   | CExpr.AExpr expr -> Generator.fromResult (evalAexpr env expr)

@@ -22,8 +22,10 @@ module dsl =
   let nothing = Nothing
   let list v = List v
   let pif t c a = If(t, c, a)
-  let cexpr c = CExpr c
-  let aexpr a = AExpr a
+  let cexpr c = Expr.CExpr c
+  let aexpr a = Expr.AExpr a
+  let caexpr a = CExpr.AExpr a
+  let loadMod n = LoadModule n
 
 let rec runTracing g =
   match g with
@@ -35,12 +37,20 @@ let rec runTracing g =
       printfn "Yield: %A" v
       runTracing (k v)
 
-let program = 
-  cexpr (pif (bool true)
-          (cexpr (pif (bool false) (aexpr (int 1)) (aexpr (int 2))))
-          (aexpr (int 2)))
 
-evalExpr (Runtime.Environment.empty) program
+let TestMod = Runtime.PurrModule([
+  "if_test", cexpr (pif (bool true)
+              (cexpr (pif (bool false) (aexpr (int 1)) (aexpr (int 2))))
+              (aexpr (int 2)))
+              
+  "let_test", plet "x" (caexpr (int 1))
+                (plet "y" (caexpr (int 2))
+                  (aexpr (list [(load "x"); load "y"])))
+])
+
+let rootEnv = Runtime.Environment.empty TestMod
+
+evalExpr rootEnv (cexpr (loadMod "let_test"))
 |> runTracing
 
 
