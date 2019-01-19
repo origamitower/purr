@@ -3,44 +3,51 @@ module Purr.Core.Evaluator
 open Purr.Core.Ast
 open Purr.Core.Runtime
 
-type Generator<'a> =
-  | Yield of value: 'a * continuation: ('a -> Generator<'a>)
+type Generator<'i, 'o, 'r> =
+  | Yield of value: 'o * continuation: ('i -> Generator<'i, 'o, 'r>)
   | Fail of reason: string
-  | Done of value: 'a
+  | Done of value: 'r
 
 
 module Generator =
-  let ``return`` x = Done(x)
+  let greturn x = Yield(x, (fun v -> Done v))
 
-  let ``yield`` x k = Yield(x, k)
+  let gyield x k = Yield(x, k)
 
-  let fail reason = Fail(reason)
+  let gfail reason = Fail(reason)
 
   let rec bind g f =
     match g with
-    | Yield (v, k) ->
-        match k v with
-        | Yield (v', k') -> bind (Yield(v', k')) f
-        | Fail reason -> Fail reason
-        | Done v -> f v
+    | Yield (v, k) -> gyield v (fun i -> bind (k i) f)
     | Fail reason -> Fail reason
-    | Done v -> Done v
+    | Done r -> Done r
 
   let sequence m1 m2 =
     bind m1 (fun _ -> m2)
 
-  let rec run g =
+  let rec runToValue g =
     match g with
-    | Done v -> v
+    | Done r -> r
     | Fail reason -> failwith reason
-    | Yield (v, k) -> run (k v)
+    | Yield (v, k) -> runToValue (k v)
 
+  let rec runToHalt g =
+    match g with
+    | Done r -> Done r
+    | Fail e -> Fail e
+    | Yield (v, k) -> runToHalt (Yield(v, k))
+
+  let next g =
+    match g with
+    | Done r -> (r, Done r)
+    | Fail e -> failwith e
+    | Yield (v, k) -> (v, k v)
   
 
 type GeneratorBuilder() =
   member __.Bind(m, f) = Generator.bind m f
-  member __.Return(v) = Generator.``return`` v
-  member __.ReturnFrom(m) = m
+  member __.Return(v) = Generator.greturn v
+  member __.ReturnFrom(m) = Generator.runToHalt m
     
 
 let gen = GeneratorBuilder()
@@ -48,7 +55,7 @@ let gen = GeneratorBuilder()
 let ensureDiscarded value =
   match value with
   | Nothing -> Done Nothing
-  | _ -> Generator.fail 
+  | _ -> Generator.gfail 
             """
             Only the last expression in a sequence may return a value.
             
@@ -79,7 +86,7 @@ let rec eval env (expr:Expression) : Generator<PurrValue> =
         return (nothing)
 
     | List items ->
-        return! Generator.fail "Not implemented."
+        return! Generator.gfail "Not implemented."
 
     | Lambda (parameters, body) ->
         return (closure env parameters body)
@@ -87,7 +94,7 @@ let rec eval env (expr:Expression) : Generator<PurrValue> =
     | Load name ->
         match Environment.lookup name env with
         | Some v -> return v
-        | None -> return! Generator.fail (sprintf "%s is not defined" name)
+        | None -> return! Generator.gfail (sprintf "%s is not defined" name)
 
     | Sequence (l, r) ->
         let! lvalue = eval env l

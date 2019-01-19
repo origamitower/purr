@@ -6,6 +6,5 @@
     <Compile Include="Ast.fs" />
     <Compile Include="Runtime.fs" />
     <Compile Include="Evaluator.fs" />
-    <Compile Include="Test.fs" />
   </ItemGroup>
 </Project>

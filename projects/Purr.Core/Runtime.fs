@@ -39,6 +39,8 @@ module Environment =
     addAll pairs newEnv
     newEnv
 
+  let empty = Environment(None)
+
 [<AutoOpen>]
 module RuntimeType =   
   let nothing = Nothing
