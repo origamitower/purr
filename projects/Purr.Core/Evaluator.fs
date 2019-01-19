@@ -146,6 +146,8 @@ and evalCexpr env expr =
                 return! Fail "[internal] asClosure returned a broken value in Apply"
       }
 
+  | CExpr.AExpr expr -> Generator.fromResult (evalAexpr env expr)
+
 and evalExpr env expr =
   match expr with
   | Expr.Let (name, init, body) ->
