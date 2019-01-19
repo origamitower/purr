@@ -20,7 +20,7 @@ module Generator =
     match g with
     | Yield (v, k) -> gyield v (fun i -> bind (k i) f)
     | Fail reason -> Fail reason
-    | Done r -> Done r
+    | Done r -> f r
 
   let sequence m1 m2 =
     bind m1 (fun _ -> m2)
@@ -35,7 +35,7 @@ module Generator =
     match g with
     | Done r -> Done r
     | Fail e -> Fail e
-    | Yield (v, k) -> runToHalt (Yield(v, k))
+    | Yield (v, k) -> runToHalt (k v)
 
   let next g =
     match g with
@@ -67,7 +67,7 @@ let ensureDiscarded value =
 
 
 
-let rec eval env (expr:Expression) : Generator<PurrValue> =
+let rec eval env (expr:Expression) : Generator<PurrValue, PurrValue, PurrValue> =
   gen {
     match expr with
     | Expression.Text v ->
