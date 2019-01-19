@@ -18,6 +18,10 @@ type Environment(parent: Environment option) =
     bindings <- Map.add name value bindings
 
 
+[<RequireQualifiedAccess>]
+module Environment =
+  let lookup name (env: Environment) = env.Lookup name
+  let add name value (env: Environment) = env.Add(name, value)
   
 
 module Objects =
@@ -48,7 +52,6 @@ module Objects =
 
   type Closure(env: Environment, parameters: Name list, body: Expression) =
     inherit PurrValue()
-
 
    
   let nothing = Nothing()

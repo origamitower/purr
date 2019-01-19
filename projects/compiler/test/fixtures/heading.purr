@@ -1,7 +1,0 @@
-% decimal: 1000.00
-% integer: 1000
-% boolean: true
-% string: "hello"
-% id: something
-
-module Test.Heading

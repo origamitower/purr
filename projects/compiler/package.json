@@ -1,7 +1,0 @@
-{
-  "private": true,
-  "dependencies": {
-    "ohm-js": "^0.14.0"
-  },
-  "devDependencies": {}
-}
