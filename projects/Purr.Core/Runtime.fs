@@ -10,6 +10,7 @@ type PurrValue =
   | Cons of head: PurrValue * tail: PurrValue
   | Nothing
   | Closure of Environment * parameters: Name list * body: Expr
+  | NativeProcedure of (PurrValue list -> PurrValue)
 
 
 and Environment(parent: Environment option) =

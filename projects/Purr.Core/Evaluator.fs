@@ -138,12 +138,19 @@ and evalCexpr env expr =
         match evalManyAexpr env args with
         | Error e -> return! Fail e
         | Ok args ->
-            match asClosure callee with
+            match callee with
             | Closure(cEnv, parameters, body) ->
                 let newEnv = Environment.extend (List.zip parameters args) cEnv
-                in return! evalExpr newEnv body
+                if (List.length parameters != List.length args) then
+                  return! Fail (sprintf "Expected %d arguments, got %d"
+                                 (List.length parameters) 
+                                 (List.length args))
+                else
+                  return! evalExpr newEnv body
+            | NativeProcedure(fn) ->
+                return fn args
             | _ -> 
-                return! Fail "[internal] asClosure returned a broken value in Apply"
+                return! Fail (sprintf "Apply expects a Function, got %s" (purrType callee))
       }
 
   | CExpr.AExpr expr -> Generator.fromResult (evalAexpr env expr)
